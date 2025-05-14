@@ -1,14 +1,14 @@
 import {isNullOrUndefined} from "~/utils/helpers";
 
-type Comparator<T> = (a: T, b: T) => number;
+export type Comparator<T> = (a: T, b: T) => number;
 
-type HeapNode<T> = {
+export type HeapNode<T> = {
     value: T;
     priority: number;
     id: string;
 };
 
-class BinaryHeap<T> {
+export class BinaryHeap<T> {
     private heap: HeapNode<T>[] = [];
     private indexMap = new Map<string, number>();
 
