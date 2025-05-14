@@ -4,8 +4,8 @@ import {manhattan} from "~/utils/heuristics";
 
 export function meta({}: Route.MetaArgs) {
     return [
-        {title: "New React Router App"},
-        {name: "description", content: "Welcome to React Router!"},
+        {title: "aStar"},
+        {name: "description", content: "aStar Demo!"},
     ];
 }
 
@@ -28,23 +28,48 @@ export default function Home() {
             </div>
         )
     }
-    const {value: {costs}} = aStarResult
+    const {value: {costs, costUpdateHistory}} = aStarResult
 
     return (
-        <div className={'flex flex-col gap-2 p-10'}>
-            {Array.from({length: size}, (_, r) => (
-                <div key={r} className={'flex gap-0.5'}>
-                    {Array.from({length: size}, (_, c) => (
-                        <div key={`${r}_${c}`}
-                             className="size-24 bg-sky-100  border border-sky-300 rounded flex items-center justify-center shadow-sm hover:bg-sky-200">
-                            <p className="text-gray-800 font-medium">{costs[r][c].toFixed(2)}</p>
-                        </div>
-                    ))}
-                </div>
-            ))}
+        <div className={'flex gap-10'}>
+            <SimpleGrid grid={grid}/>
+            <SimpleGrid grid={costs}/>
         </div>
     )
 }
+
+type SimpleGridProps = {
+    grid: number[][]
+}
+
+function SimpleGrid({grid}: SimpleGridProps) {
+    return (
+        <div className={'flex flex-col gap-2'}>
+            {grid.map((row, r) => (
+                    <div key={r} className={'flex gap-x-0.5'}>
+                        {row.map((_, c) => {
+                            const key = `${r},${c}`
+                            return (
+                                <div key={key}
+                                     style={{
+                                         height: "8rem",
+                                         width: "8rem",
+                                         backgroundColor: "#dff2fe"
+                                     }}
+                                     className={` rounded flex items-center justify-center shadow-sm border border-sky-300 `}>
+                                    <p className="text-gray-800 font-medium">
+                                        {grid[r][c].toFixed(2)}</p>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )
+            )}
+        </div>
+    )
+
+}
+
 
 
 
