@@ -1,6 +1,7 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
 import {manhattan} from "~/utils/heuristics";
+import type {Pos} from "~/types/pathfinding";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -9,13 +10,25 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
+type CellData = {
+    pos: [number, number]
+    weight: number,
+    state: "empty" | "start" | "goal" | "wall" | "visited" | "frontier" | "path"
+    g?: number,
+    h?: number,
+    f?: number,
+    step?: number
+    costUpdateHistory: { step: number, gCost: number }[]
+}
+
 export default function Home() {
-    const weightGrid = [
-        [12, 9001, 50],
-        [9002, 28, 11000],
-        [45, 800, 11212],
-    ]
+    // const weightGrid = [
+    //     [12, 9001, 50],
+    //     [9002, 28, 11000],
+    //     [45, 800, 11212],
+    // ]
     const size = 3
+    const weightGrid = generateRandomWeightGrid(size)
     const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[0].length - 1], manhattan, {
         allowed: true,
         cornerCutting: 'strict'
@@ -33,6 +46,7 @@ export default function Home() {
 
     return (
         <div className={'flex gap-10'}>
+            {/*{JSON.stringify(aStarResult.value)}*/}
             <SimpleGrid grid={weightGrid}/>
             <SimpleGrid grid={costs}/>
         </div>
@@ -72,5 +86,20 @@ function SimpleGrid({grid}: SimpleGridProps) {
 }
 
 
-
+function generateRandomWeightGrid(size: number, st?: Pos, goal?: Pos): number[][] {
+    const start = st ?? [0, 0]
+    const end = goal ?? [size - 1, size - 1]
+    return Array.from({length: size}, (_, r) =>
+        Array.from({length: size}, (_, c) => {
+                const val = Math.random()
+                const isStart = r === start[0] && c === start[1]
+                const isGoal = r === end[0] && c === end[1]
+                if (val <= 0.1 && !isStart && !isGoal) {
+                    return 0
+                }
+                return Math.floor(val * 100) + 1
+            }
+        )
+    )
+}
 
