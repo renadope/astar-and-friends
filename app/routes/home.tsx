@@ -1,7 +1,6 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
 import {manhattan} from "~/utils/heuristics";
-import {useState} from "react";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -16,7 +15,7 @@ export default function Home() {
         [9002, 28, 11000],
         [45, 800, 11212],
     ]
-
+    const size = 3
     const aStarResult = aStar(grid, [0, 0], [grid.length - 1, grid[0].length - 1], manhattan, {
         allowed: true,
         cornerCutting: 'lax'
@@ -29,10 +28,20 @@ export default function Home() {
             </div>
         )
     }
+    const {value: {costs}} = aStarResult
 
     return (
-        <div>
-            {JSON.stringify(aStarResult.value,null,2)}
+        <div className={'flex flex-col gap-2 p-10'}>
+            {Array.from({length: size}, (_, r) => (
+                <div key={r} className={'flex gap-0.5'}>
+                    {Array.from({length: size}, (_, c) => (
+                        <div key={`${r}_${c}`}
+                             className="size-24 bg-sky-100  border border-sky-300 rounded flex items-center justify-center shadow-sm hover:bg-sky-200">
+                            <p className="text-gray-800 font-medium">{costs[r][c].toFixed(2)}</p>
+                        </div>
+                    ))}
+                </div>
+            ))}
         </div>
     )
 }
