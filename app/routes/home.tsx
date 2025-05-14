@@ -10,15 +10,15 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-    const grid = [
+    const weightGrid = [
         [12, 9001, 50],
         [9002, 28, 11000],
         [45, 800, 11212],
     ]
     const size = 3
-    const aStarResult = aStar(grid, [0, 0], [grid.length - 1, grid[0].length - 1], manhattan, {
+    const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[0].length - 1], manhattan, {
         allowed: true,
-        cornerCutting: 'lax'
+        cornerCutting: 'strict'
     })
 
     if (!aStarResult.success) {
@@ -29,10 +29,11 @@ export default function Home() {
         )
     }
     const {value: {costs, costUpdateHistory}} = aStarResult
+    console.log(costUpdateHistory)
 
     return (
         <div className={'flex gap-10'}>
-            <SimpleGrid grid={grid}/>
+            <SimpleGrid grid={weightGrid}/>
             <SimpleGrid grid={costs}/>
         </div>
     )
@@ -47,7 +48,7 @@ function SimpleGrid({grid}: SimpleGridProps) {
         <div className={'flex flex-col gap-2'}>
             {grid.map((row, r) => (
                     <div key={r} className={'flex gap-x-0.5'}>
-                        {row.map((_, c) => {
+                        {row.map((value, c) => {
                             const key = `${r},${c}`
                             return (
                                 <div key={key}
@@ -58,7 +59,7 @@ function SimpleGrid({grid}: SimpleGridProps) {
                                      }}
                                      className={` rounded flex items-center justify-center shadow-sm border border-sky-300 `}>
                                     <p className="text-gray-800 font-medium">
-                                        {grid[r][c].toFixed(2)}</p>
+                                        {value.toFixed(2)}</p>
                                 </div>
                             )
                         })}
