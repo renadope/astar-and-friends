@@ -20,3 +20,11 @@ export function stringifyPos(...pos: number[]): string {
 export function checkPosEquality(a: Pos, b: Pos): boolean {
     return a[0] === b[0] && a[1] === b[1];
 }
+
+export function nodeIsPassable(val: number): boolean {
+    return val > 0 && Number.isFinite(val);
+}
+
+export function isValidNode(grid: number[][], row: number, col: number) {
+    return isValidGridIndex(grid, row, col) && nodeIsPassable(grid[row][col]);
+}
