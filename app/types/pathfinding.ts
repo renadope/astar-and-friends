@@ -38,11 +38,17 @@ export interface PathData {
 export type AStarData = {
     goalFound: boolean;
     path: PathData[];
-    visitedOrder: Pos[];
+    visitedOrder: AStarNode[];
     costs: number[][];
-    costUpdateHistory: Record<string, number>;
+    costUpdateHistory: Record<string, CostHistory[]>;
+    updatesPerStep: Record<number, number>;
     frontier: AStarNode[][];
     totalCost: number;
     steps: number;
     fallBack: Pos | null;
+};
+
+export type CostHistory = {
+    step: number;
+    gCost: number;
 };

@@ -1,4 +1,4 @@
-import type {AStarData, AStarNode, DiagonalConfig, PathData, Pos, Weights} from "~/types/pathfinding";
+import type {AStarData, AStarNode, CostHistory, DiagonalConfig, PathData, Pos, Weights} from "~/types/pathfinding";
 import {checkPosEquality, isValidGridIndex, isValidNode, nodeIsPassable, stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined, ResultErr, ResultOk} from "~/utils/helpers";
 import type {Result} from "~/types/helpers";
@@ -33,16 +33,24 @@ export function aStar(
     const startAndGoalSame = checkPosEquality(start, goal);
     const [startR, startC] = start;
     let goalFound = false;
-    const visitedOrder: Pos[] = [];
+    const visitedOrder: AStarNode[] = [];
     const frontier: AStarNode[][] = [];
     const prev = new Map<string, string>();
-    const costUpdateHistory = new Map<string, number>();
+    const updatesPerStep = new Map<number, number>();
+    const costUpdateHistory = new Map<string, CostHistory[]>();
     const costs: typeof grid = grid.map((row) => row.map(() => Infinity));
     const startGCost = grid[startR][startC];
     const startHCost = heuristicFromNodeToGoal(start);
     const startFCost = calculateFCost(weights, startGCost, startHCost);
 
     costs[startR][startC] = startGCost;
+
+    const startNode: AStarNode = {
+        pos: [startR, startC],
+        gCost: startGCost,
+        hCost: startHCost,
+        fCost: startFCost,
+    };
 
     if (startAndGoalSame) {
         return ResultOk({
@@ -56,8 +64,9 @@ export function aStar(
                 fCost: startFCost,
             }],
             costs: costs,
-            visitedOrder: [start],
+            visitedOrder: [startNode],
             costUpdateHistory: {},
+            updatesPerStep: {},
             frontier: [],
             totalCost: costs[startR][startC],
             steps: 0,
@@ -65,12 +74,6 @@ export function aStar(
         });
     }
 
-    const startNode: AStarNode = {
-        pos: [startR, startC],
-        gCost: startGCost,
-        hCost: startHCost,
-        fCost: startFCost,
-    };
     const node = makeNode(startNode, startFCost, stringifyPos(startR, startC));
 
     const openSet = new PriorityQueue<AStarNode>((a, b) =>
@@ -82,6 +85,7 @@ export function aStar(
         ? [...fourDirection, ...diagonals]
         : [...fourDirection];
 
+    let step = 0;
     while (!openSet.isEmpty()) {
         const currSet = openSet.toArray();
         frontier.push(currSet.map((st) => st.value));
@@ -92,6 +96,10 @@ export function aStar(
                 "should not happen, as we are only looping if there is content in the queue",
             );
         }
+
+        step++;
+        visitedOrder.push(minNode.value);
+
         const [currRow, currCol] = minNode.value.pos;
         if (currRow === goal[0] && currCol === goal[1]) {
             goalFound = true;
@@ -147,10 +155,13 @@ export function aStar(
                 const neighborG = currNodeCost + neighborDist;
                 if (neighborG < neighborCost) {
                     costs[neighborRow][neighborCol] = neighborG;
+                    const history = costUpdateHistory.get(neighborID) ?? [];
+                    history.push({ step: step, gCost: neighborG });
                     costUpdateHistory.set(
                         neighborID,
-                        (costUpdateHistory.get(neighborID) ?? 0) + 1,
+                        history,
                     );
+                    updatesPerStep.set(step, (updatesPerStep.get(step) ?? 0) + 1);
                     prev.set(
                         neighborID,
                         stringifyPos(currRow, currCol),
@@ -173,7 +184,6 @@ export function aStar(
                 }
             }
         }
-        visitedOrder.push([currRow, currCol]);
     }
 
     if (!goalFound) {
@@ -181,10 +191,11 @@ export function aStar(
         let closest: Pos | undefined = undefined;
         if (weights.hWeight > 0) {
             for (let i = 0; i < visitedOrder.length; i++) {
-                const h = heuristicFromNodeToGoal(visitedOrder[i]) * weights.hWeight;
+                const h = heuristicFromNodeToGoal(visitedOrder[i].pos) *
+                    weights.hWeight;
                 if (h < minH) {
                     minH = h;
-                    closest = visitedOrder[i];
+                    closest = [...visitedOrder[i].pos];
                 }
             }
             if (closest) {
@@ -192,7 +203,7 @@ export function aStar(
             }
         } else {
             if (visitedOrder.length > 0) {
-                goal = [...visitedOrder[visitedOrder.length - 1]];
+                goal = [...visitedOrder[visitedOrder.length - 1].pos];
             }
         }
     }
@@ -213,6 +224,7 @@ export function aStar(
         frontier: frontier,
         costs: costs,
         costUpdateHistory: Object.fromEntries(costUpdateHistory),
+        updatesPerStep: Object.fromEntries(updatesPerStep),
         //the goal becomes the fallback if not found otherwise if it's found just return null as there is no fallback
         fallBack: !goalFound ? goal : null,
         steps: allPathData.length - 1,
