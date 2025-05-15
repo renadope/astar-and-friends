@@ -18,7 +18,7 @@ const gridCellSize = 6
 
 type CellData = {
     pos: [number, number]
-    weight: number,
+    cost: number,
     state: "empty" | "start" | "goal" | "wall" | "visited" | "frontier" | "path"
     g?: number,
     h?: number,
@@ -45,9 +45,9 @@ export default function Home() {
     // ]
 
 
-    const size = 8
-//use memo to fix this now, but will shove th`is in a reducer or state later
-    const weightGrid = useMemo(() => generateRandomWeightGrid(size), [size])
+    const size = 10
+//use memo to fix this now, but will shove this in a reducer or state later
+    const weightGrid = useMemo(() => generateRandomCostGrid(size, biomeWeights), [size, biomeWeights])
 // const weightGrid=[
 //     [1,  1,  1,  3,  5,  3,  1,  1,  1,  1],
 //     [3, 10,  3,  1,  1,  1,  5, 10,  3,  1],
@@ -61,8 +61,8 @@ export default function Home() {
 //     [1,  5,  1,  1,  1,  1, 10, 10, 10,  1],
 // ]
     const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1], manhattan, {
-        allowed: true,
-        cornerCutting: 'lax'
+        allowed: false,
+        // cornerCutting: 'strict'
     }, {gWeight: 1, hWeight: 1, name: "aStar"})
 
     useEffect(() => {
@@ -142,7 +142,7 @@ export default function Home() {
             return row.map((weight, c) => {
                 return {
                     pos: [r, c],
-                    weight: weight,
+                    cost: weight,
                     state: isNodePassable(weight) ?
                         (r === 0 && c === 0) ? "start" :
                             (r === weightGrid.length - 1 && c === weightGrid[r].length - 1) ?
@@ -175,9 +175,11 @@ export default function Home() {
                                         height: `${gridCellSize}rem`,
                                         width: `${gridCellSize}rem`,
                                         backgroundColor: cellBgColor[cell.state] || "#dff2fe",
-                                        transition: "all 0.2s ease-in-out"
+                                        transition: "all 0.2s ease-in-out",
+                                        border: `${1 + cell.cost}px solid ${costToColor(cell.cost)}`,
+
                                     }}
-                                    className="rounded-md flex flex-col items-center justify-center shadow-sm border border-sky-300 relative hover:scale-105"
+                                    className="rounded-md flex flex-col items-center justify-center shadow-sm relative hover:scale-105"
                                     onClick={() => console.log(cell)}
                                 >
                                     <p className={`text-xs font-semibold ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-700"}`}>
@@ -188,7 +190,7 @@ export default function Home() {
                                     {/*    {cell.pos.join(',')}*/}
                                     {/*</p>*/}
                                     <p className={`text-xs ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
-                                        {cell.weight}
+                                        {cell.cost}
                                     </p>
 
                                     {(cell.f !== undefined || cell.g !== undefined) && (
@@ -261,43 +263,117 @@ function SimpleGrid({grid}: SimpleGridProps) {
 //         )
 //     )
 // }
-function generateRandomWeightGrid(size: number, st?: Pos, goal?: Pos): number[][] {
+
+//The first number represents the cost that we want to select, and the second number represents the odds of that cost being selected
+type CostAndWeight = Record<number, number>
+
+type CDFEntry = {
+    cost: number,
+    threshold: number
+}
+type CDF = CDFEntry []
+
+function biomeWeights(r: number, c: number, size: number): CostAndWeight {
+    if (r < size / 3) {
+        // Top of the map → Forest
+        return {
+            1: 0.2,  // plains
+            3: 0.6,  // forest
+            5: 0.1,  // swamp
+            10: 0.04, // mountain
+            0: 0.04,  // wall
+            15: 0.01  // wall
+        };
+    } else if (r > size * 2 / 3) {
+        // Bottom of the map → Mountain zone
+        return {
+            1: 0.1,
+            3: 0.1,
+            5: 0.2,
+            10: 0.4,
+            0: 0.15,
+            15: 0.05
+        };
+    } else {
+        // Middle of the map → Plains
+        return {
+            1: 6,
+            3: 2,
+            5: 1,
+            10: .35,
+            0: .25,
+            15: 0.4
+        };
+    }
+}
+
+type CostAndWeightFunc = (r: number, c: number, size: number) => CostAndWeight
+
+function getTerrain(): CostAndWeightFunc {
+    return (_r: number, _c: number, _size: number) => {
+        return {
+            1: 3,
+            3: 2.5,
+            5: 2,
+            10: 1,
+            0: 1.5
+        }
+    }
+}
+
+function generateRandomCostGrid(size: number,
+                                getCostAndWeight: CostAndWeightFunc,
+                                st?: Pos,
+                                goal?: Pos): number[][] {
     const start = st ?? [0, 0];
     const end = goal ?? [size - 1, size - 1];
 
-    const terrainChances = [
-        {cost: 1, weight: 0.35},
-        {cost: 3, weight: 0.25},
-        {cost: 5, weight: 0.2},
-        {cost: 10, weight: 0.1},
-        {cost: 0, weight: 0.1}
-    ];
 
-    //the weights must add up to 1!!!
-    //cant have a greater than 1 probabilty now can we there buddy
-
-    const terrainCDF: number[] = []
-    for (let i = 0; i < terrainChances.length; i++) {
-        const curr = terrainChances[i]
-        terrainCDF.push(curr.weight + (terrainCDF[i - 1] ?? 0))
-    }
-
-    function pickTerrainCost() {
-        const rand = Math.random();
-        for (let i = 0; i < terrainCDF.length; i++) {
-            if (rand <= terrainCDF[i]) return terrainChances[i].cost;
-        }
-        return 1;
-    }
-
-    return Array.from({length: size}, (_, r) =>
-        Array.from({length: size}, (_, c) => {
+    const grid: number[][] = []
+    for (let r = 0; r < size; r++) {
+        const row: number[] = []
+        for (let c = 0; c < size; c++) {
+            const cdf = buildCDF(getCostAndWeight(r, c, size))
+            const roll = Math.random()
+            const terrainWeight = cdf.find((costAndThreshold) => roll <= costAndThreshold.threshold)
             const isStart = r === start[0] && c === start[1];
             const isGoal = r === end[0] && c === end[1];
-            if (isStart || isGoal) return 1;
-            return pickTerrainCost();
-        })
-    );
+            if (isStart || isGoal) {
+                //Perhaps later on, we generate the positive number in a range
+                row.push(1)
+            } else {
+                row.push(terrainWeight ? terrainWeight.cost : 1)
+            }
+        }
+        grid.push(row)
+    }
+
+    return grid
+}
+
+function buildCDF(costAndWeight: CostAndWeight): CDF {
+
+    //Sorting makes it more consistent
+    //We don't need to create the entries array, could have just manipulated the object directly,
+    //but I wanted the sorted order of the costs so that we can see it the same each time
+    const entries = Object.entries(costAndWeight).map(([cost, weight]) => {
+        return {
+            cost: Number(cost),
+            weight: weight
+        }
+
+    }).sort((a, b) => a.cost - b.cost)
+    const total = entries.reduce((sum, entry) => sum + entry.weight, 0)
+    let cumulative = 0
+    return entries.map(({cost, weight}) => {
+        cumulative += weight
+        return {
+            cost: cost,
+            //normalizing the cumulative sum so that they all always add up to 1
+            threshold: cumulative / total
+        }
+    })
+
 }
 
 function copyCellData(cellData: CellData[][]): CellData[][] {
@@ -313,3 +389,15 @@ function copyCellData(cellData: CellData[][]): CellData[][] {
 //         {cell.f !== undefined && <span>f:{cell.f}</span>}
 //     </div>
 // )}
+
+//not gonna use this method, but wanted a quick and dirty way to just see the weights without inspecting
+function costToColor(cost: number): string {
+    if (cost === 0) return "#334155"; // wall — keep as-is
+
+    if (cost < 3) return "#7dd3fc";   // sky-300 (light blue, easy terrain)
+    if (cost < 5) return "#facc15";   // yellow-400 (cautionary / sand)
+    if (cost < 8) return "#f97316";   // orange-500 (rough terrain)
+    if (cost < 15) return "#ef4444";  // red-500 (very hard)
+    return "#a855f7";                // purple-500 (extreme terrain)
+}
+
