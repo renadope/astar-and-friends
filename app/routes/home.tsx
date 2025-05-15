@@ -27,13 +27,13 @@ type CellData = {
     costUpdateHistory?: { step: number, gCost: number }[]
 }
 export const cellBgColor = {
-    "empty": "#f1f5f9",      // slate-100 (softer, less stark than white)
-    "wall": "#334155",       // slate-800 (unchanged)
-    "visited": "#bfdbfe",    // blue-200 (a lighter, gentler visited color)
-    "frontier": "#fde68a",   // yellow-300 (brighter but still soft)
-    "path": "#6ee7b7",       // green-300 (refreshing and vivid)
-    "start": "#38bdf8",      // sky-400 (punchier start color)
-    "goal": "#fb7185"        // rose-400 (slightly lighter than original red)
+    "empty": "#f1f5f9",      // slate-100
+    "wall": "#334155",       // slate-800
+    "visited": "#d8b4fe",    // purple-300
+    "frontier": "#facc15",   // yellow-400
+    "path": "#4ade80",       // green-400
+    "start": "#0ea5e9",      // sky-500
+    "goal": "#f43f5e"        // rose-500
 };
 
 
@@ -65,7 +65,7 @@ export default function Home() {
     const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[0].length - 1], chebyshev, {
         allowed: true,
         cornerCutting: 'lax'
-    })
+    }, {gWeight: 2, hWeight: 0.5, name: "GBFS"})
 
     useEffect(() => {
         if (!aStarResult.success) {
@@ -73,6 +73,53 @@ export default function Home() {
         }
         const pathData = aStarResult.value.path
         const visitedData = aStarResult.value.visitedOrder
+        const frontierData = aStarResult.value.frontier
+
+
+
+
+        setTimeout(() => {
+            setCellData((prev) => {
+                const newData = copyCellData(prev)
+                for (let i = 0; i < frontierData.length; i++) {
+                    const aStarNodes = frontierData[i]
+                    for (let j = 0; j < aStarNodes.length; j++) {
+                        const aStarNode = aStarNodes[j]
+                        if (!isNullOrUndefined(aStarNode)) {
+                            const [r, c] = aStarNode.pos
+                            const cellData = newData[r][c]
+                            cellData.state = 'frontier'
+                            cellData.pos = [r, c]
+                            cellData.g = aStarNode.gCost
+                            cellData.h = aStarNode.hCost
+                            cellData.f = aStarNode.fCost
+                        }
+                    }
+                }
+                return newData
+            })
+        }, 1000)
+
+        setTimeout(() => {
+            setCellData((prev) => {
+                const newData = copyCellData(prev)
+                for (let i = 0; i < visitedData.length; i++) {
+                    const cell = visitedData[i]
+                    const pos = cell.pos
+                    if (!isNullOrUndefined(pos)) {
+                        const [r, c] = pos
+                        const cellData = newData[r][c]
+                        cellData.state = 'visited'
+                        cellData.pos = pos
+                        cellData.g = cell.gCost
+                        cellData.h = cell.hCost
+                        cellData.f = cell.fCost
+                    }
+                }
+                return newData
+            })
+        }, 3000)
+
         setTimeout(() => {
             setCellData((prev) => {
                 const newData = copyCellData(prev)
@@ -91,7 +138,7 @@ export default function Home() {
                 }
                 return newData
             })
-        }, 2000)
+        }, 6000)
     }, []);
 
     const [cellData, setCellData] = useState<CellData[][]>(() => {
@@ -142,9 +189,9 @@ export default function Home() {
                                         {cell.state}
                                     </p>
 
-                                    <p className={`text-xs ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
-                                        {cell.pos.join(',')}
-                                    </p>
+                                    {/*<p className={`text-xs ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>*/}
+                                    {/*    {cell.pos.join(',')}*/}
+                                    {/*</p>*/}
                                     <p className={`text-xs ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
                                         {cell.weight}
                                     </p>
