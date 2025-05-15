@@ -2,8 +2,9 @@ import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
 import {manhattan} from "~/utils/heuristics";
 import type {Pos} from "~/types/pathfinding";
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {isNodePassable} from "~/utils/grid-helpers";
+import {isNullOrUndefined} from "~/utils/helpers";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -45,8 +46,34 @@ export default function Home() {
 
     const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[0].length - 1], manhattan, {
         allowed: true,
-        cornerCutting: 'strict'
+        cornerCutting: 'lax'
     })
+
+    useEffect(() => {
+        if (!aStarResult.success) {
+            return
+        }
+        const data = aStarResult.value.path
+        setTimeout(() => {
+            setCellData((prev) => {
+                const newData = prev.map((row) => row.map((cell) => ({...cell})))
+                for (let i = 0; i < data.length; i++) {
+                    const cell = data[i]
+                    const pos = cell.pos
+                    if (!isNullOrUndefined(pos)) {
+                        const [r, c] = pos
+                        const cellData = newData[r][c]
+                        cellData.state = 'path'
+                        cellData.pos = pos
+                        cellData.g = cell.gCost
+                        cellData.h = cell.hCost
+                        cellData.f = cell.fCost
+                    }
+                }
+                return newData
+            })
+        }, 2000)
+    }, []);
 
     const [cellData, setCellData] = useState<CellData[][]>(() => {
         return weightGrid.map((row, r) => {
@@ -99,6 +126,13 @@ export default function Home() {
                                     <p className={`text-xs ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
                                         {cell.weight}
                                     </p>
+
+                                    {(cell.f !== undefined || cell.g !== undefined) && (
+                                    <div
+                                        className="absolute bottom-1 right-1 text-xs bg-white/70 text-black px-1 rounded-sm">
+                                        {cell.f !== undefined && <span>f:{cell.f.toFixed(0)}</span>}
+                                    </div>
+                                )}
 
 
                                 </div>
