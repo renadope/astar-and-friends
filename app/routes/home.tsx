@@ -1,7 +1,7 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
 import {manhattan} from "~/utils/heuristics";
-import type {Pos} from "~/types/pathfinding";
+import type {AStarNode, Pos} from "~/types/pathfinding";
 import {useEffect, useMemo, useState} from "react";
 import {isNodePassable} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
@@ -65,77 +65,77 @@ export default function Home() {
         // cornerCutting: 'strict'
     }, {gWeight: 1, hWeight: 1, name: "aStar"})
 
-    useEffect(() => {
-        if (!aStarResult.success) {
-            return
-        }
-        const pathData = aStarResult.value.path
-        const visitedData = aStarResult.value.visitedOrder
-        const frontierData = aStarResult.value.frontier
-
-
-        setTimeout(() => {
-            setCellData((prev) => {
-                const newData = copyCellData(prev)
-                for (let i = 0; i < frontierData.length; i++) {
-                    const aStarNodes = frontierData[i]
-                    for (let j = 0; j < aStarNodes.length; j++) {
-                        const aStarNode = aStarNodes[j]
-                        if (!isNullOrUndefined(aStarNode)) {
-                            const [r, c] = aStarNode.pos
-                            const cellData = newData[r][c]
-                            cellData.state = 'frontier'
-                            cellData.pos = [r, c]
-                            cellData.g = aStarNode.gCost
-                            cellData.h = aStarNode.hCost
-                            cellData.f = aStarNode.fCost
-                        }
-                    }
-                }
-                return newData
-            })
-        }, 1000)
-
-        setTimeout(() => {
-            setCellData((prev) => {
-                const newData = copyCellData(prev)
-                for (let i = 0; i < visitedData.length; i++) {
-                    const cell = visitedData[i]
-                    const pos = cell.pos
-                    if (!isNullOrUndefined(pos)) {
-                        const [r, c] = pos
-                        const cellData = newData[r][c]
-                        cellData.state = 'visited'
-                        cellData.pos = pos
-                        cellData.g = cell.gCost
-                        cellData.h = cell.hCost
-                        cellData.f = cell.fCost
-                    }
-                }
-                return newData
-            })
-        }, 3000)
-
-        setTimeout(() => {
-            setCellData((prev) => {
-                const newData = copyCellData(prev)
-                for (let i = 0; i < pathData.length; i++) {
-                    const cell = pathData[i]
-                    const pos = cell.pos
-                    if (!isNullOrUndefined(pos)) {
-                        const [r, c] = pos
-                        const cellData = newData[r][c]
-                        cellData.state = 'path'
-                        cellData.pos = pos
-                        cellData.g = cell.gCost
-                        cellData.h = cell.hCost
-                        cellData.f = cell.fCost
-                    }
-                }
-                return newData
-            })
-        }, 6000)
-    }, []);
+    // useEffect(() => {
+    //     if (!aStarResult.success) {
+    //         return
+    //     }
+    //     const pathData = aStarResult.value.path
+    //     const visitedData = aStarResult.value.visitedOrder
+    //     const frontierData = aStarResult.value.frontier
+    //
+    //
+    //     setTimeout(() => {
+    //         setCellData((prev) => {
+    //             const newData = copyCellData(prev)
+    //             for (let i = 0; i < frontierData.length; i++) {
+    //                 const aStarNodes = frontierData[i]
+    //                 for (let j = 0; j < aStarNodes.length; j++) {
+    //                     const aStarNode = aStarNodes[j]
+    //                     if (!isNullOrUndefined(aStarNode)) {
+    //                         const [r, c] = aStarNode.pos
+    //                         const cellData = newData[r][c]
+    //                         cellData.state = 'frontier'
+    //                         cellData.pos = [r, c]
+    //                         cellData.g = aStarNode.gCost
+    //                         cellData.h = aStarNode.hCost
+    //                         cellData.f = aStarNode.fCost
+    //                     }
+    //                 }
+    //             }
+    //             return newData
+    //         })
+    //     }, 1000)
+    //
+    //     setTimeout(() => {
+    //         setCellData((prev) => {
+    //             const newData = copyCellData(prev)
+    //             for (let i = 0; i < visitedData.length; i++) {
+    //                 const cell = visitedData[i]
+    //                 const pos = cell.pos
+    //                 if (!isNullOrUndefined(pos)) {
+    //                     const [r, c] = pos
+    //                     const cellData = newData[r][c]
+    //                     cellData.state = 'visited'
+    //                     cellData.pos = pos
+    //                     cellData.g = cell.gCost
+    //                     cellData.h = cell.hCost
+    //                     cellData.f = cell.fCost
+    //                 }
+    //             }
+    //             return newData
+    //         })
+    //     }, 3000)
+    //
+    //     setTimeout(() => {
+    //         setCellData((prev) => {
+    //             const newData = copyCellData(prev)
+    //             for (let i = 0; i < pathData.length; i++) {
+    //                 const cell = pathData[i]
+    //                 const pos = cell.pos
+    //                 if (!isNullOrUndefined(pos)) {
+    //                     const [r, c] = pos
+    //                     const cellData = newData[r][c]
+    //                     cellData.state = 'path'
+    //                     cellData.pos = pos
+    //                     cellData.g = cell.gCost
+    //                     cellData.h = cell.hCost
+    //                     cellData.f = cell.fCost
+    //                 }
+    //             }
+    //             return newData
+    //         })
+    //     }, 6000)
+    // }, []);
 
     const [cellData, setCellData] = useState<CellData[][]>(() => {
         return weightGrid.map((row, r) => {
@@ -159,8 +159,60 @@ export default function Home() {
             </div>
         )
     }
-    const {value: {costs,}} = aStarResult
+    const {value: {costs, visitedOrder, frontier}} = aStarResult
+    const animaionSteps = buildAnimationSteps(visitedOrder, frontier)
+    console.log(animaionSteps)
 
+    function playAnimation(steps: AnimationStep[], onUpdate: typeof setCellData, delay: number = 40) {
+        let i = 0
+
+        function next() {
+            if (i >= steps.length) {
+                //saw something about on finish, but I'll look into that,
+                //hmm, maybe we could use that to coordinate, like when this data is done, we can move onto like path data
+                return
+            }
+            const step = animaionSteps[i]
+            onUpdate((prev) => {
+
+                const grid = copyCellData(prev)
+
+                if (step.type === "frontier") {
+                    for (let j = 0; j < step.nodes.length; j++) {
+                        const aStarNode = step.nodes[j]
+                        if (!isNullOrUndefined(aStarNode)) {
+                            const [r, c] = aStarNode.pos
+                            const cellData = grid[r][c]
+                            cellData.state = 'frontier'
+                            cellData.pos = [r, c]
+                            cellData.g = aStarNode.gCost
+                            cellData.h = aStarNode.hCost
+                            cellData.f = aStarNode.fCost
+                        }
+                    }
+
+                } else if (step.type === "visited") {
+                    const [r, c] = step.node.pos
+                    const cellData = grid[r][c]
+                    cellData.state = 'visited'
+                    cellData.pos = step.node.pos
+                    cellData.g = step.node.gCost
+                    cellData.h = step.node.hCost
+                    cellData.f = step.node.fCost
+
+                }
+                return grid
+            })
+            i++
+            setTimeout(next, delay)
+        }
+
+        next()
+    }
+
+    useEffect(() => {
+        playAnimation(animaionSteps, setCellData,500)
+    }, [])
     return (
         <div className={'flex p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
             <div className="flex flex-col gap-2">
@@ -401,3 +453,27 @@ function costToColor(cost: number): string {
     return "#a855f7";                // purple-500 (extreme terrain)
 }
 
+type AnimationStep = {
+    type: "frontier"
+    nodes: AStarNode[]
+    node?: never
+} | {
+    type: "visited"
+    node: AStarNode
+    nodes?: never
+}
+
+function buildAnimationSteps(visitedOrder: AStarNode[],
+                             frontierOrder: AStarNode[][]): AnimationStep[] {
+    const arr: AnimationStep [] = []
+    if (visitedOrder.length !== frontierOrder.length) {
+        throw new Error("both should have the same length")
+    }
+    for (let i = 0; i < visitedOrder.length; i++) {
+        const visitedSnapshot = visitedOrder[i]
+        const frontierSnapshot = frontierOrder[i]
+        arr.push({type: "frontier", nodes: frontierSnapshot})
+        arr.push({type: "visited", node: visitedSnapshot})
+    }
+    return arr
+}

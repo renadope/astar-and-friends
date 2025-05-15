@@ -1,5 +1,5 @@
 import type {AStarData, AStarNode, CostHistory, DiagonalConfig, PathData, Pos, Weights} from "~/types/pathfinding";
-import {checkPosEquality, isValidGridIndex, isValidNode, isNodePassable, stringifyPos} from "~/utils/grid-helpers";
+import {checkPosEquality, isNodePassable, isValidGridIndex, isValidNode, stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined, ResultErr, ResultOk} from "~/utils/helpers";
 import type {Result} from "~/types/helpers";
 import {makeNode} from "~/queue/helpers";
@@ -15,7 +15,7 @@ export function aStar(
     goal: Pos,
     heuristic: (a: Pos, b: Pos) => number,
     allowDiagonal: DiagonalConfig,
-    weights: Weights = { gWeight: 1, hWeight: 1, name: "AStar" },
+    weights: Weights = {gWeight: 1, hWeight: 1, name: "AStar"},
 ): Result<AStarData> {
     function heuristicFromNodeToGoal(node: Pos) {
         return heuristic(node, goal);
@@ -30,6 +30,7 @@ export function aStar(
     if (!isValidNode(grid, goal[0], goal[1])) {
         return ResultErr(new Error("Invalid Goal"));
     }
+    const visited: Set<string> = new Set<string>();
     const startAndGoalSame = checkPosEquality(start, goal);
     const [startR, startC] = start;
     let goalFound = false;
@@ -101,6 +102,7 @@ export function aStar(
         visitedOrder.push(minNode.value);
 
         const [currRow, currCol] = minNode.value.pos;
+        visited.add(stringifyPos(currRow, currCol));
         if (currRow === goal[0] && currCol === goal[1]) {
             goalFound = true;
             break;
@@ -147,8 +149,11 @@ export function aStar(
 
             const neighborRow = currRow + rowDelta;
             const neighborCol = currCol + colDelta;
+            const neighborID = stringifyPos(neighborRow, neighborCol);
 
-            if (isValidNode(grid, neighborRow, neighborCol)) {
+            if (
+                isValidNode(grid, neighborRow, neighborCol) && !visited.has(neighborID)
+            ) {
                 const neighborID = stringifyPos(neighborRow, neighborCol);
                 const neighborDist = grid[neighborRow][neighborCol] * moveMultiplier;
                 const neighborCost = costs[neighborRow][neighborCol];
@@ -156,7 +161,7 @@ export function aStar(
                 if (neighborG < neighborCost) {
                     costs[neighborRow][neighborCol] = neighborG;
                     const history = costUpdateHistory.get(neighborID) ?? [];
-                    history.push({ step: step, gCost: neighborG });
+                    history.push({step: step, gCost: neighborG});
                     costUpdateHistory.set(
                         neighborID,
                         history,
@@ -233,7 +238,6 @@ export function aStar(
     // console.log(JSON.stringify(data));
     return ResultOk<AStarData>(data);
 }
-
 
 
 export function reconstructPath(
