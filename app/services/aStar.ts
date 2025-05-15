@@ -1,5 +1,5 @@
 import type {AStarData, AStarNode, CostHistory, DiagonalConfig, PathData, Pos, Weights} from "~/types/pathfinding";
-import {checkPosEquality, isValidGridIndex, isValidNode, nodeIsPassable, stringifyPos} from "~/utils/grid-helpers";
+import {checkPosEquality, isValidGridIndex, isValidNode, isNodePassable, stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined, ResultErr, ResultOk} from "~/utils/helpers";
 import type {Result} from "~/types/helpers";
 import {makeNode} from "~/queue/helpers";
@@ -131,9 +131,9 @@ export function aStar(
                 }
 
                 const sideAIsWall = !(isNullOrUndefined(sideA)) &&
-                    !nodeIsPassable(sideA);
+                    !isNodePassable(sideA);
                 const sideBIsWall = !(isNullOrUndefined(sideB)) &&
-                    !nodeIsPassable(sideB);
+                    !isNodePassable(sideB);
 
                 const cantGoDiagonal = allowDiagonal.cornerCutting === "lax"
                     ? sideAIsWall && sideBIsWall
