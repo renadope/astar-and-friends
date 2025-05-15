@@ -1,8 +1,8 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
-import {manhattan} from "~/utils/heuristics";
+import {chebyshev} from "~/utils/heuristics";
 import type {Pos} from "~/types/pathfinding";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 import {isNodePassable} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 
@@ -12,6 +12,9 @@ export function meta({}: Route.MetaArgs) {
         {name: "description", content: "aStar Demo!"},
     ];
 }
+
+//rem
+const gridCellSize = 5
 
 type CellData = {
     pos: [number, number]
@@ -24,27 +27,42 @@ type CellData = {
     costUpdateHistory?: { step: number, gCost: number }[]
 }
 export const cellBgColor = {
-    "empty": "#f8fafc",
-    "wall": "#334155",
-    "visited": "#93c5fd",
-    "frontier": "#fcd34d",
-    "path": "#4ade80",
-    "start": "#0ea5e9",
-    "goal": "#f43f5e"
-}
+    "empty": "#f1f5f9",      // slate-100 (softer, less stark than white)
+    "wall": "#334155",       // slate-800 (unchanged)
+    "visited": "#bfdbfe",    // blue-200 (a lighter, gentler visited color)
+    "frontier": "#fde68a",   // yellow-300 (brighter but still soft)
+    "path": "#6ee7b7",       // green-300 (refreshing and vivid)
+    "start": "#38bdf8",      // sky-400 (punchier start color)
+    "goal": "#fb7185"        // rose-400 (slightly lighter than original red)
+};
+
 
 export default function Home() {
     // const weightGrid = [
     //     [12, 9001, 50],
-    //     [9002, 28, 11000],
+    //     [9000, 28, 11000],
     //     [45, 800, 11212],
     // ]
 
+    const weightGrid = [
+        [1, 5, 1, 1, 1, 1, 0, 1, 1, 1],
+        [1, 5, 5, 2, 0, 1, 0, 2, 5, 1],
+        [1, 1, 1, 2, 0, 1, 1, 2, 0, 1],
+        [0, 0, 0, 2, 0, 0, 1, 2, 1, 1],
+        [1, 1, 1, 2, 1, 0, 1, 2, 0, 0],
+        [1, 0, 1, 2, 1, 0, 1, 10, 1, 1],
+        [1, 0, 1, 1, 1, 0, 1, 10, 0, 1],
+        [3, 0, 0, 0, 0, 0, 4, 1, 1, 1],
+        [1, 1, 1, 5, 5, 5, 5, 0, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
+
+
     const size = 8
 //use memo to fix this now, but will shove th`is in a reducer or state later
-    const weightGrid = useMemo(() => generateRandomWeightGrid(size), [size])
+//     const weightGrid = useMemo(() => generateRandomWeightGrid(size), [size])
 
-    const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[0].length - 1], manhattan, {
+    const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[0].length - 1], chebyshev, {
         allowed: true,
         cornerCutting: 'lax'
     })
@@ -53,12 +71,13 @@ export default function Home() {
         if (!aStarResult.success) {
             return
         }
-        const data = aStarResult.value.path
+        const pathData = aStarResult.value.path
+        const visitedData = aStarResult.value.visitedOrder
         setTimeout(() => {
             setCellData((prev) => {
                 const newData = copyCellData(prev)
-                for (let i = 0; i < data.length; i++) {
-                    const cell = data[i]
+                for (let i = 0; i < pathData.length; i++) {
+                    const cell = pathData[i]
                     const pos = cell.pos
                     if (!isNullOrUndefined(pos)) {
                         const [r, c] = pos
@@ -81,7 +100,10 @@ export default function Home() {
                 return {
                     pos: [r, c],
                     weight: weight,
-                    state: isNodePassable(weight) ? "empty" : "wall"
+                    state: isNodePassable(weight) ?
+                        (r === 0 && c === 0) ? "start" :
+                            (r === weightGrid.length - 1 && c === weightGrid.length - 1) ?
+                                "goal" : "empty" : "wall"
                 } as CellData
             })
         })
@@ -108,8 +130,8 @@ export default function Home() {
                                 <div
                                     key={key}
                                     style={{
-                                        height: "6rem",
-                                        width: "6rem",
+                                        height: `${gridCellSize}rem`,
+                                        width: `${gridCellSize}rem`,
                                         backgroundColor: cellBgColor[cell.state] || "#dff2fe",
                                         transition: "all 0.2s ease-in-out"
                                     }}
@@ -130,7 +152,8 @@ export default function Home() {
                                     {(cell.f !== undefined || cell.g !== undefined) && (
                                         <div
                                             className="absolute bottom-1 right-1 text-xs bg-white/70 text-black px-1 rounded-sm">
-                                            {cell.f !== undefined && <span>f:{cell.f.toFixed(0)}</span>}
+                                            {cell.f !== undefined && <span>f:{cell.f.toFixed(2)}</span>}
+                                            {/*{cell.g !== undefined && <span>g:{cell.g.toFixed(0)}</span>}*/}
                                         </div>
                                     )}
 
@@ -161,8 +184,8 @@ function SimpleGrid({grid}: SimpleGridProps) {
                             return (
                                 <div key={key}
                                      style={{
-                                         height: "6rem",
-                                         width: "6rem",
+                                         height: `${gridCellSize}rem`,
+                                         width: `${gridCellSize}rem`,
                                          backgroundColor: "#dff2fe"
                                      }}
                                      className={` rounded flex items-center justify-center shadow-sm border border-sky-300 `}>
