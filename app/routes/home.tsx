@@ -1,8 +1,8 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
-import {chebyshev} from "~/utils/heuristics";
+import {manhattan} from "~/utils/heuristics";
 import type {Pos} from "~/types/pathfinding";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {isNodePassable} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 
@@ -14,7 +14,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 //rem
-const gridCellSize = 5
+const gridCellSize = 6
 
 type CellData = {
     pos: [number, number]
@@ -44,28 +44,26 @@ export default function Home() {
     //     [45, 800, 11212],
     // ]
 
-    const weightGrid = [
-        [1, 5, 1, 1, 1, 1, 0, 1, 1, 1],
-        [1, 5, 5, 2, 0, 1, 0, 2, 5, 1],
-        [1, 1, 1, 2, 0, 1, 1, 2, 0, 1],
-        [0, 0, 0, 2, 0, 0, 1, 2, 1, 1],
-        [1, 1, 1, 2, 1, 0, 1, 2, 0, 0],
-        [1, 0, 1, 2, 1, 0, 1, 10, 1, 1],
-        [1, 0, 1, 1, 1, 0, 1, 10, 0, 1],
-        [3, 0, 0, 0, 0, 0, 4, 1, 1, 1],
-        [1, 1, 1, 5, 5, 5, 5, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    ]
-
 
     const size = 8
 //use memo to fix this now, but will shove th`is in a reducer or state later
-//     const weightGrid = useMemo(() => generateRandomWeightGrid(size), [size])
-
-    const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[0].length - 1], chebyshev, {
+    const weightGrid = useMemo(() => generateRandomWeightGrid(size), [size])
+// const weightGrid=[
+//     [1,  1,  1,  3,  5,  3,  1,  1,  1,  1],
+//     [3, 10,  3,  1,  1,  1,  5, 10,  3,  1],
+//     [1,  1,  1, 10, 10,  1,  1,  1,  5,  1],
+//     [5,  5,  1,  1,  3,  5, 10,  1, 10,  1],
+//     [1,  1,  3,  5,  1,  1,  1,  1,  1,  1],
+//     [1, 10, 10,  1, 10,  5,  5,  3, 10,  1],
+//     [1,  1,  1,  1,  1,  1, 10,  1,  1,  1],
+//     [5,  5, 10, 10, 10,  1,  1,  5, 10,  1],
+//     [1,  1,  1,  3,  5, 10,  3,  1,  1,  1],
+//     [1,  5,  1,  1,  1,  1, 10, 10, 10,  1],
+// ]
+    const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1], manhattan, {
         allowed: true,
         cornerCutting: 'lax'
-    }, {gWeight: 2, hWeight: 0.5, name: "GBFS"})
+    }, {gWeight: 1, hWeight: 1, name: "aStar"})
 
     useEffect(() => {
         if (!aStarResult.success) {
@@ -74,8 +72,6 @@ export default function Home() {
         const pathData = aStarResult.value.path
         const visitedData = aStarResult.value.visitedOrder
         const frontierData = aStarResult.value.frontier
-
-
 
 
         setTimeout(() => {
@@ -149,7 +145,7 @@ export default function Home() {
                     weight: weight,
                     state: isNodePassable(weight) ?
                         (r === 0 && c === 0) ? "start" :
-                            (r === weightGrid.length - 1 && c === weightGrid.length - 1) ?
+                            (r === weightGrid.length - 1 && c === weightGrid[r].length - 1) ?
                                 "goal" : "empty" : "wall"
                 } as CellData
             })
@@ -163,8 +159,7 @@ export default function Home() {
             </div>
         )
     }
-    const {value: {costs, costUpdateHistory}} = aStarResult
-    console.log(costUpdateHistory)
+    const {value: {costs,}} = aStarResult
 
     return (
         <div className={'flex p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
@@ -250,21 +245,59 @@ function SimpleGrid({grid}: SimpleGridProps) {
 }
 
 
+// function generateRandomWeightGrid(size: number, st?: Pos, goal?: Pos): number[][] {
+//     const start = st ?? [0, 0]
+//     const end = goal ?? [size - 1, size - 1]
+//     return Array.from({length: size}, (_, r) =>
+//         Array.from({length: size}, (_, c) => {
+//                 const val = Math.random()
+//                 const isStart = r === start[0] && c === start[1]
+//                 const isGoal = r === end[0] && c === end[1]
+//                 if (val <= 0.05 && !isStart && !isGoal) {
+//                     return 0
+//                 }
+//                 return Math.floor(val * 1000) + 1
+//             }
+//         )
+//     )
+// }
 function generateRandomWeightGrid(size: number, st?: Pos, goal?: Pos): number[][] {
-    const start = st ?? [0, 0]
-    const end = goal ?? [size - 1, size - 1]
+    const start = st ?? [0, 0];
+    const end = goal ?? [size - 1, size - 1];
+
+    const terrainChances = [
+        {cost: 1, weight: 0.35},
+        {cost: 3, weight: 0.25},
+        {cost: 5, weight: 0.2},
+        {cost: 10, weight: 0.1},
+        {cost: 0, weight: 0.1}
+    ];
+
+    //the weights must add up to 1!!!
+    //cant have a greater than 1 probabilty now can we there buddy
+
+    const terrainCDF: number[] = []
+    for (let i = 0; i < terrainChances.length; i++) {
+        const curr = terrainChances[i]
+        terrainCDF.push(curr.weight + (terrainCDF[i - 1] ?? 0))
+    }
+
+    function pickTerrainCost() {
+        const rand = Math.random();
+        for (let i = 0; i < terrainCDF.length; i++) {
+            if (rand <= terrainCDF[i]) return terrainChances[i].cost;
+        }
+        return 1;
+    }
+
     return Array.from({length: size}, (_, r) =>
         Array.from({length: size}, (_, c) => {
-                const val = Math.random()
-                const isStart = r === start[0] && c === start[1]
-                const isGoal = r === end[0] && c === end[1]
-                if (val <= 0.15 && !isStart && !isGoal) {
-                    return 0
-                }
-                return Math.floor(val * 100) + 1
-            }
-        )
-    )
+            const isStart = r === start[0] && c === start[1];
+            const isGoal = r === end[0] && c === end[1];
+            if (isStart || isGoal) return 1;
+            return pickTerrainCost();
+        })
+    );
 }
 
 function copyCellData(cellData: CellData[][]): CellData[][] {
