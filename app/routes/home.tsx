@@ -56,7 +56,7 @@ export default function Home() {
         const data = aStarResult.value.path
         setTimeout(() => {
             setCellData((prev) => {
-                const newData = prev.map((row) => row.map((cell) => ({...cell})))
+                const newData = copyCellData(prev)
                 for (let i = 0; i < data.length; i++) {
                     const cell = data[i]
                     const pos = cell.pos
@@ -128,11 +128,11 @@ export default function Home() {
                                     </p>
 
                                     {(cell.f !== undefined || cell.g !== undefined) && (
-                                    <div
-                                        className="absolute bottom-1 right-1 text-xs bg-white/70 text-black px-1 rounded-sm">
-                                        {cell.f !== undefined && <span>f:{cell.f.toFixed(0)}</span>}
-                                    </div>
-                                )}
+                                        <div
+                                            className="absolute bottom-1 right-1 text-xs bg-white/70 text-black px-1 rounded-sm">
+                                            {cell.f !== undefined && <span>f:{cell.f.toFixed(0)}</span>}
+                                        </div>
+                                    )}
 
 
                                 </div>
@@ -195,6 +195,11 @@ function generateRandomWeightGrid(size: number, st?: Pos, goal?: Pos): number[][
             }
         )
     )
+}
+
+function copyCellData(cellData: CellData[][]): CellData[][] {
+    return cellData.map((row) => row.map((cell) => ({...cell} as CellData)))
+
 }
 
 {/* F, G, H values if they exist */
