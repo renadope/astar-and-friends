@@ -1,7 +1,7 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
 import type {AStarData, AStarNode, PathData, Pos} from "~/types/pathfinding";
-import {useReducer} from "react";
+import {useEffect, useReducer} from "react";
 import {isNodePassable, parsePos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {generateRandomCostGrid} from "~/utils/grid-generation";
@@ -42,6 +42,10 @@ type AppState = {
     weightGrid: number[][]
     cellData: CellData[][]
     gridSize: number
+    // activeTimeline: 'granular' | 'snapshot'
+    snapshotTimeline: AnimationStep[],
+    granularTimeline: FlattenedStep[]
+    currentTimelineIndex: number,
     aStarData: AStarData | undefined
 }
 type Action =
@@ -49,12 +53,20 @@ type Action =
     | { type: "SET_CELL_DATA_COST_HISTORY" }
     | { type: "RUN_ASTAR" }
     | { type: "SET_GRID_SIZE", payload?: number }
+    | { type: "INCREMENT_INDEX", payload?: number }
+    | { type: "SET_INDEX", payload: number }
+    | { type: "DECREMENT_INDEX", payload?: number }
+    | { type: "UPDATE_CELL_DATA", }
 
 const initialState: AppState = {
     weightGrid: [],
     cellData: [],
+    snapshotTimeline: [],
+    granularTimeline: [],
+    currentTimelineIndex: 0,
     gridSize: 10,
-    aStarData: undefined
+    aStarData: undefined,
+    // activeTimeline: 'granular'
 }
 
 function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData[][] {
@@ -75,6 +87,29 @@ function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData
     })
 }
 
+function updateCellData(timeline: FlattenedStep[], cellData: CellData[][]): CellData[][] {
+    const newCellData = copyCellData(cellData)
+    for (let i = 0; i < timeline.length; i++) {
+        const timeLineNode = timeline[i]
+        if (isNullOrUndefined(timeLineNode)) {
+            continue
+        }
+        const [r, c] = timeLineNode.node.pos
+        const cell = newCellData[r][c]
+        if (isNullOrUndefined(cell)) {
+            continue
+        }
+        cell.state = timeLineNode.type
+        cell.pos = [r, c]
+        cell.g = timeLineNode.node.gCost
+        cell.h = timeLineNode.node.hCost
+        cell.f = timeLineNode.node.fCost
+        cell.step = i
+
+    }
+    return newCellData
+}
+
 function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
@@ -93,13 +128,18 @@ function reducer(state: AppState, action: Action): AppState {
                 allowed: true,
                 cornerCutting: 'strict'
             })
+
             if (!aStarResult.success) {
                 // should provide a way for the ui to signal that the criterion wasn't met for Astar to be run
                 return state
             }
+            const snapshotTimeline = buildTimeline(aStarResult.value.visitedOrder, aStarResult.value.frontier, aStarResult.value.path)
+            const granularTimeline = flattenedTimeline(snapshotTimeline)
             return {
                 ...state,
-                aStarData: aStarResult.value
+                aStarData: aStarResult.value,
+                snapshotTimeline,
+                granularTimeline,
             }
         case "SET_CELL_DATA_COST_HISTORY":
             if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
@@ -120,15 +160,51 @@ function reducer(state: AppState, action: Action): AppState {
                 ...state,
                 gridSize: Math.max(2, Math.min(10, givenSize))
             }
+        case "INCREMENT_INDEX":
+            const incrStep = Math.abs(action.payload ?? 1)
+            return {
+                ...state,
+                currentTimelineIndex: state.currentTimelineIndex + incrStep
+            }
+        case "DECREMENT_INDEX":
+            const decrStep = Math.abs(action.payload ?? 1)
+            return {
+                ...state,
+                currentTimelineIndex: Math.max(0, state.currentTimelineIndex - decrStep)
+            }
+        case "UPDATE_CELL_DATA":
+            if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
+                return state
+            }
+            const idx = Math.min(state.granularTimeline.length - 1, state.currentTimelineIndex)
+            const adjustedTimeline = state.granularTimeline.slice(0, idx + 1)
+            const initCell = initCellData(state.weightGrid)
+            return {
+                ...state,
+                cellData: updateCellData(adjustedTimeline, initCell)
+            }
+        case "SET_INDEX":
+            const setIndexIdx = action.payload
+            return {
+                ...state,
+                currentTimelineIndex: setIndexIdx
+            }
+
         default:
             return state
     }
 }
 
 export default function Home() {
-    const size = 10
+    const size = 4
     const [state, dispatch] = useReducer(reducer, initialState)
-    const {cellData} = state
+    const {cellData, currentTimelineIndex, granularTimeline: timeline} = state
+    useEffect(() => {
+        if (state.weightGrid.length === 0) {
+            return
+        }
+        dispatch({type: 'UPDATE_CELL_DATA'})
+    }, [currentTimelineIndex]);
 
 
     return (
@@ -184,11 +260,53 @@ export default function Home() {
                     </div>
                 ))}
             </div>
-            <button className={'bg-sky-500 '} onClick={() => {
-                console.log('dispatching')
-                dispatch({type: "GENERATE_GRID", payload: size})
-            }}>Generate Grid
-            </button>
+            <div className="flex gap-4 mt-4">
+                <button
+                    onClick={() => dispatch({type: "DECREMENT_INDEX"})}
+                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                >
+                    ⬅ Back
+                </button>
+
+                <button
+                    onClick={() => dispatch({type: "INCREMENT_INDEX"})}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                >
+                    Next ➡
+                </button>
+                <button className={'bg-sky-500 '} onClick={() => {
+                    console.log('dispatching')
+                    dispatch({type: "GENERATE_GRID", payload: size})
+                }}>Generate Grid:{currentTimelineIndex}
+                </button>
+                <button className={'bg-rose-300 hover:bg-rose-400 '} onClick={() => {
+                    console.log('dispatching')
+                    dispatch({type: "RUN_ASTAR"})
+                }}>Run A*
+                </button>
+            </div>
+
+            <div className="w-full flex items-center gap-4 py-4">
+                <label htmlFor="timeline" className="text-sm font-medium">
+                    Step {currentTimelineIndex + 1} / {timeline.length}
+                </label>
+
+                <input
+                    id="timeline"
+                    type="range"
+                    min={0}
+                    max={timeline.length - 1}
+                    value={currentTimelineIndex}
+                    onChange={(e) =>
+                        dispatch({
+                            type: 'SET_INDEX',
+                            payload: parseInt(e.target.value, 10),
+                        })
+                    }
+                    className="w-full accent-blue-500"
+                />
+            </div>
+
             {/*<SimpleGrid grid={weightGrid}/>*/
             }
             {/*<SimpleGrid grid={costs}/>*/
