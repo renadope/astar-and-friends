@@ -1,0 +1,69 @@
+//The first number represents the cost that we want to select, and the second number represents the odds of that cost being selected
+import type {Pos} from "~/types/pathfinding";
+import type {CostAndWeight, CostAndWeightFunc} from "~/utils/grid-weights";
+
+
+
+export type CDFEntry = {
+    cost: number,
+    threshold: number
+}
+export type CDF = CDFEntry []
+
+
+
+
+export function generateRandomCostGrid(size: number,
+                                getCostAndWeight: CostAndWeightFunc,
+                                st?: Pos,
+                                goal?: Pos): number[][] {
+    const start = st ?? [0, 0];
+    const end = goal ?? [size - 1, size - 1];
+
+
+    const grid: number[][] = []
+    for (let r = 0; r < size; r++) {
+        const row: number[] = []
+        for (let c = 0; c < size; c++) {
+            const cdf = buildCDF(getCostAndWeight(r, c, size))
+            const roll = Math.random()
+            const terrainWeight = cdf.find((costAndThreshold) => roll <= costAndThreshold.threshold)
+            const isStart = r === start[0] && c === start[1];
+            const isGoal = r === end[0] && c === end[1];
+            if (isStart || isGoal) {
+                //Perhaps later on, we generate the positive number in a range
+                row.push(1)
+            } else {
+                row.push(terrainWeight ? terrainWeight.cost : 1)
+            }
+        }
+        grid.push(row)
+    }
+
+    return grid
+}
+
+export function buildCDF(costAndWeight: CostAndWeight): CDF {
+
+    //Sorting makes it more consistent
+    //We don't need to create the entries array, could have just manipulated the object directly,
+    //but I wanted the sorted order of the costs so that we can see it the same each time
+    const entries = Object.entries(costAndWeight).map(([cost, weight]) => {
+        return {
+            cost: Number(cost),
+            weight: weight
+        }
+
+    }).sort((a, b) => a.cost - b.cost)
+    const total = entries.reduce((sum, entry) => sum + entry.weight, 0)
+    let cumulative = 0
+    return entries.map(({cost, weight}) => {
+        cumulative += weight
+        return {
+            cost: cost,
+            //normalizing the cumulative sum so that they all always add up to 1
+            threshold: cumulative / total
+        }
+    })
+
+}
