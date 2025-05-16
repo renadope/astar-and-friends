@@ -235,15 +235,6 @@ function copyCellData(cellData: CellData[][]): CellData[][] {
 
 }
 
-{/* F, G, H values if they exist */
-}
-// {(cell.f !== undefined || cell.g !== undefined) && (
-//     <div
-//         className="absolute bottom-1 right-1 text-xs bg-white/70 text-black px-1 rounded-sm">
-//         {cell.f !== undefined && <span>f:{cell.f}</span>}
-//     </div>
-// )}
-
 //not gonna use this method, but wanted a quick and dirty way to just see the weights without inspecting
 function costToColor(cost: number): string {
     if (cost === 0) return "#334155"; // wall — dark and sturdy (unchanged)
@@ -255,19 +246,20 @@ function costToColor(cost: number): string {
     return "#c084fc";                // purple-400 — extreme zone
 }
 
-type AnimationStep = {
+
+type FrontierSnapshot = {
     type: "frontier"
     nodes: AStarNode[]
-    node?: never
-} | {
+}
+type VisitedSnapshot = {
     type: "visited"
     node: AStarNode
-    nodes?: never
-} | {
+}
+type PathSnapshot = {
     type: "path",
     node: PathData,
-    nodes?: never
 }
+type AnimationStep = FrontierSnapshot | VisitedSnapshot | PathSnapshot
 
 function buildTimeline(visitedOrder: AStarNode[],
                        frontierOrder: AStarNode[][],
@@ -308,7 +300,20 @@ type PathStep = {
 export type FlattenedStep = FrontierStep | VisitedStep | PathStep;
 
 
-function isPathStep(step: FlattenedStep): step is PathData {
+function isPathSnapshot(step: AnimationStep): step is PathSnapshot {
+    return step.type === "path"
+}
+
+function isFrontierSnapshot(step: AnimationStep): step is FrontierSnapshot {
+    return step.type === "frontier"
+}
+
+function isVisitedSnapshot(step: AnimationStep): step is VisitedSnapshot {
+    return step.type === "visited"
+}
+
+
+function isPathStep(step: FlattenedStep): step is PathStep {
     return step.type === "path"
 }
 
@@ -321,26 +326,20 @@ function isVisitedStep(step: FlattenedStep): step is VisitedStep {
 }
 
 
-function flattenedTimeline(timeline: AnimationStep[]) {
-    const arr: FlattenedStep[] = []
+function flattenedTimeline(timeline: AnimationStep[]): FlattenedStep[] {
+    const flattenedSteps: FlattenedStep[] = []
     for (let i = 0; i < timeline.length; i++) {
         const node = timeline[i]
-        switch (node.type) {
-            case "visited":
-                arr.push({type: 'visited', node: node.node})
-                break
-            case "path":
-                arr.push({type: 'path', node: node.node})
-                break
-            case "frontier":
-                for (let j = 0; j < node.nodes.length; j++) {
-                    arr.push({type: 'frontier', node: node.nodes[j]})
-                }
-                break
-            default:
-                break
-
+        if (isVisitedSnapshot(node)) {
+            flattenedSteps.push({type: 'visited', node: node.node});
+        } else if (isPathSnapshot(node)) {
+            flattenedSteps.push({type: 'path', node: node.node});
+        } else if (isFrontierSnapshot(node)) {
+            for (const frontierNode of node.nodes) {
+                flattenedSteps.push({type: 'frontier', node: frontierNode});
+            }
         }
+
     }
-    return arr
+    return flattenedSteps
 }
