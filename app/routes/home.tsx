@@ -14,7 +14,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 //rem
-const gridCellSize = 5
+const gridCellSize = 6
 
 type CellData = {
     pos: [number, number]
@@ -27,25 +27,19 @@ type CellData = {
     costUpdateHistory?: { step: number, gCost: number }[]
 }
 export const cellBgColor = {
-    "empty": "#f1f5f9",      // slate-100
-    "wall": "#334155",       // slate-800
-    "visited": "#d8b4fe",    // purple-300
-    "frontier": "#facc15",   // yellow-400
-    "path": "#4ade80",       // green-400
-    "start": "#0ea5e9",      // sky-500
-    "goal": "#f43f5e"        // rose-500
+    "empty": "#f8fafc",      // slate-50 – neutral background
+    "wall": "#334155",       // slate-800 – sturdy and dark
+    "visited": "#c084fc",    // purple-400 – brighter, playful violet
+    "frontier": "#fde047",   // yellow-300 – golden and cheerful
+    "path": "#34d399",       // emerald-400 – balanced, modern trail
+    "start": "#0ea5e9",      // sky-500 – distinct blue entry point
+    "goal": "#f43f5e"        // rose-500 – emotional, urgent destination
 };
 
 
+
 export default function Home() {
-    // const weightGrid = [
-    //     [12, 9001, 50],
-    //     [9000, 28, 11000],
-    //     [45, 800, 11212],
-    // ]
-
-
-    const size = 10
+    const size = 12
     const [searchDone, setSearchDone] = useState<boolean>(false)
 //use memo to fix this now, but will shove this in a reducer or state later
     const weightGrid = useMemo(() => generateRandomCostGrid(size, biomeWeights), [size, biomeWeights])
@@ -91,7 +85,6 @@ export default function Home() {
     }
     const {value: {costs, visitedOrder, frontier, path: pathData, costUpdateHistory}} = aStarResult
     const animaionSteps = buildAnimationSteps(visitedOrder, frontier)
-    console.log(animaionSteps)
 
     function animatePath(path: typeof pathData, onUpdate: typeof setCellData, delay: number = 40, onFinish: () => void) {
         let i = 0
@@ -129,8 +122,6 @@ export default function Home() {
         function next() {
             if (i >= steps.length) {
                 onFinish()
-                //saw something about on finish, but I'll look into that,
-                //hmm, maybe we could use that to coordinate, like when this data is done, we can move onto  path data
                 return
             }
             const step = animaionSteps[i]
@@ -208,25 +199,29 @@ export default function Home() {
                                         height: `${gridCellSize}rem`,
                                         width: `${gridCellSize}rem`,
                                         backgroundColor: cellBgColor[cell.state] || "#dff2fe",
-                                        transition: "all 0.2s ease-in-out",
-                                        border: `${Math.min(3, Math.max(1, 1 + cell.cost * 0.5))}px solid ${costToColor(cell.cost)}`,
+                                        // transition: "all 0.2s ease-in-out",
+
+                                        // border: `${1 + (Math.sin(cell.cost * 2) + Math.cos(cell.cost * 0.5)) * 0.4}px solid ${costToColor(cell.cost)}`,
+                                        transform: `rotate(${(cell.cost % 3) - 1}deg) scale(${1 + cell.cost * 0.005})`
+
+
 
                                     }}
                                     className="rounded-md flex flex-col items-center justify-center shadow-sm relative hover:scale-105"
                                     onClick={() => console.log(cell)}
                                 >
-                                    <p className={`text-xs font-semibold ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-700"}`}>
+                                    <p className={`text-xs font-semibold ${["wall", "path","visited"].includes(cell.state) ? "text-white" : "text-gray-700"}`}>
                                         {cell.state}
                                     </p>
 
-                                    <p className={`text-xs ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
+                                    <p className={`text-xs ${["wall", "path","visited"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
                                         {cell.pos.join(',')}
                                     </p>
-                                    <p className={`text-xs ${["wall"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
+                                    <p className={`text-xs ${["wall","visited"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
                                         {cell.cost}
                                     </p>
-                                    <p className={`text-xs ${["wall"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
-                                        U:{cell.costUpdateHistory ? cell.costUpdateHistory.length : 0}
+                                    <p className={`text-xs ${["wall","visited"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
+                                        {cell.costUpdateHistory ? cell.costUpdateHistory.length + " updates" : ""}
                                     </p>
 
                                     {/*{(cell.f !== undefined || cell.g !== undefined) && (*/}
@@ -326,7 +321,7 @@ function biomeWeights(r: number, c: number, size: number): CostAndWeight {
             1: 0.1,
             3: 0.1,
             5: 0.2,
-            10: 0.4,
+            100: 0.4,
             0: 0.15,
             15: 0.05
         };
@@ -477,13 +472,13 @@ function copyCellData(cellData: CellData[][]): CellData[][] {
 
 //not gonna use this method, but wanted a quick and dirty way to just see the weights without inspecting
 function costToColor(cost: number): string {
-    if (cost === 0) return "#334155"; // wall — keep as-is
+    if (cost === 0) return "#334155"; // wall — dark and sturdy (unchanged)
 
-    if (cost < 3) return "#7dd3fc";   // sky-300 (light blue, easy terrain)
-    if (cost < 5) return "#facc15";   // yellow-400 (cautionary / sand)
-    if (cost < 8) return "#f97316";   // orange-500 (rough terrain)
-    if (cost < 15) return "#ef4444";  // red-500 (very hard)
-    return "#a855f7";                // purple-500 (extreme terrain)
+    if (cost < 3) return "#22d3ee";   // cyan-400 — easy, chill terrain
+    if (cost < 5) return "#fcd34d";   // yellow-300 — sandy, cautious zone
+    if (cost < 8) return "#fb923c";   // orange-400 — rugged area
+    if (cost < 15) return "#f87171";  // red-400 — painful, but passable
+    return "#c084fc";                // purple-400 — extreme zone
 }
 
 type AnimationStep = {
