@@ -1,12 +1,12 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
-import {euclidean} from "~/utils/heuristics";
-import type {AStarNode, CostHistory} from "~/types/pathfinding";
-import {useEffect, useReducer, useState} from "react";
+import type {AStarData, AStarNode, PathData, Pos} from "~/types/pathfinding";
+import {useReducer} from "react";
 import {isNodePassable, parsePos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {generateRandomCostGrid} from "~/utils/grid-generation";
 import {predefinedWeightFuncs} from "~/utils/grid-weights";
+import {heuristics} from "~/utils/heuristics";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -28,7 +28,7 @@ type CellData = {
     step?: number
     costUpdateHistory?: { step: number, gCost: number }[]
 }
-export const cellBgColor = {
+const cellBgColor = {
     "empty": "#f8fafc",      // slate-50 – neutral background
     "wall": "#334155",       // slate-800 – sturdy and dark
     "visited": "#c084fc",    // purple-400 – brighter, playful violet
@@ -41,70 +41,85 @@ export const cellBgColor = {
 type AppState = {
     weightGrid: number[][]
     cellData: CellData[][]
-    costHistory: CostHistory[]
+    gridSize: number
+    aStarData: AStarData | undefined
 }
 type Action =
-    | { type: "GENERATE_GRID", payload: number, }
+    | { type: "GENERATE_GRID", payload?: number, }
     | { type: "SET_CELL_DATA_COST_HISTORY" }
     | { type: "RUN_ASTAR" }
+    | { type: "SET_GRID_SIZE", payload?: number }
 
 const initialState: AppState = {
     weightGrid: [],
     cellData: [],
-    costHistory[]
+    gridSize: 10,
+    aStarData: undefined
+}
+
+function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData[][] {
+    const st = start ?? [0, 0]
+    const end = goal ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1]
+    return weightGrid.map((row, r) => {
+        return row.map((weight, c) => {
+            const cellData: CellData = {
+                pos: [r, c],
+                cost: weight,
+                state: isNodePassable(weight) ?
+                    (r === st[0] && c === st[1]) ? "start" :
+                        (r === end[0] && c === end[1]) ?
+                            "goal" : "empty" : "wall"
+            }
+            return cellData
+        })
+    })
 }
 
 function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
-            const size = action.payload
-            console.log(size)
+            const size = action.payload ?? state.gridSize ?? 5
             const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['random'])
-            const cellData = weightGrid.map((row, r) => {
-                return row.map((weight, c) => {
-                    const cellData: CellData = {
-                        pos: [r, c],
-                        cost: weight,
-                        state: isNodePassable(weight) ?
-                            (r === 0 && c === 0) ? "start" :
-                                (r === weightGrid.length - 1 && c === weightGrid[r].length - 1) ?
-                                    "goal" : "empty" : "wall"
-                    }
-                    return cellData
-                })
-            })
+            const cellData = initCellData(weightGrid)
             return {
                 ...state,
                 weightGrid: weightGrid,
                 cellData: cellData
             }
         case "RUN_ASTAR":
-            const start = [0, 0]
-            const goal = [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
-            const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan)
+            const start: Pos = [0, 0]
+            const goal: Pos = [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
+            const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan, {
+                allowed: true,
+                cornerCutting: 'strict'
+            })
             if (!aStarResult.success) {
                 // should provide a way for the ui to signal that the criterion wasn't met for Astar to be run
                 return state
             }
             return {
                 ...state,
-                //can't remember if I'm supposed to assign or spread this, will double back to this.
-                costHistory: [...aStarResult.value.costUpdateHistory]
+                aStarData: aStarResult.value
             }
         case "SET_CELL_DATA_COST_HISTORY":
-            if (state.cellData.length === 0) {
+            if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
                 return state
             }
-            if (isNullOrUndefined(state.costHistory) || state.costHistory.length === 0) {
-                return {...state, costHistory: []}
-            }
-            const cellData = copyCellData(state.cellData)
+            const cellDataGrid = copyCellData(state.cellData)
+            const costUpdateHistory = state.aStarData.costUpdateHistory
             for (const pair in costUpdateHistory) {
                 const updateHistory = costUpdateHistory[pair] ?? []
                 const pos = parsePos(pair)
-                cellData[pos[0]][pos[1]].costUpdateHistory = [...updateHistory]
+                cellDataGrid[pos[0]][pos[1]].costUpdateHistory = [...updateHistory]
             }
-            return {...state, cellData: cellData}
+            return {...state, cellData: cellDataGrid}
+        case "SET_GRID_SIZE":
+            //this one needs a bit more on it, like do we regen a grid, do we 'trim' the grid
+            const givenSize = Math.abs(action.payload ?? 5)
+            return {
+                ...state,
+                gridSize: Math.max(2, Math.min(10, givenSize))
+            }
         default:
             return state
     }
@@ -112,122 +127,15 @@ function reducer(state: AppState, action: Action): AppState {
 
 export default function Home() {
     const size = 10
-    const [searchDone, setSearchDone] = useState<boolean>(false)
     const [state, dispatch] = useReducer(reducer, initialState)
-    const {weightGrid, cellData} = state
-
-    const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1], euclidean, {
-        allowed: true,
-        cornerCutting: 'strict'
-    }, {gWeight: 1, hWeight: 1, name: "aStar"})
+    const {cellData} = state
 
 
-    if (!aStarResult.success) {
-        return (
-            <div className={'bg-red-500'}>
-                <p className={'text-7xl'}>Sad</p>
-            </div>
-        )
-    }
-    const {value: {visitedOrder, frontier, path: pathData, costUpdateHistory}} = aStarResult
-    const animaionSteps = buildAnimationSteps(visitedOrder, frontier)
-
-    function animatePath(path: typeof pathData, onUpdate: typeof setCellData, delay: number = 40, onFinish: () => void) {
-        let i = 0
-
-        function next() {
-            if (i >= path.length) {
-                onFinish()
-                return
-            }
-            const step = pathData[i]
-            onUpdate((prev) => {
-                const grid = copyCellData(prev)
-
-                if (!isNullOrUndefined(step)) {
-                    const [r, c] = step.pos
-                    const cellData = grid[r][c]
-                    cellData.state = 'path'
-                    cellData.pos = step.pos
-                    cellData.g = step.gCost
-                    cellData.h = step.hCost
-                    cellData.f = step.fCost
-                }
-                return grid
-            })
-            i++
-            setTimeout(next, delay)
-        }
-
-        next()
-    }
-
-    function animateVisitedAndFrontier(steps: AnimationStep[], onUpdate: typeof setCellData, delay: number = 40, onFinish: () => void) {
-        let i = 0
-
-        function next() {
-            if (i >= steps.length) {
-                onFinish()
-                return
-            }
-            const step = animaionSteps[i]
-            onUpdate((prev) => {
-
-                const grid = copyCellData(prev)
-
-                if (step.type === "frontier") {
-                    for (let j = 0; j < step.nodes.length; j++) {
-                        const aStarNode = step.nodes[j]
-                        if (!isNullOrUndefined(aStarNode)) {
-                            const [r, c] = aStarNode.pos
-
-                            const cellData = grid[r][c]
-                            cellData.state = 'frontier'
-                            cellData.pos = [r, c]
-                            cellData.g = aStarNode.gCost
-                            cellData.h = aStarNode.hCost
-                            cellData.f = aStarNode.fCost
-                        }
-                    }
-
-                } else if (step.type === "visited") {
-                    const [r, c] = step.node.pos
-                    const cellData = grid[r][c]
-                    cellData.state = 'visited'
-                    cellData.pos = step.node.pos
-                    cellData.g = step.node.gCost
-                    cellData.h = step.node.hCost
-                    cellData.f = step.node.fCost
-
-                }
-                return grid
-            })
-            i++
-            setTimeout(next, delay)
-        }
-
-        next()
-    }
-
-    useEffect(() => {
-        animateVisitedAndFrontier(animaionSteps, setCellData, 100, () => {
-            setSearchDone(true)
-        })
-    }, [])
-
-    useEffect(() => {
-        if (searchDone) {
-            animatePath(pathData, setCellData, 150, () => {
-                console.log("foo")
-                dispatch({type: "SET_CELL_DATA_COST_HISTORY"})
-            })
-        }
-    }, [searchDone])
     return (
         <div className={'flex p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 transition-all ease-in-out duration-300">
                 {cellData && cellData.length > 0 && cellData.map((row, r) => (
-                    <div key={`col-${r}`} className="flex gap-1">
+                    <div key={`col-${r}`} className="flex gap-1 ">
                         {row.map((cell, c) => {
                             const key = cell.pos.join(',');
                             return (
@@ -355,19 +263,31 @@ type AnimationStep = {
     type: "visited"
     node: AStarNode
     nodes?: never
+} | {
+    type: "path",
+    node: PathData,
+    nodes?: never
+
+
 }
 
-function buildAnimationSteps(visitedOrder: AStarNode[],
-                             frontierOrder: AStarNode[][]): AnimationStep[] {
-    const arr: AnimationStep [] = []
+function buildTimeline(visitedOrder: AStarNode[],
+                       frontierOrder: AStarNode[][],
+                       pathData: PathData[]): AnimationStep[] {
+
+    const timeline: AnimationStep [] = []
     if (visitedOrder.length !== frontierOrder.length) {
         throw new Error("both should have the same length")
     }
     for (let i = 0; i < visitedOrder.length; i++) {
         const visitedSnapshot = visitedOrder[i]
         const frontierSnapshot = frontierOrder[i]
-        arr.push({type: "frontier", nodes: frontierSnapshot})
-        arr.push({type: "visited", node: visitedSnapshot})
+        timeline.push({type: "frontier", nodes: frontierSnapshot})
+        timeline.push({type: "visited", node: visitedSnapshot})
     }
-    return arr
+    for (let i = 0; i < pathData.length; i++) {
+        const pathNode = pathData[i]
+        timeline.push({type: "path", node: pathNode})
+    }
+    return timeline
 }
