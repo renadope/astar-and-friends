@@ -39,10 +39,10 @@ export const cellBgColor = {
 
 
 export default function Home() {
-    const size = 12
+    const size = 10
     const [searchDone, setSearchDone] = useState<boolean>(false)
 //use memo to fix this now, but will shove this in a reducer or state later
-    const weightGrid = useMemo(() => generateRandomCostGrid(size, biomeWeights), [size, biomeWeights])
+    const weightGrid = useMemo(() => generateRandomCostGrid(size, circularBasin), [size])
     // const weightGrid = [
     //     [1, 1, 10, 3, 5, 3, 12, 1, 1, 11],
     //     [3, 10, 3, 1, 1, 1, 5, 10, 3, 1],
