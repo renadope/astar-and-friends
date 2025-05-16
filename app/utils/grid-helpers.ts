@@ -16,6 +16,9 @@ export function isValidGridIndex(
 export function stringifyPos(...pos: number[]): string {
     return pos.join(",");
 }
+export function parsePos(key: string): number[] {
+    return key.split(",").map(Number);
+}
 
 export function checkPosEquality(a: Pos, b: Pos): boolean {
     return a[0] === b[0] && a[1] === b[1];

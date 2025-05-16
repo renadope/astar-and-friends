@@ -1,9 +1,9 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
-import {manhattan} from "~/utils/heuristics";
+import {euclidean} from "~/utils/heuristics";
 import type {AStarNode, Pos} from "~/types/pathfinding";
 import {useEffect, useMemo, useState} from "react";
-import {isNodePassable} from "~/utils/grid-helpers";
+import {isNodePassable, parsePos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 
 export function meta({}: Route.MetaArgs) {
@@ -14,7 +14,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 //rem
-const gridCellSize = 6
+const gridCellSize = 5
 
 type CellData = {
     pos: [number, number]
@@ -46,96 +46,26 @@ export default function Home() {
 
 
     const size = 10
+    const [searchDone, setSearchDone] = useState<boolean>(false)
 //use memo to fix this now, but will shove this in a reducer or state later
     const weightGrid = useMemo(() => generateRandomCostGrid(size, biomeWeights), [size, biomeWeights])
-// const weightGrid=[
-//     [1,  1,  1,  3,  5,  3,  1,  1,  1,  1],
-//     [3, 10,  3,  1,  1,  1,  5, 10,  3,  1],
-//     [1,  1,  1, 10, 10,  1,  1,  1,  5,  1],
-//     [5,  5,  1,  1,  3,  5, 10,  1, 10,  1],
-//     [1,  1,  3,  5,  1,  1,  1,  1,  1,  1],
-//     [1, 10, 10,  1, 10,  5,  5,  3, 10,  1],
-//     [1,  1,  1,  1,  1,  1, 10,  1,  1,  1],
-//     [5,  5, 10, 10, 10,  1,  1,  5, 10,  1],
-//     [1,  1,  1,  3,  5, 10,  3,  1,  1,  1],
-//     [1,  5,  1,  1,  1,  1, 10, 10, 10,  1],
-// ]
-    const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1], manhattan, {
-        allowed: false,
-        // cornerCutting: 'strict'
+    // const weightGrid = [
+    //     [1, 1, 10, 3, 5, 3, 12, 1, 1, 11],
+    //     [3, 10, 3, 1, 1, 1, 5, 10, 3, 1],
+    //     [1, 1, 1, 10, 10, 1, 1, 1, 5, 1],
+    //     [5, 5, 1, 1, 3, 5, 10, 1, 10, 1],
+    //     [1, 1, 31, 51, 1, 1, 1, 1, 1, 1],
+    //     [1, 10, 10, 14, 10, 5, 5, 3, 10, 1],
+    //     [1, 1, 1, 1, 1, 1, 10, 1, 1, 12],
+    //     [50, 5, 10, 10, 10, 1, 1, 5, 10, 12],
+    //     [1, 1, 12, 3, 5, 10, 3, 1, 1, 1],
+    //     [10, 10, 20, 30, 40, 50, 60, 70, 80, 99],
+    //     [99, 80, 70, 60, 50, 40, 30, 20, 10, 1],
+    // ]
+    const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1], euclidean, {
+        allowed: true,
+        cornerCutting: 'strict'
     }, {gWeight: 1, hWeight: 1, name: "aStar"})
-
-    // useEffect(() => {
-    //     if (!aStarResult.success) {
-    //         return
-    //     }
-    //     const pathData = aStarResult.value.path
-    //     const visitedData = aStarResult.value.visitedOrder
-    //     const frontierData = aStarResult.value.frontier
-    //
-    //
-    //     setTimeout(() => {
-    //         setCellData((prev) => {
-    //             const newData = copyCellData(prev)
-    //             for (let i = 0; i < frontierData.length; i++) {
-    //                 const aStarNodes = frontierData[i]
-    //                 for (let j = 0; j < aStarNodes.length; j++) {
-    //                     const aStarNode = aStarNodes[j]
-    //                     if (!isNullOrUndefined(aStarNode)) {
-    //                         const [r, c] = aStarNode.pos
-    //                         const cellData = newData[r][c]
-    //                         cellData.state = 'frontier'
-    //                         cellData.pos = [r, c]
-    //                         cellData.g = aStarNode.gCost
-    //                         cellData.h = aStarNode.hCost
-    //                         cellData.f = aStarNode.fCost
-    //                     }
-    //                 }
-    //             }
-    //             return newData
-    //         })
-    //     }, 1000)
-    //
-    //     setTimeout(() => {
-    //         setCellData((prev) => {
-    //             const newData = copyCellData(prev)
-    //             for (let i = 0; i < visitedData.length; i++) {
-    //                 const cell = visitedData[i]
-    //                 const pos = cell.pos
-    //                 if (!isNullOrUndefined(pos)) {
-    //                     const [r, c] = pos
-    //                     const cellData = newData[r][c]
-    //                     cellData.state = 'visited'
-    //                     cellData.pos = pos
-    //                     cellData.g = cell.gCost
-    //                     cellData.h = cell.hCost
-    //                     cellData.f = cell.fCost
-    //                 }
-    //             }
-    //             return newData
-    //         })
-    //     }, 3000)
-    //
-    //     setTimeout(() => {
-    //         setCellData((prev) => {
-    //             const newData = copyCellData(prev)
-    //             for (let i = 0; i < pathData.length; i++) {
-    //                 const cell = pathData[i]
-    //                 const pos = cell.pos
-    //                 if (!isNullOrUndefined(pos)) {
-    //                     const [r, c] = pos
-    //                     const cellData = newData[r][c]
-    //                     cellData.state = 'path'
-    //                     cellData.pos = pos
-    //                     cellData.g = cell.gCost
-    //                     cellData.h = cell.hCost
-    //                     cellData.f = cell.fCost
-    //                 }
-    //             }
-    //             return newData
-    //         })
-    //     }, 6000)
-    // }, []);
 
     const [cellData, setCellData] = useState<CellData[][]>(() => {
         return weightGrid.map((row, r) => {
@@ -159,17 +89,48 @@ export default function Home() {
             </div>
         )
     }
-    const {value: {costs, visitedOrder, frontier}} = aStarResult
+    const {value: {costs, visitedOrder, frontier, path: pathData, costUpdateHistory}} = aStarResult
     const animaionSteps = buildAnimationSteps(visitedOrder, frontier)
     console.log(animaionSteps)
 
-    function playAnimation(steps: AnimationStep[], onUpdate: typeof setCellData, delay: number = 40) {
+    function animatePath(path: typeof pathData, onUpdate: typeof setCellData, delay: number = 40, onFinish: () => void) {
+        let i = 0
+
+        function next() {
+            if (i >= path.length) {
+                onFinish()
+                return
+            }
+            const step = pathData[i]
+            onUpdate((prev) => {
+                const grid = copyCellData(prev)
+
+                if (!isNullOrUndefined(step)) {
+                    const [r, c] = step.pos
+                    const cellData = grid[r][c]
+                    cellData.state = 'path'
+                    cellData.pos = step.pos
+                    cellData.g = step.gCost
+                    cellData.h = step.hCost
+                    cellData.f = step.fCost
+                }
+                return grid
+            })
+            i++
+            setTimeout(next, delay)
+        }
+
+        next()
+    }
+
+    function animateVisitedAndFrontier(steps: AnimationStep[], onUpdate: typeof setCellData, delay: number = 40, onFinish: () => void) {
         let i = 0
 
         function next() {
             if (i >= steps.length) {
+                onFinish()
                 //saw something about on finish, but I'll look into that,
-                //hmm, maybe we could use that to coordinate, like when this data is done, we can move onto like path data
+                //hmm, maybe we could use that to coordinate, like when this data is done, we can move onto  path data
                 return
             }
             const step = animaionSteps[i]
@@ -182,6 +143,7 @@ export default function Home() {
                         const aStarNode = step.nodes[j]
                         if (!isNullOrUndefined(aStarNode)) {
                             const [r, c] = aStarNode.pos
+
                             const cellData = grid[r][c]
                             cellData.state = 'frontier'
                             cellData.pos = [r, c]
@@ -211,13 +173,32 @@ export default function Home() {
     }
 
     useEffect(() => {
-        playAnimation(animaionSteps, setCellData,500)
+        animateVisitedAndFrontier(animaionSteps, setCellData, 100, () => {
+            setSearchDone(true)
+        })
     }, [])
+
+    useEffect(() => {
+        if (searchDone) {
+            animatePath(pathData, setCellData, 150, () => {
+                console.log("foo")
+                setCellData((prev) => {
+                    const grid = copyCellData(prev)
+                    for (const pair in costUpdateHistory) {
+                        const updateHistory = costUpdateHistory[pair] ?? []
+                        const pos = parsePos(pair)
+                        grid[pos[0]][pos[1]].costUpdateHistory = [...updateHistory]
+                    }
+                    return grid
+                })
+            })
+        }
+    }, [searchDone])
     return (
         <div className={'flex p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
             <div className="flex flex-col gap-2">
                 {cellData.map((row, r) => (
-                    <div key={`col-${r}`} className="flex gap-2">
+                    <div key={`col-${r}`} className="flex gap-1">
                         {row.map((cell, c) => {
                             const key = cell.pos.join(',');
                             return (
@@ -228,7 +209,7 @@ export default function Home() {
                                         width: `${gridCellSize}rem`,
                                         backgroundColor: cellBgColor[cell.state] || "#dff2fe",
                                         transition: "all 0.2s ease-in-out",
-                                        border: `${1 + cell.cost}px solid ${costToColor(cell.cost)}`,
+                                        border: `${Math.min(3, Math.max(1, 1 + cell.cost * 0.5))}px solid ${costToColor(cell.cost)}`,
 
                                     }}
                                     className="rounded-md flex flex-col items-center justify-center shadow-sm relative hover:scale-105"
@@ -238,20 +219,23 @@ export default function Home() {
                                         {cell.state}
                                     </p>
 
-                                    {/*<p className={`text-xs ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>*/}
-                                    {/*    {cell.pos.join(',')}*/}
-                                    {/*</p>*/}
                                     <p className={`text-xs ${["wall", "path"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
+                                        {cell.pos.join(',')}
+                                    </p>
+                                    <p className={`text-xs ${["wall"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
                                         {cell.cost}
                                     </p>
+                                    <p className={`text-xs ${["wall"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
+                                        U:{cell.costUpdateHistory ? cell.costUpdateHistory.length : 0}
+                                    </p>
 
-                                    {(cell.f !== undefined || cell.g !== undefined) && (
-                                        <div
-                                            className="absolute bottom-1 right-1 text-xs bg-white/70 text-black px-1 rounded-sm">
-                                            {cell.f !== undefined && <span>f:{cell.f.toFixed(2)}</span>}
-                                            {/*{cell.g !== undefined && <span>g:{cell.g.toFixed(0)}</span>}*/}
-                                        </div>
-                                    )}
+                                    {/*{(cell.f !== undefined || cell.g !== undefined) && (*/}
+                                    {/*    <div*/}
+                                    {/*        className="absolute bottom-1 right-1 text-xs bg-white/70 text-black px-1 rounded-sm">*/}
+                                    {/*        {cell.f !== undefined && <span>f:{cell.f.toFixed(2)}</span>}*/}
+                                    {/*        /!*{cell.g !== undefined && <span>g:{cell.g.toFixed(0)}</span>}*!/*/}
+                                    {/*    </div>*/}
+                                    {/*)}*/}
 
 
                                 </div>
@@ -260,8 +244,8 @@ export default function Home() {
                     </div>
                 ))}
             </div>
-            <SimpleGrid grid={weightGrid}/>
-            <SimpleGrid grid={costs}/>
+            {/*<SimpleGrid grid={weightGrid}/>*/}
+            {/*<SimpleGrid grid={costs}/>*/}
         </div>
     )
 }
@@ -372,6 +356,55 @@ function getTerrain(): CostAndWeightFunc {
         }
     }
 }
+
+function diagonalCostGradient(r: number, c: number, size: number): CostAndWeight {
+
+    const d = (r + c) / (2 * size);
+    return {
+        1: 1 - d,
+        10: d
+    };
+}
+
+function wallCorridorBias(r: number, c: number, size: number): CostAndWeight {
+
+    if (c === Math.floor(size / 2)) return {10: 8, 0: 2, 15: 5};
+    return {1: 8, 3: 2, 5: 5};
+}
+
+function circularBasin(r: number, c: number, size: number): CostAndWeight {
+    const cx = size / 2, cy = size / 2;
+    const dist = Math.sqrt((r - cx) ** 2 + (c - cy) ** 2);
+    const norm = dist / (size / Math.sqrt(2)); // normalize to [0, 1]
+    return {
+        1: 1 - norm,
+        5: norm * 0.5,
+        10: norm * 0.5
+    };
+}
+
+function centerRidge(r: number, c: number, size: number): CostAndWeight {
+    const cx = size / 2, cy = size / 2;
+    const dist = Math.sqrt((r - cx) ** 2 + (c - cy) ** 2);
+    const norm = 1 - dist / (size / Math.sqrt(2));
+    return {
+        1: norm * 0.5,
+        5: 1 - norm,
+        10: (1 - norm) * 0.5,
+        15: (1 - norm) * 0.4
+    };
+}
+
+function fakeNoise(r: number, c: number, size: number): CostAndWeight {
+    const val = Math.sin(r * 0.3) * Math.cos(c * 0.3); // range [-1, 1]
+    const norm = (val + 1) / 2; // → [0, 1]
+    return {
+        1: 1 - norm,
+        3: norm * 0.4,
+        10: norm * 0.6
+    };
+}
+
 
 function generateRandomCostGrid(size: number,
                                 getCostAndWeight: CostAndWeightFunc,
