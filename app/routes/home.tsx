@@ -1,8 +1,8 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
 import {euclidean} from "~/utils/heuristics";
-import type {AStarNode} from "~/types/pathfinding";
-import {useEffect, useMemo, useState} from "react";
+import type {AStarNode, CostHistory} from "~/types/pathfinding";
+import {useEffect, useReducer, useState} from "react";
 import {isNodePassable, parsePos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {generateRandomCostGrid} from "~/utils/grid-generation";
@@ -38,37 +38,89 @@ export const cellBgColor = {
     "goal": "#f43f5e"        // rose-500 – emotional, urgent destination
 };
 
+type AppState = {
+    weightGrid: number[][]
+    cellData: CellData[][]
+    costHistory: CostHistory[]
+}
+type Action =
+    | { type: "GENERATE_GRID", payload: number, }
+    | { type: "SET_CELL_DATA_COST_HISTORY" }
+    | { type: "RUN_ASTAR" }
+
+const initialState: AppState = {
+    weightGrid: [],
+    cellData: [],
+    costHistory[]
+}
+
+function reducer(state: AppState, action: Action): AppState {
+    switch (action.type) {
+        case "GENERATE_GRID":
+            const size = action.payload
+            console.log(size)
+            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['random'])
+            const cellData = weightGrid.map((row, r) => {
+                return row.map((weight, c) => {
+                    const cellData: CellData = {
+                        pos: [r, c],
+                        cost: weight,
+                        state: isNodePassable(weight) ?
+                            (r === 0 && c === 0) ? "start" :
+                                (r === weightGrid.length - 1 && c === weightGrid[r].length - 1) ?
+                                    "goal" : "empty" : "wall"
+                    }
+                    return cellData
+                })
+            })
+            return {
+                ...state,
+                weightGrid: weightGrid,
+                cellData: cellData
+            }
+        case "RUN_ASTAR":
+            const start = [0, 0]
+            const goal = [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
+            const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan)
+            if (!aStarResult.success) {
+                // should provide a way for the ui to signal that the criterion wasn't met for Astar to be run
+                return state
+            }
+            return {
+                ...state,
+                //can't remember if I'm supposed to assign or spread this, will double back to this.
+                costHistory: [...aStarResult.value.costUpdateHistory]
+            }
+        case "SET_CELL_DATA_COST_HISTORY":
+            if (state.cellData.length === 0) {
+                return state
+            }
+            if (isNullOrUndefined(state.costHistory) || state.costHistory.length === 0) {
+                return {...state, costHistory: []}
+            }
+            const cellData = copyCellData(state.cellData)
+            for (const pair in costUpdateHistory) {
+                const updateHistory = costUpdateHistory[pair] ?? []
+                const pos = parsePos(pair)
+                cellData[pos[0]][pos[1]].costUpdateHistory = [...updateHistory]
+            }
+            return {...state, cellData: cellData}
+        default:
+            return state
+    }
+}
 
 export default function Home() {
     const size = 10
     const [searchDone, setSearchDone] = useState<boolean>(false)
-//use memo to fix this now, but will shove this in a reducer or state later
-    const weightGrid = useMemo(() => generateRandomCostGrid(size, (r, c, size) => predefinedWeightFuncs['wall'](r, c, size, {
-        10: 1,
-        1000: 2,
-        0: 1,
-        20: 3
-    })), [size])
+    const [state, dispatch] = useReducer(reducer, initialState)
+    const {weightGrid, cellData} = state
 
     const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1], euclidean, {
         allowed: true,
         cornerCutting: 'strict'
     }, {gWeight: 1, hWeight: 1, name: "aStar"})
 
-    const [cellData, setCellData] = useState<CellData[][]>(() => {
-        return weightGrid.map((row, r) => {
-            return row.map((weight, c) => {
-                return {
-                    pos: [r, c],
-                    cost: weight,
-                    state: isNodePassable(weight) ?
-                        (r === 0 && c === 0) ? "start" :
-                            (r === weightGrid.length - 1 && c === weightGrid[r].length - 1) ?
-                                "goal" : "empty" : "wall"
-                } as CellData
-            })
-        })
-    })
 
     if (!aStarResult.success) {
         return (
@@ -167,22 +219,14 @@ export default function Home() {
         if (searchDone) {
             animatePath(pathData, setCellData, 150, () => {
                 console.log("foo")
-                setCellData((prev) => {
-                    const grid = copyCellData(prev)
-                    for (const pair in costUpdateHistory) {
-                        const updateHistory = costUpdateHistory[pair] ?? []
-                        const pos = parsePos(pair)
-                        grid[pos[0]][pos[1]].costUpdateHistory = [...updateHistory]
-                    }
-                    return grid
-                })
+                dispatch({type: "SET_CELL_DATA_COST_HISTORY"})
             })
         }
     }, [searchDone])
     return (
         <div className={'flex p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
             <div className="flex flex-col gap-2">
-                {cellData.map((row, r) => (
+                {cellData && cellData.length > 0 && cellData.map((row, r) => (
                     <div key={`col-${r}`} className="flex gap-1">
                         {row.map((cell, c) => {
                             const key = cell.pos.join(',');
@@ -232,8 +276,15 @@ export default function Home() {
                     </div>
                 ))}
             </div>
-            {/*<SimpleGrid grid={weightGrid}/>*/}
-            {/*<SimpleGrid grid={costs}/>*/}
+            <button className={'bg-sky-500 '} onClick={() => {
+                console.log('dispatching')
+                dispatch({type: "GENERATE_GRID", payload: size})
+            }}>Generate Grid
+            </button>
+            {/*<SimpleGrid grid={weightGrid}/>*/
+            }
+            {/*<SimpleGrid grid={costs}/>*/
+            }
         </div>
     )
 }
