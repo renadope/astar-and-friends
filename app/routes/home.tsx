@@ -199,10 +199,10 @@ export default function Home() {
                                         height: `${gridCellSize}rem`,
                                         width: `${gridCellSize}rem`,
                                         backgroundColor: cellBgColor[cell.state] || "#dff2fe",
-                                        // transition: "all 0.2s ease-in-out",
-
-                                        // border: `${1 + (Math.sin(cell.cost * 2) + Math.cos(cell.cost * 0.5)) * 0.4}px solid ${costToColor(cell.cost)}`,
-                                        transform: `rotate(${(cell.cost % 3) - 1}deg) scale(${1 + cell.cost * 0.005})`
+                                        transition: "all 0.2s ease-in-out",
+                                        //
+                                        border: `${1 + (Math.sin(cell.cost * 2) + Math.cos(cell.cost * 0.5)) * 0.4}px solid ${costToColor(cell.cost)}`,
+                                        // transform: `rotate(${(cell.cost % 3) - 1}deg) scale(${1 + cell.cost * 0.005})`
 
 
 
