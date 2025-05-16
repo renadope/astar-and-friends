@@ -43,24 +43,17 @@ export default function Home() {
     const size = 10
     const [searchDone, setSearchDone] = useState<boolean>(false)
 //use memo to fix this now, but will shove this in a reducer or state later
-    const weightGrid = useMemo(() => generateRandomCostGrid(size, predefinedWeightFuncs['biome']), [size])
-    // const weightGrid = [
-    //     [1, 1, 10, 3, 5, 3, 12, 1, 1, 11],
-    //     [3, 10, 3, 1, 1, 1, 5, 10, 3, 1],
-    //     [1, 1, 1, 10, 10, 1, 1, 1, 5, 1],
-    //     [5, 5, 1, 1, 3, 5, 10, 1, 10, 1],
-    //     [1, 1, 31, 51, 1, 1, 1, 1, 1, 1],
-    //     [1, 10, 10, 14, 10, 5, 5, 3, 10, 1],
-    //     [1, 1, 1, 1, 1, 1, 10, 1, 1, 12],
-    //     [50, 5, 10, 10, 10, 1, 1, 5, 10, 12],
-    //     [1, 1, 12, 3, 5, 10, 3, 1, 1, 1],
-    //     [10, 10, 20, 30, 40, 50, 60, 70, 80, 99],
-    //     [99, 80, 70, 60, 50, 40, 30, 20, 10, 1],
-    // ]
+    const weightGrid = useMemo(() => generateRandomCostGrid(size, (r, c, size) => predefinedWeightFuncs['wall'](r, c, size, {
+        10: 1,
+        1000: 2,
+        0: 1,
+        20: 3
+    })), [size])
+
     const aStarResult = aStar(weightGrid, [0, 0], [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1], euclidean, {
         allowed: true,
         cornerCutting: 'strict'
-    }, {gWeight: 1, hWeight: 2, name: "aStar"})
+    }, {gWeight: 1, hWeight: 1, name: "aStar"})
 
     const [cellData, setCellData] = useState<CellData[][]>(() => {
         return weightGrid.map((row, r) => {
@@ -202,7 +195,7 @@ export default function Home() {
                                         backgroundColor: cellBgColor[cell.state] || "#dff2fe",
                                         transition: "all 0.2s ease-in-out",
                                         //
-                                        border: `${1 + (Math.sin(cell.cost * 2) + Math.cos(cell.cost * 0.5)) * 0.4}px solid ${costToColor(cell.cost)}`,
+                                        border: `${1 + Math.min(4, Math.sqrt(cell.cost) * .7)}px solid ${costToColor(cell.cost)}`,
                                         // transform: `rotate(${(cell.cost % 3) - 1}deg) scale(${1 + cell.cost * 0.005})`
 
 
@@ -276,24 +269,6 @@ function SimpleGrid({grid}: SimpleGridProps) {
     )
 
 }
-
-
-// function generateRandomWeightGrid(size: number, st?: Pos, goal?: Pos): number[][] {
-//     const start = st ?? [0, 0]
-//     const end = goal ?? [size - 1, size - 1]
-//     return Array.from({length: size}, (_, r) =>
-//         Array.from({length: size}, (_, c) => {
-//                 const val = Math.random()
-//                 const isStart = r === start[0] && c === start[1]
-//                 const isGoal = r === end[0] && c === end[1]
-//                 if (val <= 0.05 && !isStart && !isGoal) {
-//                     return 0
-//                 }
-//                 return Math.floor(val * 1000) + 1
-//             }
-//         )
-//     )
-// }
 
 
 function copyCellData(cellData: CellData[][]): CellData[][] {

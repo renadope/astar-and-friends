@@ -1,5 +1,5 @@
 export type CostAndWeight = Record<number, number>
-export type CostAndWeightFunc = (r: number, c: number, size: number) => CostAndWeight
+export type CostAndWeightFunc = (r: number, c: number, size: number, weight?: CostAndWeight) => CostAndWeight
 
 function biomeWeights(r: number, c: number, size: number): CostAndWeight {
     if (r < size / 3) {
@@ -36,8 +36,8 @@ function biomeWeights(r: number, c: number, size: number): CostAndWeight {
 }
 
 
-function getTerrain(_r: number, _c: number, _size: number): CostAndWeight {
-    return {
+function getTerrain(_r: number, _c: number, _size: number, weight?: CostAndWeight): CostAndWeight {
+    return weight? weight : {
         1: 3,
         3: 2.5,
         5: 2,
@@ -55,9 +55,9 @@ function diagonalCostGradient(r: number, c: number, size: number): CostAndWeight
     };
 }
 
-function wallCorridorBias(r: number, c: number, size: number): CostAndWeight {
+function wallCorridorBias(r: number, c: number, size: number, weight?: CostAndWeight): CostAndWeight {
 
-    if (c === Math.floor(size / 2)) return {10: 8, 0: 2, 15: 5};
+    if (c === Math.floor(size / 2)) return weight ? weight : {10: 8, 0: 2, 15: 5, 20: 3};
     return {1: 8, 3: 2, 5: 5};
 }
 
