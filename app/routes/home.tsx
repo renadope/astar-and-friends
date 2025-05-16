@@ -267,8 +267,6 @@ type AnimationStep = {
     type: "path",
     node: PathData,
     nodes?: never
-
-
 }
 
 function buildTimeline(visitedOrder: AStarNode[],
@@ -290,4 +288,59 @@ function buildTimeline(visitedOrder: AStarNode[],
         timeline.push({type: "path", node: pathNode})
     }
     return timeline
+}
+
+type FrontierStep = {
+    type: "frontier";
+    node: AStarNode;
+};
+
+type VisitedStep = {
+    type: "visited";
+    node: AStarNode;
+};
+
+type PathStep = {
+    type: "path";
+    node: PathData;
+};
+
+export type FlattenedStep = FrontierStep | VisitedStep | PathStep;
+
+
+function isPathStep(step: FlattenedStep): step is PathData {
+    return step.type === "path"
+}
+
+function isFrontierStep(step: FlattenedStep): step is FrontierStep {
+    return step.type === "frontier"
+}
+
+function isVisitedStep(step: FlattenedStep): step is VisitedStep {
+    return step.type === "visited"
+}
+
+
+function flattenedTimeline(timeline: AnimationStep[]) {
+    const arr: FlattenedStep[] = []
+    for (let i = 0; i < timeline.length; i++) {
+        const node = timeline[i]
+        switch (node.type) {
+            case "visited":
+                arr.push({type: 'visited', node: node.node})
+                break
+            case "path":
+                arr.push({type: 'path', node: node.node})
+                break
+            case "frontier":
+                for (let j = 0; j < node.nodes.length; j++) {
+                    arr.push({type: 'frontier', node: node.nodes[j]})
+                }
+                break
+            default:
+                break
+
+        }
+    }
+    return arr
 }
