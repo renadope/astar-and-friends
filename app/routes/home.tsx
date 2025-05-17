@@ -257,9 +257,14 @@ function reducer(state: AppState, action: Action): AppState {
 }
 
 export default function Home() {
-    const size = 5
+    const size = 3
     const [state, dispatch] = useReducer(reducer, initialState)
     const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData} = state
+
+
+    // const groupedBySnapshotStep = groupBySnapshotStep(timeline)
+
+
     useEffect(() => {
         if (state.weightGrid.length === 0) {
             return
@@ -267,21 +272,21 @@ export default function Home() {
         dispatch({type: 'UPDATE_CELL_DATA'})
     }, [currentTimelineIndex]);
 
-    useEffect(() => {
-        if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0) {
-            return
-        }
-        if (currentTimelineIndex > timeline.length - 1) {
-            return
-        }
-        const interval = setInterval(() => {
-            dispatch({
-                type: 'INCREMENT_INDEX'
-            })
-        }, 500)
-        return () => clearInterval(interval)
-
-    }, [aStarData, currentTimelineIndex, timeline.length])
+    // useEffect(() => {
+    //     if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0) {
+    //         return
+    //     }
+    //     if (currentTimelineIndex > timeline.length - 1) {
+    //         return
+    //     }
+    //     const interval = setInterval(() => {
+    //         dispatch({
+    //             type: 'INCREMENT_INDEX'
+    //         })
+    //     }, 500)
+    //     return () => clearInterval(interval)
+    //
+    // }, [aStarData, currentTimelineIndex, timeline.length])
 
 
     return (
@@ -312,7 +317,7 @@ export default function Home() {
                                                 "0 2px 4px rgba(0,0,0,0.1)"
                                     }}
                                     className={`
-                        ${updatedOnThisStep ? 'animate-spin' : ''}
+                        ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
                         ${isCurrentStep ? 'scale-125 animate-pulse' : 'scale-100'} 
                         ${cellBgColor[cell.state] || "bg-sky-100"}
                         ${isInteractive ? "hover:scale-110 cursor-pointer" : ""}
@@ -347,7 +352,7 @@ export default function Home() {
                                             <div className={`text-xs ${textColors[cell.state] || "text-slate-500"} 
                                     ${cell.cost > 10 ? "font-bold" : ""}
                                     transition-all duration-200 group-hover:scale-110`}>
-                                                {cell.cost}:{updatedOnThisStep ? 'foo' : 'bar/'}{`snp:`}{snapShotStep}
+                                                {cell.cost}:{cell.snapShotStep}
                                             </div>
                                         )}
 
@@ -395,30 +400,45 @@ export default function Home() {
                     Object.entries(aStarData.costUpdateHistory).map(([key, updates]) => (
                         <div key={key}>
                             <strong>{key}:</strong>{" "}
-                            {updates.map((u, i) => `(step:${u.step}, g: ${u.gCost})`).join(", ")}
+                            {updates.map((u, i) => `(snapshot:${u.step}, g: ${u.gCost})`).join(", ")}
                         </div>
                     ))}
             </div>
-            <div className="text-sm font-mono whitespace-pre">
-                {timeline &&
-                    timeline.map((step, index) => {
+            {/*<div className="text-sm font-mono whitespace-pre">*/}
+            {/*    {groupedBySnapshotStep && (*/}
+            {/*        Array.from(groupedBySnapshotStep.entries()).map(([step, nodes]) => (*/}
+            {/*            <div key={step}>*/}
+            {/*                <strong>Snapshot {step}:</strong>{" "}*/}
+            {/*                {nodes.map((n, i) => {*/}
+            {/*                    const { pos, gCost } = n.node;*/}
+            {/*                    const posStr = `(${pos[0]},${pos[1]})`;*/}
+            {/*                    return `${n.type} ${posStr} g:${gCost.toFixed(1)}`;*/}
+            {/*                }).join(" | ")}*/}
+            {/*            </div>*/}
+            {/*        ))*/}
+            {/*    )}*/}
+            {/*</div>*/}
+            {/*<div className="text-sm font-mono whitespace-pre">*/}
+            {/*    {timeline &&*/}
+            {/*        timeline.map((step, index) => {*/}
 
-                        if (!isPathStep(step)) {
-                            const {type, node, snapShotStep} = step;
-                            const pos = node.pos.join(",");
-                            const g = node.gCost ?? "–";
-                            const h = node.hCost ?? "–";
-                            const f = node.fCost ?? "–";
+            {/*            if (!isPathStep(step)) {*/}
+            {/*                const {type, node, snapShotStep} = step;*/}
+            {/*                const pos = node.pos.join(",");*/}
+            {/*                const g = node.gCost ?? "–";*/}
+            {/*                const h = node.hCost ?? "–";*/}
+            {/*                const f = node.fCost ?? "–";*/}
 
-                            return (
-                                <div key={index}>
-                                    <strong>Step {index}:</strong> [{type}] pos=({pos}), g={g}, h={h}, f={f}
-                                    {snapShotStep !== undefined && ` | snapshotStep: ${snapShotStep}`}
-                                </div>
-                            );
-                        }
-                    })}
-            </div>
+            {/*                return (*/}
+            {/*                    <div key={index}>*/}
+            {/*                        <strong>Step {index}:</strong> [{type}] pos=({pos}), g={g}, h={h}, f={f}*/}
+            {/*                        {snapShotStep !== undefined &&*/}
+            {/*                            <strong>{` | snapshotStep: ${snapShotStep}`}</strong>}*/}
+            {/*                    </div>*/}
+            {/*                );*/}
+            {/*            }*/}
+            {/*        })}*/}
+            {/*</div>*/}
 
 
             <div className="flex gap-4 mt-4">
@@ -629,4 +649,17 @@ function flattenedTimeline(timeline: SnapshotStep[]): FlattenedStep[] {
 
     }
     return flattenedSteps
+}
+
+
+function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedStep[]> {
+    const res = new Map<number, FlattenedStep[]>();
+    for (const node of timeline) {
+        if (!isPathStep(node) && node.snapShotStep !== undefined) {
+            const group = res.get(node.snapShotStep) ?? [];
+            group.push(node);
+            res.set(node.snapShotStep, group);
+        }
+    }
+    return res;
 }
