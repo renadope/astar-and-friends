@@ -17,6 +17,7 @@ export type DiagonalConfig =
     | {
     allowed: true;
     cornerCutting: "strict" | "lax";
+    diagonalMultiplier:number
 }
     | {
     allowed: false;

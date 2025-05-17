@@ -142,7 +142,7 @@ export function aStar(
                     continue;
                 }
             }
-            const moveMultiplier = isDiagonal ? Math.SQRT2 : 1;
+            const moveMultiplier = isAllowedDiagonalConfig(allowDiagonal) ? allowDiagonal.diagonalMultiplier : 1;
 
             const neighborRow = currRow + rowDelta;
             const neighborCol = currCol + colDelta;
@@ -289,3 +289,39 @@ function calculateFCost(
 ): number {
     return (weights.gWeight * gCost) + (weights.hWeight * hCost);
 }
+
+function isAllowedDiagonalConfig(config: DiagonalConfig): config is {
+    allowed: true
+    cornerCutting: 'lax' | 'strict',
+    diagonalMultiplier: number
+} {
+    return config.allowed
+}
+
+export function getAlgorithmName(gWeight: number, hWeight: number): string {
+    const g = gWeight;
+    const h = hWeight;
+
+    if (g === 0 && h === 0) {
+        return "Breadth-First Search (BFS)";
+    }
+
+    if (g === 0 && h > 0) {
+        return h === 1 ? "Greedy Best-First Search" : `Greedy BFS (×${h})`;
+    }
+
+    if (g > 0 && h === 0) {
+        return g === 1 ? "Dijkstra's Algorithm" : `Weighted Dijkstra (×${g})`;
+    }
+
+    if (g === 1 && h === 1) {
+        return "A* Search";
+    }
+    if (g !== 1 && h !== 1 && g === h) {
+        return `Aggressive ${g}x A* Search `;
+    }
+
+
+    return `Weighted A* (g×${g}, h×${h})`;
+}
+

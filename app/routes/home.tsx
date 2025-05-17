@@ -1,6 +1,6 @@
 import type {Route} from "./+types/home";
-import {aStar} from "~/services/aStar";
-import type {AStarData, AStarNode, PathData, Pos, Weights} from "~/types/pathfinding";
+import {aStar, getAlgorithmName} from "~/services/aStar";
+import type {AStarData, AStarNode, DiagonalConfig, PathData, Pos, Weights} from "~/types/pathfinding";
 import {type ChangeEvent, useEffect, useReducer} from "react";
 import {isNodePassable, parsePos, stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
@@ -59,6 +59,7 @@ type AppState = {
     currentTimelineIndex: number,
     aStarData: AStarData | undefined
     gwWeights: gwWeights
+    diagonalSettings: DiagonalConfig
 }
 type Action =
     | { type: "GENERATE_GRID", payload?: number, }
@@ -71,6 +72,9 @@ type Action =
     | { type: "UPDATE_CELL_DATA", }
     | { type: "SET_G_WEIGHT", payload: number }
     | { type: "SET_H_WEIGHT", payload: number }
+    | { type: "TOGGLE_DIAGONAL", payload: boolean }
+    | { type: "TOGGLE_CORNER_CUTTING", payload: 'strict' | 'lax' }
+    | { type: "SET_DIAGONAL_MULTIPLIER", payload: number }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -80,7 +84,8 @@ const initialState: AppState = {
     currentTimelineIndex: 0,
     gridSize: 10,
     aStarData: undefined,
-    gwWeights: {gWeight: 1, hWeight: 1}
+    gwWeights: {gWeight: 1, hWeight: 1},
+    diagonalSettings: {allowed: true, cornerCutting: "lax", diagonalMultiplier: Math.SQRT2}
     // activeTimeline: 'granular'
 }
 
@@ -176,7 +181,7 @@ function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
-            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['wall'])
+            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['biome'])
             const cellData = initCellData(weightGrid)
             return {
                 ...state,
@@ -190,10 +195,9 @@ function reducer(state: AppState, action: Action): AppState {
             }
             const start: Pos = [0, 0]
             const goal: Pos = [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
-            const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan, {
-                allowed: true,
-                cornerCutting: 'strict'
-            }, {...state.gwWeights, name: "change_this_name_to_the_proper_name"})
+            const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan,
+                state.diagonalSettings,
+                {...state.gwWeights, name: "change_this_name_to_the_proper_name"})
 
             if (!aStarResult.success) {
                 // should provide a way for the ui to signal that the criterion wasn't met for Astar to be run
@@ -269,6 +273,48 @@ function reducer(state: AppState, action: Action): AppState {
                 ...state,
                 gwWeights: {...state.gwWeights, hWeight: hWeight}
             }
+        case "TOGGLE_DIAGONAL":
+            const toggledVal = action.payload
+
+            if (toggledVal) {
+                return {
+                    ...state,
+                    diagonalSettings: {
+                        allowed: toggledVal,
+                        cornerCutting: 'lax',
+                        diagonalMultiplier: Math.SQRT2
+                    }
+                }
+            }
+            return {
+                ...state,
+                diagonalSettings: {
+                    allowed: false
+                }
+            }
+        case "TOGGLE_CORNER_CUTTING":
+            if (!state.diagonalSettings.allowed) {
+                return state
+            }
+            return {
+                ...state,
+                diagonalSettings: {
+                    ...state.diagonalSettings,
+                    cornerCutting: action.payload
+                }
+            }
+        case "SET_DIAGONAL_MULTIPLIER":
+            if (!state.diagonalSettings.allowed) {
+                return state
+            }
+            const diagonalMultiplier = Math.abs(action.payload)
+            return {
+                ...state,
+                diagonalSettings: {
+                    ...state.diagonalSettings,
+                    diagonalMultiplier: diagonalMultiplier
+                }
+            }
 
 
         default:
@@ -279,7 +325,8 @@ function reducer(state: AppState, action: Action): AppState {
 export default function Home() {
     const size = 8
     const [state, dispatch] = useReducer(reducer, initialState)
-    const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData} = state
+    const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData, diagonalSettings} = state
+    const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
 
 
     // const groupedBySnapshotStep = groupBySnapshotStep(timeline)
@@ -291,22 +338,22 @@ export default function Home() {
         }
         dispatch({type: 'UPDATE_CELL_DATA'})
     }, [currentTimelineIndex]);
-
-    useEffect(() => {
-        if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0) {
-            return
-        }
-        if (currentTimelineIndex > timeline.length - 1) {
-            return
-        }
-        const interval = setInterval(() => {
-            dispatch({
-                type: 'INCREMENT_INDEX'
-            })
-        }, 100)
-        return () => clearInterval(interval)
-
-    }, [aStarData, currentTimelineIndex, timeline.length])
+    //
+    // useEffect(() => {
+    //     if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0) {
+    //         return
+    //     }
+    //     if (currentTimelineIndex > timeline.length - 1) {
+    //         return
+    //     }
+    //     const interval = setInterval(() => {
+    //         dispatch({
+    //             type: 'INCREMENT_INDEX'
+    //         })
+    //     }, 100)
+    //     return () => clearInterval(interval)
+    //
+    // }, [aStarData, currentTimelineIndex, timeline.length])
 
 
     return (
@@ -501,60 +548,161 @@ export default function Home() {
                                   d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
                                   clipRule="evenodd"/>
                         </svg>
-                        Run A*
+                        Run {algorithmName}
+                    </button>
+                    <button
+                        className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
+                        onClick={() => {
+                            dispatch({type: "RUN_ASTAR"})
+                            dispatch({type: "SET_INDEX", payload: timeline.length})
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20"
+                             fill="currentColor">
+                            <path fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                                  clipRule="evenodd"/>
+                        </svg>
+                        Run {algorithmName} & Jump to End
                     </button>
                 </div>
-                <div className="flex flex-col gap-4 w-full max-w-md  mt-4 p-4 bg-white rounded-lg shadow-md">
-                    <div className="w-full pt-2">
-                        <label htmlFor="gWeight" className="block text-sm font-semibold text-blue-600 mb-1">
-                            G-Weight (Cost So Far): <span className="font-mono text-black">{state.gwWeights.gWeight}</span>
-                        </label>
-                        <input
-                            id={`gWeight`}
-                            type="range"
-                            min={0}
-                            max={10}
-                            step={0.5}
-                            value={state.gwWeights.gWeight}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                dispatch({
-                                    type: 'SET_G_WEIGHT',
-                                    payload: Number(e.target.value),
-                                })
-                                dispatch({type: "RUN_ASTAR"})
+                <div className={'grid grid-cols-2 gap-2'}>
+                    <div
+                        className="flex flex-col gap-4 max-w-md  mt-4 p-4 bg-white hover:bg-slate-50 rounded-lg shadow-md">
+                        <h3 className={'text-sm font-mono'}>Control A* Behavior with Weights</h3>
+                        <div className="w-full ">
+                            <label htmlFor="gWeight" className="block text-sm font-semibold text-blue-600 mb-1">
+                                G-Weight (Cost So Far): <span
+                                className="font-mono text-black">{state.gwWeights.gWeight}</span>
+                            </label>
+                            <input
+                                id={`gWeight`}
+                                type="range"
+                                min={0}
+                                max={10}
+                                step={0.5}
+                                value={state.gwWeights.gWeight}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                    dispatch({
+                                        type: 'SET_G_WEIGHT',
+                                        payload: Number(e.target.value),
+                                    })
+                                    dispatch({type: "RUN_ASTAR"})
 
-                            }
-                            }
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                        />
-                    </div>
-                    <div className="w-full pt-2">
-                        <label htmlFor="hWeight" className="block text-sm font-semibold text-pink-600 mb-1">
-                            H-Weight (Heuristic): <span className="font-mono text-black">{state.gwWeights.hWeight}</span>
-                        </label>
-                        <input
-                            id={`hWeight`}
-                            type="range"
-                            min={0}
-                            max={10}
-                            step={0.5}
-                            value={state.gwWeights.hWeight}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                dispatch({
-                                    type: 'SET_H_WEIGHT',
-                                    payload: Number(e.target.value),
-                                })
-                                dispatch({type: "RUN_ASTAR"})
-                            }
+                                }
+                                }
+                                className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                            />
+                        </div>
+                        <div className="w-full pt-2">
+                            <label htmlFor="hWeight" className="block text-sm font-semibold text-pink-600 mb-1">
+                                H-Weight (Heuristic): <span
+                                className="font-mono text-black">{state.gwWeights.hWeight}</span>
+                            </label>
+                            <input
+                                id={`hWeight`}
+                                type="range"
+                                min={0}
+                                max={10}
+                                step={0.5}
+                                value={state.gwWeights.hWeight}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                    dispatch({
+                                        type: 'SET_H_WEIGHT',
+                                        payload: Number(e.target.value),
+                                    })
+                                    dispatch({type: "RUN_ASTAR"})
+                                }
 
-                            }
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-pink-500"
-                        />
+                                }
+                                className="w-full h-2 bg-pink-200 rounded-lg appearance-none cursor-pointer accent-pink-600"
+                            />
+                        </div>
                     </div>
-                </div>
-                <div className={'flex gap-2 '}>
-                    <p>G:{state.gwWeights.gWeight}</p>
-                    <p>H:{state.gwWeights.hWeight}</p>
+                    <div
+                        className="flex flex-col gap-4 max-w-md  mt-4 p-4 bg-white hover:bg-slate-50 rounded-lg shadow-md">
+                        <h3 className={'text-sm font-mono'}>Diagonal Contorls</h3>
+                        <fieldset className="border p-3 rounded-md">
+                            <legend className="text-sm font-semibold text-gray-700">Diagonal Movement</legend>
+
+                            <label className="flex items-center gap-2 mt-2">
+                                <input type="checkbox" checked={diagonalSettings.allowed} onChange={() => {
+                                    dispatch({
+                                        type: 'TOGGLE_DIAGONAL',
+                                        payload: !diagonalSettings.allowed
+                                    })
+                                    dispatch({type: "RUN_ASTAR"})
+
+
+                                }}/>
+                                Allow Diagonal
+                            </label>
+
+                            {diagonalSettings.allowed && (
+                                <div className="ml-4 mt-2 space-y-2">
+                                    <div className="flex gap-4">
+                                        <label className="flex items-center gap-2">
+                                            <input
+                                                type="radio"
+                                                name="diagonalMode"
+                                                value="strict"
+                                                checked={diagonalSettings.cornerCutting === 'strict'}
+                                                onChange={() => {
+                                                    dispatch({
+                                                        type: "TOGGLE_CORNER_CUTTING",
+                                                        payload: "strict"
+                                                    })
+                                                    dispatch({type: "RUN_ASTAR"})
+
+                                                }}
+                                            />
+                                            Strict
+                                        </label>
+
+                                        <label className="flex items-center gap-2">
+                                            <input
+                                                type="radio"
+                                                name="diagonalMode"
+                                                value="lax"
+                                                checked={diagonalSettings.cornerCutting === 'lax'}
+                                                onChange={() => {
+                                                    dispatch({
+                                                        type: "TOGGLE_CORNER_CUTTING",
+                                                        payload: "lax"
+                                                    })
+                                                    dispatch({type: "RUN_ASTAR"})
+
+                                                }}
+                                            />
+                                            Lax
+                                        </label>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-sm text-gray-600 font-medium">
+                                            Diagonal Cost Multiplier: {diagonalSettings.diagonalMultiplier.toFixed(4)}
+                                        </label>
+                                        <input
+                                            type="range"
+                                            min={1}
+                                            max={3}
+                                            step={0.1}
+                                            value={diagonalSettings.diagonalMultiplier}
+                                            onChange={(e) => {
+                                                dispatch({
+                                                    type: "SET_DIAGONAL_MULTIPLIER",
+                                                    payload: Number(e.target.value)
+                                                })
+                                                dispatch({type: "RUN_ASTAR"})
+                                            }}
+                                            className="w-full accent-purple-500"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </fieldset>
+
+                    </div>
                 </div>
             </div>
 
