@@ -2,7 +2,7 @@ import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
 import type {AStarData, AStarNode, PathData, Pos} from "~/types/pathfinding";
 import {useEffect, useReducer} from "react";
-import {isNodePassable, parsePos} from "~/utils/grid-helpers";
+import {isNodePassable, parsePos, stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {generateRandomCostGrid} from "~/utils/grid-generation";
 import {predefinedWeightFuncs} from "~/utils/grid-weights";
@@ -25,7 +25,8 @@ type CellData = {
     g?: number,
     h?: number,
     f?: number,
-    step?: number
+    step?: number,
+    snapShotStep?: number
     costUpdateHistory?: { step: number, gCost: number }[]
 }
 const cellBgColor = {
@@ -52,7 +53,7 @@ type AppState = {
     cellData: CellData[][]
     gridSize: number
     // activeTimeline: 'granular' | 'snapshot'
-    snapshotTimeline: AnimationStep[],
+    snapshotTimeline: SnapshotStep[],
     granularTimeline: FlattenedStep[]
     currentTimelineIndex: number,
     aStarData: AStarData | undefined
@@ -96,7 +97,53 @@ function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData
     })
 }
 
-function updateCellData(timeline: FlattenedStep[], cellData: CellData[][]): CellData[][] {
+function updateCellDataSnapshotStep(timeline: SnapshotStep[], cellData: CellData[][]): CellData[][] {
+    if (isNullOrUndefined(timeline) || timeline.length === 0) {
+        return cellData
+    }
+    let snapshotStep = 0
+    const newCellData = copyCellData(cellData)
+    for (let i = 0; i < timeline.length; i++) {
+        const node = timeline[i]
+        if (isNullOrUndefined(node)) {
+            continue
+        }
+        if (isFrontierSnapshot(node)) {
+            const nodes = node.nodes
+            for (let j = 0; j < nodes.length; j++) {
+                const frontier = nodes[j]
+                const [r, c] = frontier.pos
+                const cell = newCellData[r][c]
+                cell.state = "frontier"
+                cell.pos = [r, c]
+                cell.g = frontier.gCost
+                cell.h = frontier.hCost
+                cell.f = frontier.fCost
+                cell.step = i
+                cell.snapShotStep = snapshotStep
+            }
+
+        } else if (isVisitedSnapshot(node) || isPathSnapshot(node)) {
+            const [r, c] = node.node.pos
+            const cell = newCellData[r][c]
+            cell.state = node.type
+            cell.pos = [r, c]
+            cell.g = node.node.gCost
+            cell.h = node.node.hCost
+            cell.f = node.node.fCost
+            cell.step = i
+            cell.snapShotStep = isPathSnapshot(node) ? undefined : snapshotStep
+            if (isVisitedSnapshot(node)) {
+                snapshotStep++
+            }
+
+        }
+    }
+    return newCellData
+
+}
+
+function updateCellDataFlattenedStep(timeline: FlattenedStep[], cellData: CellData[][]): CellData[][] {
     const newCellData = copyCellData(cellData)
     for (let i = 0; i < timeline.length; i++) {
         const timeLineNode = timeline[i]
@@ -114,6 +161,7 @@ function updateCellData(timeline: FlattenedStep[], cellData: CellData[][]): Cell
         cell.h = timeLineNode.node.hCost
         cell.f = timeLineNode.node.fCost
         cell.step = i
+        cell.snapShotStep = isFrontierStep(timeLineNode) || isVisitedStep(timeLineNode) ? timeLineNode.snapShotStep : undefined
 
     }
     return newCellData
@@ -194,7 +242,7 @@ function reducer(state: AppState, action: Action): AppState {
             const initCell = initCellData(state.weightGrid)
             return {
                 ...state,
-                cellData: updateCellData(adjustedTimeline, initCell)
+                cellData: updateCellDataFlattenedStep(adjustedTimeline, initCell)
             }
         case "SET_INDEX":
             const setIndexIdx = action.payload
@@ -209,7 +257,7 @@ function reducer(state: AppState, action: Action): AppState {
 }
 
 export default function Home() {
-    const size = 8
+    const size = 5
     const [state, dispatch] = useReducer(reducer, initialState)
     const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData} = state
     useEffect(() => {
@@ -230,7 +278,7 @@ export default function Home() {
             dispatch({
                 type: 'INCREMENT_INDEX'
             })
-        }, 100)
+        }, 500)
         return () => clearInterval(interval)
 
     }, [aStarData, currentTimelineIndex, timeline.length])
@@ -240,10 +288,14 @@ export default function Home() {
         <div className={'flex p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
             <div
                 className="flex flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
-                {cellData && cellData.length > 0 && cellData.map((row, r) => (
+                {aStarData && cellData && cellData.length > 0 && cellData.map((row, r) => (
                     <div key={`col-${r}`} className="flex gap-0.5 hover:gap-1 transition-all duration-300">
                         {row.map((cell, c) => {
-                            const key = cell.pos.join(',');
+
+                            const snapShotStep = cell.snapShotStep ?? Infinity
+                            const key = stringifyPos(...cell.pos)
+                            const history = aStarData.costUpdateHistory[key] ?? [];
+                            const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
                             const isCurrentStep = cell.step === currentTimelineIndex;
                             const isInteractive = ["start", "end", "empty"].includes(cell.state);
                             return (
@@ -260,6 +312,7 @@ export default function Home() {
                                                 "0 2px 4px rgba(0,0,0,0.1)"
                                     }}
                                     className={`
+                        ${updatedOnThisStep ? 'animate-spin' : ''}
                         ${isCurrentStep ? 'scale-125 animate-pulse' : 'scale-100'} 
                         ${cellBgColor[cell.state] || "bg-sky-100"}
                         ${isInteractive ? "hover:scale-110 cursor-pointer" : ""}
@@ -294,7 +347,7 @@ export default function Home() {
                                             <div className={`text-xs ${textColors[cell.state] || "text-slate-500"} 
                                     ${cell.cost > 10 ? "font-bold" : ""}
                                     transition-all duration-200 group-hover:scale-110`}>
-                                                {cell.cost}
+                                                {cell.cost}:{updatedOnThisStep ? 'foo' : 'bar/'}{`snp:`}{snapShotStep}
                                             </div>
                                         )}
 
@@ -337,6 +390,35 @@ export default function Home() {
                     ))}
                 </div>
             </div>
+            <div className="text-sm font-mono whitespace-pre">
+                {aStarData?.costUpdateHistory &&
+                    Object.entries(aStarData.costUpdateHistory).map(([key, updates]) => (
+                        <div key={key}>
+                            <strong>{key}:</strong>{" "}
+                            {updates.map((u, i) => `(step:${u.step}, g: ${u.gCost})`).join(", ")}
+                        </div>
+                    ))}
+            </div>
+            <div className="text-sm font-mono whitespace-pre">
+                {timeline &&
+                    timeline.map((step, index) => {
+
+                        const {type, node,snapShotStep} = step;
+                        const pos = node.pos.join(",");
+                        const g = node.gCost ?? "–";
+                        const h = node.hCost ?? "–";
+                        const f = node.fCost ?? "–";
+
+                        return (
+                            <div key={index}>
+                                <strong>Step {index}:</strong> [{type}] pos=({pos}), g={g}, h={h}, f={f}
+                                {snapShotStep !== undefined && ` | snapshotStep: ${snapShotStep}`}
+                            </div>
+                        );
+                    })}
+            </div>
+
+
             <div className="flex gap-4 mt-4">
                 <button
                     onClick={() => dispatch({type: "DECREMENT_INDEX"})}
@@ -456,13 +538,13 @@ type PathSnapshot = {
     type: "path",
     node: PathData,
 }
-type AnimationStep = FrontierSnapshot | VisitedSnapshot | PathSnapshot
+type SnapshotStep = FrontierSnapshot | VisitedSnapshot | PathSnapshot
 
 function buildTimeline(visitedOrder: AStarNode[],
                        frontierOrder: AStarNode[][],
-                       pathData: PathData[]): AnimationStep[] {
+                       pathData: PathData[]): SnapshotStep[] {
 
-    const timeline: AnimationStep [] = []
+    const timeline: SnapshotStep [] = []
     if (visitedOrder.length !== frontierOrder.length) {
         throw new Error("both should have the same length")
     }
@@ -482,11 +564,13 @@ function buildTimeline(visitedOrder: AStarNode[],
 type FrontierStep = {
     type: "frontier";
     node: AStarNode;
+    snapShotStep: number
 };
 
 type VisitedStep = {
     type: "visited";
     node: AStarNode;
+    snapShotStep: number
 };
 
 type PathStep = {
@@ -497,15 +581,15 @@ type PathStep = {
 export type FlattenedStep = FrontierStep | VisitedStep | PathStep;
 
 
-function isPathSnapshot(step: AnimationStep): step is PathSnapshot {
+function isPathSnapshot(step: SnapshotStep): step is PathSnapshot {
     return step.type === "path"
 }
 
-function isFrontierSnapshot(step: AnimationStep): step is FrontierSnapshot {
+function isFrontierSnapshot(step: SnapshotStep): step is FrontierSnapshot {
     return step.type === "frontier"
 }
 
-function isVisitedSnapshot(step: AnimationStep): step is VisitedSnapshot {
+function isVisitedSnapshot(step: SnapshotStep): step is VisitedSnapshot {
     return step.type === "visited"
 }
 
@@ -523,19 +607,23 @@ function isVisitedStep(step: FlattenedStep): step is VisitedStep {
 }
 
 
-function flattenedTimeline(timeline: AnimationStep[]): FlattenedStep[] {
+function flattenedTimeline(timeline: SnapshotStep[]): FlattenedStep[] {
+    let snapshotStep = 0;
+
     const flattenedSteps: FlattenedStep[] = []
     for (let i = 0; i < timeline.length; i++) {
         const node = timeline[i]
         if (isVisitedSnapshot(node)) {
-            flattenedSteps.push({type: 'visited', node: node.node});
-        } else if (isPathSnapshot(node)) {
-            flattenedSteps.push({type: 'path', node: node.node});
+            flattenedSteps.push({type: 'visited', node: node.node, snapShotStep: snapshotStep});
+            snapshotStep++
         } else if (isFrontierSnapshot(node)) {
             for (const frontierNode of node.nodes) {
-                flattenedSteps.push({type: 'frontier', node: frontierNode});
+                flattenedSteps.push({type: 'frontier', node: frontierNode, snapShotStep: snapshotStep});
             }
+        } else if (isPathSnapshot(node)) {
+            flattenedSteps.push({type: 'path', node: node.node});
         }
+
 
     }
     return flattenedSteps
