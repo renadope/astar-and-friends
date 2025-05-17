@@ -7,6 +7,7 @@ import {isNullOrUndefined} from "~/utils/helpers";
 import {generateRandomCostGrid} from "~/utils/grid-generation";
 import {predefinedWeightFuncs} from "~/utils/grid-weights";
 import {heuristics} from "~/utils/heuristics";
+import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -357,7 +358,7 @@ export default function Home() {
 
 
     return (
-        <div className={'grid grid-cols-2 p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
+        <div className={'grid grid-cols-2 p-4 rounded-lg shadow-sm gap-2 '}>
             <div
                 className="flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
                 {aStarData && cellData && cellData.length > 0 && cellData.map((row, r) => (
@@ -466,7 +467,7 @@ export default function Home() {
             </div>
 
 
-            <div className="flex flex-col gap-4 p-4 bg-slate-200/70 backdrop-blur-sm rounded-xl shadow-sm">
+            <div className="flex flex-col gap-4 p-4  backdrop-blur-sm rounded-xl shadow-sm">
                 <div className="flex items-center justify-between">
                     <div className="flex gap-2">
                         <button
@@ -703,7 +704,32 @@ export default function Home() {
                         </fieldset>
 
                     </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">Cell Mode</label>
+                        <ToggleGroup
+                            type="single"
+                            value={'set_goal'}
+                            onValueChange={(val) => {
+
+                            }}
+                            variant="outline"
+                            size="default"
+                            className="w-full"
+                        >
+                            <ToggleGroupItem value="set_goal" aria-label="Set Goal">
+                                Set Goal 🎯
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="set_start" aria-label="Set Start">
+                                Set Start 🏁
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="set_wall" aria-label="Set Wall">
+                                Set Wall 🚧
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                    </div>
+
                 </div>
+
             </div>
 
             {/*<SimpleGrid grid={weightGrid}/>*/
@@ -711,7 +737,7 @@ export default function Home() {
             {/*<SimpleGrid grid={costs}/>*/
             }
         </div>
-    )
+    );
 }
 
 type SimpleGridProps = {
