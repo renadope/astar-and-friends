@@ -21,9 +21,6 @@ export function aStar(
         return heuristic(node, goal);
     }
 
-    if (weights.hWeight === 0 && weights.gWeight === 0) {
-        return ResultErr(new Error("Invalid weight combo, both cannot be zero"));
-    }
     if (!isValidNode(grid, start[0], start[1])) {
         return ResultErr(new Error("Invalid Start"));
     }
@@ -213,7 +210,6 @@ export function aStar(
         }
     }
 
-    console.log("");
     const allPathData = reconstructPath(
         grid,
         costs,

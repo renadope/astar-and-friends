@@ -1,7 +1,7 @@
 import type {Route} from "./+types/home";
 import {aStar} from "~/services/aStar";
-import type {AStarData, AStarNode, PathData, Pos} from "~/types/pathfinding";
-import {useEffect, useReducer} from "react";
+import type {AStarData, AStarNode, PathData, Pos, Weights} from "~/types/pathfinding";
+import {type ChangeEvent, useEffect, useReducer} from "react";
 import {isNodePassable, parsePos, stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {generateRandomCostGrid} from "~/utils/grid-generation";
@@ -17,6 +17,7 @@ export function meta({}: Route.MetaArgs) {
 
 //rem
 const gridCellSize = 7
+type gwWeights = Omit<Weights, 'name'>
 
 type CellData = {
     pos: [number, number]
@@ -57,6 +58,7 @@ type AppState = {
     granularTimeline: FlattenedStep[]
     currentTimelineIndex: number,
     aStarData: AStarData | undefined
+    gwWeights: gwWeights
 }
 type Action =
     | { type: "GENERATE_GRID", payload?: number, }
@@ -67,6 +69,8 @@ type Action =
     | { type: "SET_INDEX", payload: number }
     | { type: "DECREMENT_INDEX", payload?: number }
     | { type: "UPDATE_CELL_DATA", }
+    | { type: "SET_G_WEIGHT", payload: number }
+    | { type: "SET_H_WEIGHT", payload: number }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -76,6 +80,7 @@ const initialState: AppState = {
     currentTimelineIndex: 0,
     gridSize: 10,
     aStarData: undefined,
+    gwWeights: {gWeight: 1, hWeight: 1}
     // activeTimeline: 'granular'
 }
 
@@ -171,7 +176,7 @@ function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
-            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['diagonal'])
+            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['wall'])
             const cellData = initCellData(weightGrid)
             return {
                 ...state,
@@ -188,7 +193,7 @@ function reducer(state: AppState, action: Action): AppState {
             const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan, {
                 allowed: true,
                 cornerCutting: 'strict'
-            })
+            }, {...state.gwWeights, name: "change_this_name_to_the_proper_name"})
 
             if (!aStarResult.success) {
                 // should provide a way for the ui to signal that the criterion wasn't met for Astar to be run
@@ -251,6 +256,20 @@ function reducer(state: AppState, action: Action): AppState {
                 ...state,
                 currentTimelineIndex: setIndexIdx
             }
+        case "SET_G_WEIGHT":
+            const gWeight = Math.max(0, Math.abs(action.payload))
+            return {
+                ...state,
+                gwWeights: {...state.gwWeights, gWeight: gWeight}
+            }
+
+        case "SET_H_WEIGHT":
+            const hWeight = Math.max(0, Math.abs(action.payload))
+            return {
+                ...state,
+                gwWeights: {...state.gwWeights, hWeight: hWeight}
+            }
+
 
         default:
             return state
@@ -258,7 +277,7 @@ function reducer(state: AppState, action: Action): AppState {
 }
 
 export default function Home() {
-    const size = 6
+    const size = 8
     const [state, dispatch] = useReducer(reducer, initialState)
     const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData} = state
 
@@ -284,14 +303,14 @@ export default function Home() {
             dispatch({
                 type: 'INCREMENT_INDEX'
             })
-        }, 200)
+        }, 100)
         return () => clearInterval(interval)
 
     }, [aStarData, currentTimelineIndex, timeline.length])
 
 
     return (
-        <div className={'grid grid-cols-3 p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
+        <div className={'grid grid-cols-2 p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
             <div
                 className="flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
                 {aStarData && cellData && cellData.length > 0 && cellData.map((row, r) => (
@@ -400,15 +419,16 @@ export default function Home() {
             </div>
 
 
-            <div className="flex flex-col gap-4 p-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm">
+            <div className="flex flex-col gap-4 p-4 bg-slate-200/70 backdrop-blur-sm rounded-xl shadow-sm">
                 <div className="flex items-center justify-between">
                     <div className="flex gap-2">
                         <button
                             onClick={() => dispatch({type: "DECREMENT_INDEX"})}
                             className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
                             </svg>
                             Back
                         </button>
@@ -418,8 +438,9 @@ export default function Home() {
                             className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
                         >
                             Next
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
                             </svg>
                         </button>
                     </div>
@@ -455,13 +476,15 @@ export default function Home() {
                     <button
                         className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
                         onClick={() => {
-                            console.log('dispatching')
                             dispatch({type: "GENERATE_GRID", payload: size})
                             dispatch({type: "RUN_ASTAR"})
                         }}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 110-2h4a1 1 0 011 1v4a1 1 0 11-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 112 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 110 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 110-2h1.586l-2.293-2.293a1 1 0 011.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20"
+                             fill="currentColor">
+                            <path fillRule="evenodd"
+                                  d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 110-2h4a1 1 0 011 1v4a1 1 0 11-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 112 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 110 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 110-2h1.586l-2.293-2.293a1 1 0 011.414-1.414L15 13.586V12a1 1 0 011-1z"
+                                  clipRule="evenodd"/>
                         </svg>
                         Generate Grid
                     </button>
@@ -469,15 +492,69 @@ export default function Home() {
                     <button
                         className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
                         onClick={() => {
-                            console.log('dispatching')
                             dispatch({type: "RUN_ASTAR"})
                         }}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20"
+                             fill="currentColor">
+                            <path fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                                  clipRule="evenodd"/>
                         </svg>
                         Run A*
                     </button>
+                </div>
+                <div className="flex flex-col gap-4 w-full max-w-md  mt-4 p-4 bg-white rounded-lg shadow-md">
+                    <div className="w-full pt-2">
+                        <label htmlFor="gWeight" className="block text-sm font-semibold text-blue-600 mb-1">
+                            G-Weight (Cost So Far): <span className="font-mono text-black">{state.gwWeights.gWeight}</span>
+                        </label>
+                        <input
+                            id={`gWeight`}
+                            type="range"
+                            min={0}
+                            max={10}
+                            step={0.5}
+                            value={state.gwWeights.gWeight}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                dispatch({
+                                    type: 'SET_G_WEIGHT',
+                                    payload: Number(e.target.value),
+                                })
+                                dispatch({type: "RUN_ASTAR"})
+
+                            }
+                            }
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                        />
+                    </div>
+                    <div className="w-full pt-2">
+                        <label htmlFor="hWeight" className="block text-sm font-semibold text-pink-600 mb-1">
+                            H-Weight (Heuristic): <span className="font-mono text-black">{state.gwWeights.hWeight}</span>
+                        </label>
+                        <input
+                            id={`hWeight`}
+                            type="range"
+                            min={0}
+                            max={10}
+                            step={0.5}
+                            value={state.gwWeights.hWeight}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                dispatch({
+                                    type: 'SET_H_WEIGHT',
+                                    payload: Number(e.target.value),
+                                })
+                                dispatch({type: "RUN_ASTAR"})
+                            }
+
+                            }
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                        />
+                    </div>
+                </div>
+                <div className={'flex gap-2 '}>
+                    <p>G:{state.gwWeights.gWeight}</p>
+                    <p>H:{state.gwWeights.hWeight}</p>
                 </div>
             </div>
 
