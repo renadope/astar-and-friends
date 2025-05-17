@@ -198,6 +198,7 @@ function reducer(state: AppState, action: Action): AppState {
             const granularTimeline = flattenedTimeline(snapshotTimeline)
             return {
                 ...state,
+                currentTimelineIndex: 0,
                 aStarData: aStarResult.value,
                 snapshotTimeline,
                 granularTimeline,
@@ -292,17 +293,17 @@ export default function Home() {
     return (
         <div className={'grid grid-cols-3 p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
             <div
-                className="flex flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
+                className="flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
                 {aStarData && cellData && cellData.length > 0 && cellData.map((row, r) => (
                     <div key={`col-${r}`} className="flex gap-0.5 hover:gap-1 transition-all duration-300">
                         {row.map((cell, c) => {
 
-                            const snapShotStep = cell.snapShotStep ?? Infinity
+                            const snapShotStep = cell.snapShotStep ?? Number.MAX_SAFE_INTEGER
                             const key = stringifyPos(...cell.pos)
                             const history = aStarData.costUpdateHistory[key] ?? [];
                             const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
                             // const updatedOnThisStep = history.some((h) => h.step === snapShotStep + 1)
-                            const costUpdateOnThisStep = history.find((h) => h.step === snapShotStep + 1)
+                            // const costUpdateOnThisStep = history.find((h) => h.step === snapShotStep + 1)
                             const isCurrentStep = cell.step === currentTimelineIndex;
                             const isInteractive = ["start", "end", "empty"].includes(cell.state);
                             return (
@@ -380,14 +381,18 @@ export default function Home() {
                 ))}
 
                 <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                    {["wall", "path", "visited", "start", "end", "empty"].map(state => (
+                    {["empty", "wall", "visited", "frontier", "path", "start", "goal"].map(state => (
                         <div key={state}
                              className="flex items-center gap-1 px-2 py-1 bg-white/50 rounded-full shadow-sm">
-                            <div className={`w-3 h-3 rounded-full bg-${state === "wall" ? "slate-800" :
-                                state === "path" ? "emerald-500" :
-                                    state === "visited" ? "violet-600" :
-                                        state === "start" ? "blue-500" :
-                                            state === "end" ? "red-500" : "sky-100"}`}></div>
+                            <div className={`w-3 h-3 rounded-full ${
+                                state === "wall" ? "bg-slate-800" :
+                                    state === "path" ? "bg-emerald-500" :
+                                        state === "visited" ? "bg-violet-600" :
+                                            state === "frontier" ? "bg-amber-400" :
+                                                state === "start" ? "bg-blue-500" :
+                                                    state === "goal" ? "bg-red-500" :
+                                                        "bg-sky-100"
+                            }`}></div>
                             <span className="text-xs text-slate-700 capitalize">{state}</span>
                         </div>
                     ))}
@@ -395,53 +400,85 @@ export default function Home() {
             </div>
 
 
-            <div className="flex gap-4 mt-4">
-                <button
-                    onClick={() => dispatch({type: "DECREMENT_INDEX"})}
-                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-                >
-                    ⬅ Back
-                </button>
+            <div className="flex flex-col gap-4 p-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm">
+                <div className="flex items-center justify-between">
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => dispatch({type: "DECREMENT_INDEX"})}
+                            className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                            Back
+                        </button>
 
-                <button
-                    onClick={() => dispatch({type: "INCREMENT_INDEX"})}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                >
-                    Next ➡
-                </button>
-                <button className={'bg-sky-500 '} onClick={() => {
-                    console.log('dispatching')
-                    dispatch({type: "GENERATE_GRID", payload: size})
-                    dispatch({type: "RUN_ASTAR"})
+                        <button
+                            onClick={() => dispatch({type: "INCREMENT_INDEX"})}
+                            className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
+                        >
+                            Next
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
 
-                }}>Generate Grid:{currentTimelineIndex}
-                </button>
-                <button className={'bg-rose-300 hover:bg-rose-400 '} onClick={() => {
-                    console.log('dispatching')
-                    dispatch({type: "RUN_ASTAR"})
-                }}>Run A*
-                </button>
-            </div>
+                    <div className="text-sm font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
+                        Step {currentTimelineIndex + 1} / {timeline.length}
+                    </div>
+                </div>
 
-            <div className="w-full flex items-center gap-4 py-4">
-                <label htmlFor="timeline" className="text-sm font-medium">
-                    Step {currentTimelineIndex + 1} / {timeline.length}
-                </label>
+                <div className="w-full">
+                    <input
+                        id="timeline"
+                        type="range"
+                        min={0}
+                        max={timeline.length - 1}
+                        value={currentTimelineIndex}
+                        onChange={(e) =>
+                            dispatch({
+                                type: 'SET_INDEX',
+                                payload: parseInt(e.target.value, 10),
+                            })
+                        }
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                    />
 
-                <input
-                    id="timeline"
-                    type="range"
-                    min={0}
-                    max={timeline.length - 1}
-                    value={currentTimelineIndex}
-                    onChange={(e) =>
-                        dispatch({
-                            type: 'SET_INDEX',
-                            payload: parseInt(e.target.value, 10),
-                        })
-                    }
-                    className="w-full accent-blue-500"
-                />
+                    <div className="w-full flex justify-between mt-1 px-1">
+                        <span className="text-xs text-gray-500">Start</span>
+                        <span className="text-xs text-gray-500">End</span>
+                    </div>
+                </div>
+
+                <div className="flex gap-2 justify-center pt-2">
+                    <button
+                        className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
+                        onClick={() => {
+                            console.log('dispatching')
+                            dispatch({type: "GENERATE_GRID", payload: size})
+                            dispatch({type: "RUN_ASTAR"})
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 110-2h4a1 1 0 011 1v4a1 1 0 11-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 112 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 110 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 110-2h1.586l-2.293-2.293a1 1 0 011.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
+                        </svg>
+                        Generate Grid
+                    </button>
+
+                    <button
+                        className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
+                        onClick={() => {
+                            console.log('dispatching')
+                            dispatch({type: "RUN_ASTAR"})
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                        </svg>
+                        Run A*
+                    </button>
+                </div>
             </div>
 
             {/*<SimpleGrid grid={weightGrid}/>*/
