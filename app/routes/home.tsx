@@ -171,7 +171,7 @@ function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
-            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['wall'])
+            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['diagonal'])
             const cellData = initCellData(weightGrid)
             return {
                 ...state,
@@ -257,7 +257,7 @@ function reducer(state: AppState, action: Action): AppState {
 }
 
 export default function Home() {
-    const size = 3
+    const size = 6
     const [state, dispatch] = useReducer(reducer, initialState)
     const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData} = state
 
@@ -272,25 +272,25 @@ export default function Home() {
         dispatch({type: 'UPDATE_CELL_DATA'})
     }, [currentTimelineIndex]);
 
-    // useEffect(() => {
-    //     if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0) {
-    //         return
-    //     }
-    //     if (currentTimelineIndex > timeline.length - 1) {
-    //         return
-    //     }
-    //     const interval = setInterval(() => {
-    //         dispatch({
-    //             type: 'INCREMENT_INDEX'
-    //         })
-    //     }, 500)
-    //     return () => clearInterval(interval)
-    //
-    // }, [aStarData, currentTimelineIndex, timeline.length])
+    useEffect(() => {
+        if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0) {
+            return
+        }
+        if (currentTimelineIndex > timeline.length - 1) {
+            return
+        }
+        const interval = setInterval(() => {
+            dispatch({
+                type: 'INCREMENT_INDEX'
+            })
+        }, 200)
+        return () => clearInterval(interval)
+
+    }, [aStarData, currentTimelineIndex, timeline.length])
 
 
     return (
-        <div className={'flex p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
+        <div className={'grid grid-cols-3 p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
             <div
                 className="flex flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
                 {aStarData && cellData && cellData.length > 0 && cellData.map((row, r) => (
@@ -300,8 +300,9 @@ export default function Home() {
                             const snapShotStep = cell.snapShotStep ?? Infinity
                             const key = stringifyPos(...cell.pos)
                             const history = aStarData.costUpdateHistory[key] ?? [];
-                            // const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
-                            const updatedOnThisStep = history.some((h) => h.step === snapShotStep + 1)
+                            const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
+                            // const updatedOnThisStep = history.some((h) => h.step === snapShotStep + 1)
+                            const costUpdateOnThisStep = history.find((h) => h.step === snapShotStep + 1)
                             const isCurrentStep = cell.step === currentTimelineIndex;
                             const isInteractive = ["start", "end", "empty"].includes(cell.state);
                             return (
@@ -349,13 +350,9 @@ export default function Home() {
                                             {cell.pos.join(',')}
                                         </p>
 
-                                        {cell.cost > 0 && (
-                                            <div className={`text-xs ${textColors[cell.state] || "text-slate-500"} 
-                                    ${cell.cost > 10 ? "font-bold" : ""}
-                                    transition-all duration-200 group-hover:scale-110`}>
-                                                {cell.cost}:{cell.snapShotStep}
-                                            </div>
-                                        )}
+                                        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                                            {cell.cost}
+                                        </p>
 
                                         {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
                                             <div
@@ -396,50 +393,6 @@ export default function Home() {
                     ))}
                 </div>
             </div>
-            <div className="text-sm font-mono whitespace-pre">
-                {aStarData?.costUpdateHistory &&
-                    Object.entries(aStarData.costUpdateHistory).map(([key, updates]) => (
-                        <div key={key}>
-                            <strong>{key}:</strong>{" "}
-                            {updates.map((u, i) => `(snapshot:${u.step}, g: ${u.gCost})`).join(", ")}
-                        </div>
-                    ))}
-            </div>
-            {/*<div className="text-sm font-mono whitespace-pre">*/}
-            {/*    {groupedBySnapshotStep && (*/}
-            {/*        Array.from(groupedBySnapshotStep.entries()).map(([step, nodes]) => (*/}
-            {/*            <div key={step}>*/}
-            {/*                <strong>Snapshot {step}:</strong>{" "}*/}
-            {/*                {nodes.map((n, i) => {*/}
-            {/*                    const { pos, gCost } = n.node;*/}
-            {/*                    const posStr = `(${pos[0]},${pos[1]})`;*/}
-            {/*                    return `${n.type} ${posStr} g:${gCost.toFixed(1)}`;*/}
-            {/*                }).join(" | ")}*/}
-            {/*            </div>*/}
-            {/*        ))*/}
-            {/*    )}*/}
-            {/*</div>*/}
-            {/*<div className="text-sm font-mono whitespace-pre">*/}
-            {/*    {timeline &&*/}
-            {/*        timeline.map((step, index) => {*/}
-
-            {/*            if (!isPathStep(step)) {*/}
-            {/*                const {type, node, snapShotStep} = step;*/}
-            {/*                const pos = node.pos.join(",");*/}
-            {/*                const g = node.gCost ?? "–";*/}
-            {/*                const h = node.hCost ?? "–";*/}
-            {/*                const f = node.fCost ?? "–";*/}
-
-            {/*                return (*/}
-            {/*                    <div key={index}>*/}
-            {/*                        <strong>Step {index}:</strong> [{type}] pos=({pos}), g={g}, h={h}, f={f}*/}
-            {/*                        {snapShotStep !== undefined &&*/}
-            {/*                            <strong>{` | snapshotStep: ${snapShotStep}`}</strong>}*/}
-            {/*                    </div>*/}
-            {/*                );*/}
-            {/*            }*/}
-            {/*        })}*/}
-            {/*</div>*/}
 
 
             <div className="flex gap-4 mt-4">
