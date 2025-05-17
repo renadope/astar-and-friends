@@ -300,7 +300,8 @@ export default function Home() {
                             const snapShotStep = cell.snapShotStep ?? Infinity
                             const key = stringifyPos(...cell.pos)
                             const history = aStarData.costUpdateHistory[key] ?? [];
-                            const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
+                            // const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
+                            const updatedOnThisStep = history.some((h) => h.step === snapShotStep + 1)
                             const isCurrentStep = cell.step === currentTimelineIndex;
                             const isInteractive = ["start", "end", "empty"].includes(cell.state);
                             return (
