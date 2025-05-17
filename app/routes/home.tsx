@@ -16,7 +16,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 //rem
-const gridCellSize = 6
+const gridCellSize = 7
 
 type CellData = {
     pos: [number, number]
@@ -36,6 +36,15 @@ const cellBgColor = {
     "path": "#34d399",       // emerald-400 – balanced, modern trail
     "start": "#0ea5e9",      // sky-500 – distinct blue entry point
     "goal": "#f43f5e"        // rose-500 – emotional, urgent destination
+};
+const textColors: Record<keyof typeof cellBgColor, string> = {
+    wall: "text-white",
+    path: "text-white",
+    visited: "text-white",
+    start: "text-white",
+    goal: "text-white",
+    empty: "text-slate-800",
+    frontier: "text-slate-950"
 };
 
 type AppState = {
@@ -114,14 +123,18 @@ function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
-            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['random'])
+            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['wall'])
             const cellData = initCellData(weightGrid)
             return {
                 ...state,
+                currentTimelineIndex: 0,
                 weightGrid: weightGrid,
                 cellData: cellData
             }
         case "RUN_ASTAR":
+            if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
+                return state
+            }
             const start: Pos = [0, 0]
             const goal: Pos = [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
             const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan, {
@@ -196,9 +209,9 @@ function reducer(state: AppState, action: Action): AppState {
 }
 
 export default function Home() {
-    const size = 4
+    const size = 8
     const [state, dispatch] = useReducer(reducer, initialState)
-    const {cellData, currentTimelineIndex, granularTimeline: timeline} = state
+    const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData} = state
     useEffect(() => {
         if (state.weightGrid.length === 0) {
             return
@@ -206,14 +219,33 @@ export default function Home() {
         dispatch({type: 'UPDATE_CELL_DATA'})
     }, [currentTimelineIndex]);
 
+    useEffect(() => {
+        if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0) {
+            return
+        }
+        if (currentTimelineIndex > timeline.length - 1) {
+            return
+        }
+        const interval = setInterval(() => {
+            dispatch({
+                type: 'INCREMENT_INDEX'
+            })
+        }, 100)
+        return () => clearInterval(interval)
+
+    }, [aStarData, currentTimelineIndex, timeline.length])
+
 
     return (
         <div className={'flex p-4 bg-gray-50 rounded-lg shadow-sm gap-2 '}>
-            <div className="flex flex-col gap-2 transition-all ease-in-out duration-300">
+            <div
+                className="flex flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
                 {cellData && cellData.length > 0 && cellData.map((row, r) => (
-                    <div key={`col-${r}`} className="flex gap-1 ">
+                    <div key={`col-${r}`} className="flex gap-0.5 hover:gap-1 transition-all duration-300">
                         {row.map((cell, c) => {
                             const key = cell.pos.join(',');
+                            const isCurrentStep = cell.step === currentTimelineIndex;
+                            const isInteractive = ["start", "end", "empty"].includes(cell.state);
                             return (
                                 <div
                                     key={key}
@@ -221,44 +253,89 @@ export default function Home() {
                                         height: `${gridCellSize}rem`,
                                         width: `${gridCellSize}rem`,
                                         backgroundColor: cellBgColor[cell.state] || "#dff2fe",
-                                        transition: "all 0.2s ease-in-out",
-                                        //
+                                        transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
                                         border: `${1 + Math.min(4, Math.sqrt(cell.cost) * .7)}px solid ${costToColor(cell.cost)}`,
-                                        // transform: `rotate(${(cell.cost % 3) - 1}deg) scale(${1 + cell.cost * 0.005})`
-
-
+                                        boxShadow: isCurrentStep ? "0 0 15px 5px rgba(59, 130, 246, 0.5)" :
+                                            cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.6)" :
+                                                "0 2px 4px rgba(0,0,0,0.1)"
                                     }}
-                                    className="rounded-md flex flex-col items-center justify-center shadow-sm relative hover:scale-105"
-                                    onClick={() => console.log(cell)}
+                                    className={`
+                        ${isCurrentStep ? 'scale-125 animate-pulse' : 'scale-100'} 
+                        ${cellBgColor[cell.state] || "bg-sky-100"}
+                        ${isInteractive ? "hover:scale-110 cursor-pointer" : ""}
+                        transition-all duration-300 rounded-md flex flex-col items-center 
+                        justify-center relative backdrop-blur-sm
+                        ${cell.state === "path" && isCurrentStep ? "animate-bounce" : ""}
+                        `}
+                                    onClick={() => {
+                                        console.log(cell);
+                                        // Add haptic feedback if available
+                                        //oh man this looks cool ad
+                                        if (window.navigator && window.navigator.vibrate) {
+                                            window.navigator.vibrate(50);
+                                        }
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (cell.costUpdateHistory && cell.costUpdateHistory.length > 0) {
+                                            e.currentTarget.setAttribute('title', `Cost updates: ${cell.costUpdateHistory.join(' → ')}`);
+                                        }
+                                    }}
                                 >
-                                    <p className={`text-xs font-semibold ${["wall", "path", "visited"].includes(cell.state) ? "text-white" : "text-gray-700"}`}>
-                                        {cell.state}
-                                    </p>
+                                    <div className="flex flex-col items-center w-full h-full justify-center group">
+                                        <p className={`text-xs font-bold ${textColors[cell.state] || "text-slate-700"} transition-all duration-200 group-hover:text-lg`}>
+                                            {cell.state}
+                                        </p>
 
-                                    <p className={`text-xs ${["wall", "path", "visited"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
-                                        {cell.pos.join(',')}
-                                    </p>
-                                    <p className={`text-xs ${["wall", "visited"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
-                                        {cell.cost}
-                                    </p>
-                                    <p className={`text-xs ${["wall", "visited"].includes(cell.state) ? "text-white" : "text-gray-500"}`}>
-                                        {cell.costUpdateHistory ? cell.costUpdateHistory.length + " updates" : ""}
-                                    </p>
+                                        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                                            {cell.pos.join(',')}
+                                        </p>
 
-                                    {/*{(cell.f !== undefined || cell.g !== undefined) && (*/}
-                                    {/*    <div*/}
-                                    {/*        className="absolute bottom-1 right-1 text-xs bg-white/70 text-black px-1 rounded-sm">*/}
-                                    {/*        {cell.f !== undefined && <span>f:{cell.f.toFixed(2)}</span>}*/}
-                                    {/*        /!*{cell.g !== undefined && <span>g:{cell.g.toFixed(0)}</span>}*!/*/}
-                                    {/*    </div>*/}
-                                    {/*)}*/}
+                                        {cell.cost > 0 && (
+                                            <div className={`text-xs ${textColors[cell.state] || "text-slate-500"} 
+                                    ${cell.cost > 10 ? "font-bold" : ""}
+                                    transition-all duration-200 group-hover:scale-110`}>
+                                                {cell.cost}
+                                            </div>
+                                        )}
 
+                                        {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
+                                            <div
+                                                className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-xs px-1 rounded-full shadow-sm transform transition-transform group-hover:scale-125">
+                                                {cell.costUpdateHistory.length}
+                                            </div>
+                                        )}
+                                    </div>
 
+                                    {(cell.state === "path" || isCurrentStep) && (
+                                        <div
+                                            className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                                    )}
+
+                                    {cell.f !== undefined && (
+                                        <div
+                                            className="absolute top-0 right-0 text-xs bg-white/80 text-black px-1 py-0.5 rounded-bl-md rounded-tr-md font-mono shadow-sm">
+                                            f:{cell.f.toFixed(1)}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
                     </div>
                 ))}
+
+                <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                    {["wall", "path", "visited", "start", "end", "empty"].map(state => (
+                        <div key={state}
+                             className="flex items-center gap-1 px-2 py-1 bg-white/50 rounded-full shadow-sm">
+                            <div className={`w-3 h-3 rounded-full bg-${state === "wall" ? "slate-800" :
+                                state === "path" ? "emerald-500" :
+                                    state === "visited" ? "violet-600" :
+                                        state === "start" ? "blue-500" :
+                                            state === "end" ? "red-500" : "sky-100"}`}></div>
+                            <span className="text-xs text-slate-700 capitalize">{state}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
             <div className="flex gap-4 mt-4">
                 <button
@@ -277,6 +354,8 @@ export default function Home() {
                 <button className={'bg-sky-500 '} onClick={() => {
                     console.log('dispatching')
                     dispatch({type: "GENERATE_GRID", payload: size})
+                    dispatch({type: "RUN_ASTAR"})
+
                 }}>Generate Grid:{currentTimelineIndex}
                 </button>
                 <button className={'bg-rose-300 hover:bg-rose-400 '} onClick={() => {
