@@ -403,18 +403,20 @@ export default function Home() {
                 {timeline &&
                     timeline.map((step, index) => {
 
-                        const {type, node,snapShotStep} = step;
-                        const pos = node.pos.join(",");
-                        const g = node.gCost ?? "–";
-                        const h = node.hCost ?? "–";
-                        const f = node.fCost ?? "–";
+                        if (!isPathStep(step)) {
+                            const {type, node, snapShotStep} = step;
+                            const pos = node.pos.join(",");
+                            const g = node.gCost ?? "–";
+                            const h = node.hCost ?? "–";
+                            const f = node.fCost ?? "–";
 
-                        return (
-                            <div key={index}>
-                                <strong>Step {index}:</strong> [{type}] pos=({pos}), g={g}, h={h}, f={f}
-                                {snapShotStep !== undefined && ` | snapshotStep: ${snapShotStep}`}
-                            </div>
-                        );
+                            return (
+                                <div key={index}>
+                                    <strong>Step {index}:</strong> [{type}] pos=({pos}), g={g}, h={h}, f={f}
+                                    {snapShotStep !== undefined && ` | snapshotStep: ${snapShotStep}`}
+                                </div>
+                            );
+                        }
                     })}
             </div>
 
