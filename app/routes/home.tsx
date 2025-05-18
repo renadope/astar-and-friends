@@ -5,7 +5,7 @@ import {type ChangeEvent, useEffect, useReducer, useState} from "react";
 import {isNodePassable, parsePos, stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {generateRandomCostGrid} from "~/utils/grid-generation";
-import {predefinedWeightFuncs} from "~/utils/grid-weights";
+import {type CostAndWeightFunc, type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
 import {type HeuristicFunc, type HeuristicName, heuristics} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
 import {Check, ChevronsUpDown, RefreshCcw} from "lucide-react";
@@ -23,7 +23,7 @@ export function meta({}: Route.MetaArgs) {
 
 const NO_TIMELINE = -1 as const
 //rem
-const gridCellSize = 7
+const gridCellSize = 6.5
 type gwWeights = Omit<Weights, 'name'>
 type CellToggle = 'set_goal' | 'toggle_wall' | 'set_start' | "inactive"
 
@@ -62,6 +62,72 @@ const heuristicInfo: { label: string; value: HeuristicName }[] = [
     {label: "Octile: D * (|dx| + |dy| + (√2 - 2 * D) × min(dx, dy))", value: "octile"},
     {label: "Chebyshev: (max(|dx|, |dy|))", value: "chebyshev"}
 ];
+type WeightData = {
+    label: string;
+    value: CostAndWeightKind;
+    description: string;
+    emoji: string;
+    tag?: "Recommended" | "Simple" | "Challenging" | "Experimental";
+}
+const weightPresets: WeightData[] = [
+    {
+        label: "Uniform",
+        value: "uniform",
+        description: "All cells have the same traversal cost. Ideal for basic testing.",
+        emoji: "📏",
+        tag: "Simple"
+    },
+    {
+        label: "Fake Noise",
+        value: "noise",
+        description: "Adds pseudo-random variation in weights to simulate natural terrain.",
+        emoji: "🌫️",
+        tag: "Experimental"
+    },
+    {
+        label: "Center Ridge",
+        value: "centerRidge",
+        description: "Creates a high-cost ridge down the center of the grid.",
+        emoji: "⛰️",
+        tag: "Challenging"
+    },
+    {
+        label: "Circular Basin",
+        value: "circularBasin",
+        description: "Lower weights near the center and higher costs as you move outward.",
+        emoji: "🌀",
+        tag: "Recommended"
+    },
+    {
+        label: "Wall Corridor Bias",
+        value: "wall",
+        description: "Biases cost around walls and corridors to simulate bottlenecks.",
+        emoji: "🚧",
+        tag: "Challenging"
+    },
+    {
+        label: "Diagonal Gradient",
+        value: "diagonal",
+        description: "Increases cost gradually from top-left to bottom-right diagonally.",
+        emoji: "📐",
+        tag: "Simple"
+    },
+    {
+        label: "Random Terrain",
+        value: "random",
+        description: "Completely randomized weights for each cell. Unpredictable paths.",
+        emoji: "🎲",
+        tag: "Experimental"
+    },
+    {
+        label: "Biome Weights",
+        value: "biome",
+        description: "Mimics different biome zones with clustered terrain types.",
+        emoji: "🌍",
+        tag: "Recommended"
+    }
+];
+
 
 type AppState = {
     weightGrid: number[][]
@@ -78,6 +144,7 @@ type AppState = {
     startPos: Pos | undefined
     goalPos: Pos | undefined
     heuristic: { func: HeuristicFunc, name: HeuristicName }
+    weightPreset: { func: CostAndWeightFunc, name: CostAndWeightKind }
 }
 type Action =
     | { type: "GENERATE_GRID", payload?: number, }
@@ -97,6 +164,7 @@ type Action =
     | { type: "UPDATE_CELL_STATUS", payload: Pos }
     | { type: "RESET_ASTAR_DATA", }
     | { type: "SET_HEURISTIC_FUNC", payload: HeuristicName }
+    | { type: "SET_WEIGHT_PRESET", payload: CostAndWeightKind }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -111,7 +179,11 @@ const initialState: AppState = {
     cellSelectionState: 'inactive',
     startPos: undefined,
     goalPos: undefined,
-    heuristic: {name: "manhattan", func: heuristics['manhattan']}
+    heuristic: {name: "manhattan", func: heuristics['manhattan']},
+    weightPreset: {
+        func: predefinedWeightFuncs['uniform'],
+        name: 'uniform'
+    }
 
     // activeTimeline: 'granular'
 }
@@ -209,7 +281,7 @@ function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
-            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['uniform'])
+            const weightGrid: number[][] = generateRandomCostGrid(size, state.weightPreset.func)
             const cellData = initCellData(weightGrid, state.startPos ?? [0, 0],
                 state.goalPos ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1])
             return {
@@ -438,6 +510,21 @@ function reducer(state: AppState, action: Action): AppState {
                 ...state,
                 heuristic: {name: newHeuristicName, func: newHeuristic}
             }
+        case "SET_WEIGHT_PRESET":
+            const newWeightPresetName = action.payload
+            if (isNullOrUndefined(newWeightPresetName)) {
+                return {
+                    ...state,
+                    weightPreset: {name: 'uniform', func: predefinedWeightFuncs['uniform']}
+                }
+            }
+            return {
+                ...state,
+                weightPreset: {
+                    name: newWeightPresetName,
+                    func: predefinedWeightFuncs[newWeightPresetName]
+                }
+            }
 
 
         default:
@@ -446,10 +533,11 @@ function reducer(state: AppState, action: Action): AppState {
 }
 
 export default function Home() {
-    const size = 8
+    const size = 10
     const [state, dispatch] = useReducer(reducer, initialState)
     const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData, diagonalSettings} = state
-    const [open, setOpen] = useState(false)
+    const [heuristicPopoverOpen, setHeuristicPopoverOpen] = useState(false)
+    const [weightPresetOpen, setWeightPresetOpen] = useState(false)
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
 
 
@@ -852,12 +940,12 @@ export default function Home() {
 
                     <div className={'space-y-2 flex flex-col'}>
                         <label className="text-sm font-medium text-muted-foreground">Select Heuristic Function</label>
-                        <Popover open={open} onOpenChange={setOpen}>
+                        <Popover open={heuristicPopoverOpen} onOpenChange={setHeuristicPopoverOpen}>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
                                     role="combobox"
-                                    aria-expanded={open}
+                                    aria-expanded={heuristicPopoverOpen}
                                     className="w-2/3 justify-between"
                                 >
                                     {capitalize(heuristicInfo.find(
@@ -880,7 +968,7 @@ export default function Home() {
                                                             type: "SET_HEURISTIC_FUNC",
                                                             payload: currentValue as HeuristicName
                                                         })
-                                                        setOpen(false)
+                                                        setHeuristicPopoverOpen(false)
                                                     }}
                                                 >
                                                     {heuristicInfo.label}
@@ -888,6 +976,55 @@ export default function Home() {
                                                         className={cn(
                                                             "ml-auto",
                                                             state.heuristic.name === heuristicInfo.value ? " opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                    <div className={'space-y-2 flex flex-col'}>
+                        <label className="text-sm font-medium text-muted-foreground">Select Weight Preset</label>
+                        <Popover open={weightPresetOpen} onOpenChange={setWeightPresetOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={weightPresetOpen}
+                                    className="w-2/3 justify-between"
+                                >
+                                    {capitalize(weightPresets.find(
+                                        (weightPreset) => weightPreset.value === state.weightPreset.name)?.label ?? "no selection")}
+                                    <ChevronsUpDown className="opacity-50"/>
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-f">
+                                <Command>
+                                    <CommandInput placeholder="Search Preset..."/>
+                                    <CommandList>
+                                        <CommandEmpty>No Preset found.</CommandEmpty>
+                                        <CommandGroup>
+                                            {weightPresets.map((weightPresetInfo) => (
+                                                <CommandItem
+                                                    key={weightPresetInfo.value}
+                                                    value={weightPresetInfo.value}
+                                                    onSelect={(currentValue: string) => {
+                                                        dispatch({
+                                                            type: "SET_WEIGHT_PRESET",
+                                                            payload: currentValue as CostAndWeightKind
+                                                        })
+                                                        setWeightPresetOpen(false)
+                                                    }}
+                                                >
+
+                                                        {weightPresetInfo.emoji} {weightPresetInfo.label}
+                                                    <Check
+                                                        className={cn(
+                                                            "ml-auto",
+                                                            state.weightPreset.name === weightPresetInfo.value ? " opacity-100" : "opacity-0"
                                                         )}
                                                     />
                                                 </CommandItem>
