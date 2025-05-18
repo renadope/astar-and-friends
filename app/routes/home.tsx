@@ -1,6 +1,6 @@
 import type {Route} from "./+types/home";
 import {aStar, getAlgorithmName} from "~/services/aStar";
-import type {AStarData, AStarNode, DiagonalConfig, PathData, Pos, Weights} from "~/types/pathfinding";
+import type {AStarData, DiagonalConfig, Pos, Weights} from "~/types/pathfinding";
 import {type ChangeEvent, useEffect, useReducer, useState} from "react";
 import {isNodePassable, parsePos, stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
@@ -15,9 +15,14 @@ import {Button} from "~/components/ui/button";
 import {cn} from "~/lib/utils";
 import {
     buildTimeline,
-    type FlattenedStep, flattenedTimeline,
-    isFrontierSnapshot, isFrontierStep, isPathSnapshot, isPathStep,
-    isVisitedSnapshot, isVisitedStep,
+    type FlattenedStep,
+    flattenedTimeline,
+    isFrontierSnapshot,
+    isFrontierStep,
+    isPathSnapshot,
+    isPathStep,
+    isVisitedSnapshot,
+    isVisitedStep,
     type SnapshotStep
 } from "~/utils/timeline-generation";
 
@@ -897,9 +902,9 @@ export default function Home() {
                                         </label>
                                         <input
                                             type="range"
-                                            min={1}
-                                            max={300}
-                                            step={1}
+                                            min={0.1}
+                                            max={10}
+                                            step={.1}
                                             value={diagonalSettings.diagonalMultiplier}
                                             onChange={(e) => {
                                                 dispatch({
@@ -1027,7 +1032,7 @@ export default function Home() {
                                                     }}
                                                 >
 
-                                                        {weightPresetInfo.emoji} {weightPresetInfo.label}
+                                                    {weightPresetInfo.emoji} {weightPresetInfo.label}
                                                     <Check
                                                         className={cn(
                                                             "ml-auto",
@@ -1099,7 +1104,6 @@ function costToColor(cost: number): string {
     if (cost < 15) return "#f87171";  // red-400 — painful, but passable
     return "#c084fc";                // purple-400 — extreme zone
 }
-
 
 
 function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedStep[]> {
