@@ -211,7 +211,10 @@ function reducer(state: AppState, action: Action): AppState {
                 ...state,
                 currentTimelineIndex: 0,
                 weightGrid: weightGrid,
-                cellData: cellData
+                cellData: cellData,
+                aStarData: undefined,
+                snapshotTimeline: [],
+                granularTimeline: [],
             }
         case "RUN_ASTAR":
             if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
@@ -449,13 +452,13 @@ export default function Home() {
         <div className={'grid grid-cols-2 p-4 rounded-lg shadow-sm gap-2 '}>
             <div
                 className="flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
-                {aStarData && cellData && cellData.length > 0 && cellData.map((row, r) => (
+                {cellData && cellData.length > 0 && cellData.map((row, r) => (
                     <div key={`col-${r}`} className="flex gap-0.5 hover:gap-1 transition-all duration-300">
                         {row.map((cell, c) => {
 
                             const snapShotStep = cell.snapShotStep ?? Number.MAX_SAFE_INTEGER
                             const key = stringifyPos(...cell.pos)
-                            const history = aStarData.costUpdateHistory[key] ?? [];
+                            const history = aStarData ? aStarData.costUpdateHistory[key] ?? [] : []
                             const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
                             // const updatedOnThisStep = history.some((h) => h.step === snapShotStep + 1)
                             // const costUpdateOnThisStep = history.find((h) => h.step === snapShotStep + 1)
