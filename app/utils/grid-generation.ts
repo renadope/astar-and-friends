@@ -3,7 +3,6 @@ import type {Pos} from "~/types/pathfinding";
 import type {CostAndWeight, CostAndWeightFunc} from "~/utils/grid-weights";
 
 
-
 export type CDFEntry = {
     cost: number,
     threshold: number
@@ -11,12 +10,10 @@ export type CDFEntry = {
 export type CDF = CDFEntry []
 
 
-
-
 export function generateRandomCostGrid(size: number,
-                                getCostAndWeight: CostAndWeightFunc,
-                                st?: Pos,
-                                goal?: Pos): number[][] {
+                                       getCostAndWeight: CostAndWeightFunc,
+                                       st?: Pos,
+                                       goal?: Pos): number[][] {
     const start = st ?? [0, 0];
     const end = goal ?? [size - 1, size - 1];
 
@@ -25,22 +22,27 @@ export function generateRandomCostGrid(size: number,
     for (let r = 0; r < size; r++) {
         const row: number[] = []
         for (let c = 0; c < size; c++) {
-            const cdf = buildCDF(getCostAndWeight(r, c, size))
-            const roll = Math.random()
-            const terrainWeight = cdf.find((costAndThreshold) => roll <= costAndThreshold.threshold)
+            const terrainWeight = getTerrainWeight(getCostAndWeight, r, c, size)
             const isStart = r === start[0] && c === start[1];
             const isGoal = r === end[0] && c === end[1];
             if (isStart || isGoal) {
                 //Perhaps later on, we generate the positive number in a range
                 row.push(1)
             } else {
-                row.push(terrainWeight ? terrainWeight.cost : 1)
+                row.push(terrainWeight)
             }
         }
         grid.push(row)
     }
 
     return grid
+}
+
+export function getTerrainWeight(func: CostAndWeightFunc, r: number, c: number, size: number) {
+    const cdf = buildCDF(func(r, c, size))
+    const roll = Math.random()
+    const terrainWeight = cdf.find((costAndThreshold) => roll <= costAndThreshold.threshold)
+    return terrainWeight ? terrainWeight.cost : 1
 }
 
 export function buildCDF(costAndWeight: CostAndWeight): CDF {

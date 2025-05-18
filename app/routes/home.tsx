@@ -4,7 +4,7 @@ import type {AStarData, DiagonalConfig, Pos, Weights} from "~/types/pathfinding"
 import {type ChangeEvent, useEffect, useReducer, useState} from "react";
 import {isNodePassable, parsePos, stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
-import {generateRandomCostGrid} from "~/utils/grid-generation";
+import {generateRandomCostGrid, getTerrainWeight} from "~/utils/grid-generation";
 import {type CostAndWeightFunc, type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
 import {type HeuristicFunc, type HeuristicName, heuristics} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
@@ -481,7 +481,9 @@ function reducer(state: AppState, action: Action): AppState {
                 const newWeightGrid = state.weightGrid.map((row, rowIndex) => {
                     return row.map((weight, colIndex) => {
                         if (rowIndex === targetRow && colIndex === targetCol && weight === 0) {
-                            return 1
+                            return getTerrainWeight(state.weightPreset.func, rowIndex, colIndex,
+                                Math.min(state.weightGrid.length, state.weightGrid[state.weightGrid.length - 1].length)
+                            )
                         }
                         return rowIndex === targetRow && colIndex === targetCol ? 0 : weight
                     })
