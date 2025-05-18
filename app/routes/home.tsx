@@ -16,6 +16,7 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
+const NO_TIMELINE = -1 as const
 //rem
 const gridCellSize = 7
 type gwWeights = Omit<Weights, 'name'>
@@ -209,7 +210,7 @@ function reducer(state: AppState, action: Action): AppState {
                 state.goalPos ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1])
             return {
                 ...state,
-                currentTimelineIndex: 0,
+                currentTimelineIndex: NO_TIMELINE,
                 weightGrid: weightGrid,
                 cellData: cellData,
                 aStarData: undefined,
@@ -220,10 +221,6 @@ function reducer(state: AppState, action: Action): AppState {
             if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
                 return state
             }
-            // if (!state.startPos || !state.goalPos) {
-            //     console.warn("Start or goal position not set!");
-            //     return state;
-            // }
             const start: Pos = state.startPos ?? [0, 0]
             const goal: Pos = state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
             const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan,
@@ -238,7 +235,9 @@ function reducer(state: AppState, action: Action): AppState {
             const granularTimeline = flattenedTimeline(snapshotTimeline)
             return {
                 ...state,
-                currentTimelineIndex: 0,
+                cellData: initCellData(state.weightGrid, state.startPos ?? [0, 0],
+                    state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]),
+                currentTimelineIndex: NO_TIMELINE,
                 aStarData: aStarResult.value,
                 snapshotTimeline,
                 granularTimeline,
@@ -425,6 +424,9 @@ export default function Home() {
 
 
     useEffect(() => {
+        if (state.currentTimelineIndex < 0) {
+            return;
+        }
         if (state.weightGrid.length === 0) {
             return
         }
@@ -643,7 +645,6 @@ export default function Home() {
                         className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
                         onClick={() => {
                             dispatch({type: "RUN_ASTAR"})
-                            dispatch({type: "SET_INDEX", payload: timeline.length})
                         }}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20"
@@ -676,8 +677,6 @@ export default function Home() {
                                         type: 'SET_G_WEIGHT',
                                         payload: Number(e.target.value),
                                     })
-                                    dispatch({type: "RUN_ASTAR"})
-
                                 }
                                 }
                                 className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
@@ -700,7 +699,6 @@ export default function Home() {
                                         type: 'SET_H_WEIGHT',
                                         payload: Number(e.target.value),
                                     })
-                                    dispatch({type: "RUN_ASTAR"})
                                 }
 
                                 }
@@ -720,8 +718,6 @@ export default function Home() {
                                         type: 'TOGGLE_DIAGONAL',
                                         payload: !diagonalSettings.allowed
                                     })
-                                    dispatch({type: "RUN_ASTAR"})
-
 
                                 }}/>
                                 Allow Diagonal
@@ -741,7 +737,6 @@ export default function Home() {
                                                         type: "TOGGLE_CORNER_CUTTING",
                                                         payload: "strict"
                                                     })
-                                                    dispatch({type: "RUN_ASTAR"})
 
                                                 }}
                                             />
@@ -759,7 +754,6 @@ export default function Home() {
                                                         type: "TOGGLE_CORNER_CUTTING",
                                                         payload: "lax"
                                                     })
-                                                    dispatch({type: "RUN_ASTAR"})
 
                                                 }}
                                             />
@@ -782,7 +776,6 @@ export default function Home() {
                                                     type: "SET_DIAGONAL_MULTIPLIER",
                                                     payload: Number(e.target.value)
                                                 })
-                                                dispatch({type: "RUN_ASTAR"})
                                             }}
                                             className="w-full accent-purple-500"
                                         />
@@ -808,6 +801,7 @@ export default function Home() {
                             variant="outline"
                             size="default"
                             className="w-full"
+                            disabled={!!aStarData}
                         >
                             <ToggleGroupItem value="set_goal" aria-label="Set Goal">
                                 Set Goal 🎯
