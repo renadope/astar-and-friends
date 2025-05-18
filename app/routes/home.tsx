@@ -21,7 +21,7 @@ const NO_TIMELINE = -1 as const
 //rem
 const gridCellSize = 7
 type gwWeights = Omit<Weights, 'name'>
-type CellToggle = 'set_goal' | 'set_wall' | 'set_start' | "inactive"
+type CellToggle = 'set_goal' | 'toggle_wall' | 'set_start' | "inactive"
 
 type CellData = {
     pos: [number, number]
@@ -121,17 +121,6 @@ function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData
     })
 }
 
-function setWallInCellData(cellData: CellData[][], wallPos: Pos): CellData[][] {
-    const newCellData = copyCellData(cellData)
-    const [r, c] = wallPos
-    const cell = newCellData[r][c]
-    cell.pos = wallPos
-    cell.state = 'wall'
-    cell.cost = 0
-
-    return newCellData
-
-}
 
 function updateCellDataSnapshotStep(timeline: SnapshotStep[], cellData: CellData[][]): CellData[][] {
     if (isNullOrUndefined(timeline) || timeline.length === 0) {
@@ -207,7 +196,7 @@ function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
-            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['biome'])
+            const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['uniform'])
             const cellData = initCellData(weightGrid, state.startPos ?? [0, 0],
                 state.goalPos ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1])
             return {
@@ -243,6 +232,7 @@ function reducer(state: AppState, action: Action): AppState {
                 aStarData: aStarResult.value,
                 snapshotTimeline,
                 granularTimeline,
+                cellSelectionState: "inactive",
             }
         case "SET_CELL_DATA_COST_HISTORY":
             if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
@@ -387,19 +377,23 @@ function reducer(state: AppState, action: Action): AppState {
                     startPos: [targetRow, targetCol],
                     goalPos: [goalRow, goalCol]
                 }
-            } else if (state.cellSelectionState === 'set_wall') {
+            } else if (state.cellSelectionState === 'toggle_wall') {
                 if ((targetRow === startRow && targetCol === startCol) || (targetRow === goalRow && targetCol === goalCol)) {
                     return state
                 }
                 const newWeightGrid = state.weightGrid.map((row, rowIndex) => {
                     return row.map((weight, colIndex) => {
+                        if (rowIndex === targetRow && colIndex === targetCol && weight === 0) {
+                            return 1
+                        }
                         return rowIndex === targetRow && colIndex === targetCol ? 0 : weight
                     })
                 })
                 return {
                     ...state,
                     weightGrid: newWeightGrid,
-                    cellData: setWallInCellData(state.cellData, [targetRow, targetCol]),
+                    cellData: initCellData(newWeightGrid, state.startPos ?? [0, 0],
+                        state.goalPos ?? [newWeightGrid.length - 1, newWeightGrid[newWeightGrid.length - 1].length - 1]),
                     startPos: [startRow, startCol],
                     goalPos: [goalRow, goalCol]
                 }
@@ -822,8 +816,8 @@ export default function Home() {
                             <ToggleGroupItem value="set_start" aria-label="Set Start">
                                 Set Start 🏁
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="set_wall" aria-label="Set Wall">
-                                Set Wall 🚧
+                            <ToggleGroupItem value="toggle_wall" aria-label="Toggle Wall">
+                                Toggle Wall 🚧
                             </ToggleGroupItem>
                         </ToggleGroup>
                     </div>

@@ -37,7 +37,7 @@ function biomeWeights(r: number, c: number, size: number): CostAndWeight {
 
 
 function getTerrain(_r: number, _c: number, _size: number, weight?: CostAndWeight): CostAndWeight {
-    return weight? weight : {
+    return weight ? weight : {
         1: 3,
         3: 2.5,
         5: 2,
@@ -94,7 +94,14 @@ function fakeNoise(r: number, c: number, size: number): CostAndWeight {
     };
 }
 
-type weightKind = "biome" | "random" | "diagonal" | "wall" | "circularBasin" | "centerRidge" | "noise"
+function uniform(r: number, c: number, size: number): CostAndWeight {
+    return {
+        1: 1
+    }
+}
+
+
+type weightKind = "biome" | "random" | "diagonal" | "wall" | "circularBasin" | "centerRidge" | "noise" | "uniform"
 
 export const predefinedWeightFuncs: Record<weightKind, CostAndWeightFunc> = {
     biome: biomeWeights,
@@ -104,4 +111,5 @@ export const predefinedWeightFuncs: Record<weightKind, CostAndWeightFunc> = {
     circularBasin: circularBasin,
     centerRidge: centerRidge,
     noise: fakeNoise,
+    uniform: uniform
 }
