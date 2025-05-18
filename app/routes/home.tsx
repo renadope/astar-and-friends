@@ -1,14 +1,18 @@
 import type {Route} from "./+types/home";
 import {aStar, getAlgorithmName} from "~/services/aStar";
 import type {AStarData, AStarNode, DiagonalConfig, PathData, Pos, Weights} from "~/types/pathfinding";
-import {type ChangeEvent, useEffect, useReducer} from "react";
+import {type ChangeEvent, useEffect, useReducer, useState} from "react";
 import {isNodePassable, parsePos, stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {generateRandomCostGrid} from "~/utils/grid-generation";
 import {predefinedWeightFuncs} from "~/utils/grid-weights";
-import {heuristics} from "~/utils/heuristics";
+import {type HeuristicFunc, type HeuristicName, heuristics} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
-import {RefreshCcw} from "lucide-react";
+import {Check, ChevronsUpDown, RefreshCcw} from "lucide-react";
+import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
+import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "~/components/ui/command";
+import {Button} from "~/components/ui/button";
+import {cn} from "~/lib/utils";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -52,6 +56,12 @@ const textColors: Record<keyof typeof cellBgColor, string> = {
     empty: "text-slate-800",
     frontier: "text-slate-950"
 };
+const heuristicInfo: { label: string; value: HeuristicName }[] = [
+    {label: "Manhattan: (|dx| + |dy|)", value: "manhattan"},
+    {label: "Euclidean: (√(dx² + dy²))", value: "euclidean"},
+    {label: "Octile: D * (|dx| + |dy| + (√2 - 2 * D) × min(dx, dy))", value: "octile"},
+    {label: "Chebyshev: (max(|dx|, |dy|))", value: "chebyshev"}
+];
 
 type AppState = {
     weightGrid: number[][]
@@ -67,6 +77,7 @@ type AppState = {
     cellSelectionState: CellToggle
     startPos: Pos | undefined
     goalPos: Pos | undefined
+    heuristic: { func: HeuristicFunc, name: HeuristicName }
 }
 type Action =
     | { type: "GENERATE_GRID", payload?: number, }
@@ -85,6 +96,7 @@ type Action =
     | { type: "SET_CELL_SELECTION_STATE", payload: CellToggle }
     | { type: "UPDATE_CELL_STATUS", payload: Pos }
     | { type: "RESET_ASTAR_DATA", }
+    | { type: "SET_HEURISTIC_FUNC", payload: HeuristicName }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -98,7 +110,8 @@ const initialState: AppState = {
     diagonalSettings: {allowed: true, cornerCutting: "lax", diagonalMultiplier: Math.SQRT2},
     cellSelectionState: 'inactive',
     startPos: undefined,
-    goalPos: undefined
+    goalPos: undefined,
+    heuristic: {name: "manhattan", func: heuristics['manhattan']}
 
     // activeTimeline: 'granular'
 }
@@ -214,7 +227,7 @@ function reducer(state: AppState, action: Action): AppState {
             }
             const start: Pos = state.startPos ?? [0, 0]
             const goal: Pos = state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
-            const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan,
+            const aStarResult = aStar(state.weightGrid, start, goal, state.heuristic.func,
                 state.diagonalSettings,
                 {...state.gwWeights, name: "change_this_name_to_the_proper_name"})
 
@@ -411,6 +424,20 @@ function reducer(state: AppState, action: Action): AppState {
                 granularTimeline: [],
                 snapshotTimeline: []
             }
+        case "SET_HEURISTIC_FUNC":
+            //paranoid fall back
+            const newHeuristicName = action.payload
+            const newHeuristic = heuristics[newHeuristicName]
+            if (isNullOrUndefined(newHeuristic)) {
+                return {
+                    ...state,
+                    heuristic: {name: 'manhattan', func: heuristics['manhattan']}
+                }
+            }
+            return {
+                ...state,
+                heuristic: {name: newHeuristicName, func: newHeuristic}
+            }
 
 
         default:
@@ -422,6 +449,8 @@ export default function Home() {
     const size = 8
     const [state, dispatch] = useReducer(reducer, initialState)
     const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData, diagonalSettings} = state
+    const [open, setOpen] = useState(false)
+    const [value, setValue] = useState("")
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
 
 
@@ -792,7 +821,7 @@ export default function Home() {
                         </fieldset>
 
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 col-span-full">
                         <label className="text-sm font-medium text-muted-foreground">Cell
                             Mode:{state.cellSelectionState ? state.cellSelectionState : `${typeof state.cellSelectionState}`}</label>
                         <ToggleGroup
@@ -821,6 +850,56 @@ export default function Home() {
                             </ToggleGroupItem>
                         </ToggleGroup>
                     </div>
+
+                    <div className={'space-y-2 flex flex-col'}>
+                        <label className="text-sm font-medium text-muted-foreground">Select Heuristic Function</label>
+                        <Popover open={open} onOpenChange={setOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={open}
+                                    className="w-[200px] justify-between"
+                                >
+                                    {capitalize(heuristicInfo.find(
+                                        (heuristic) => heuristic.value === state.heuristic.name)?.value ?? "no selection")}
+                                    <ChevronsUpDown className="opacity-50"/>
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[200px] p-0">
+                                <Command>
+                                    <CommandInput placeholder="Search heuristic..."/>
+                                    <CommandList>
+                                        <CommandEmpty>No heuristic found.</CommandEmpty>
+                                        <CommandGroup>
+                                            {heuristicInfo.map((heuristicInfo) => (
+                                                <CommandItem
+                                                    key={heuristicInfo.value}
+                                                    value={heuristicInfo.value}
+                                                    onSelect={(currentValue: string) => {
+                                                        dispatch({
+                                                            type: "SET_HEURISTIC_FUNC",
+                                                            payload: currentValue as HeuristicName
+                                                        })
+                                                        setOpen(false)
+                                                    }}
+                                                >
+                                                    {heuristicInfo.label}
+                                                    <Check
+                                                        className={cn(
+                                                            "ml-auto",
+                                                            value === heuristicInfo.value ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+
 
                 </div>
 
@@ -993,4 +1072,8 @@ function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedSt
         }
     }
     return res;
+}
+
+function capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }

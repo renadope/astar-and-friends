@@ -9,12 +9,16 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.13",
+    "@radix-ui/react-popover": "^1.1.13",
+    "@radix-ui/react-slot": "^1.2.2",
     "@radix-ui/react-toggle": "^1.1.8",
     "@radix-ui/react-toggle-group": "^1.1.9",
     "@react-router/node": "^7.5.3",
     "@react-router/serve": "^7.5.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "isbot": "^5.1.27",
     "lucide-react": "^0.511.0",
     "react": "^19.1.0",

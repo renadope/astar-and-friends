@@ -1,9 +1,9 @@
 import type {Pos} from "~/types/pathfinding";
 
-type heursiticFunc = (a: Pos, b: Pos) => number;
-type heuristicName = "manhattan" | "euclidean" | "octile" | "chebyshev"
-type heuristicWeights = {
-    [k in keyof heuristicName]?: number
+export type HeuristicFunc = (a: Pos, b: Pos) => number;
+export type HeuristicName = "manhattan" | "euclidean" | "octile" | "chebyshev"
+type HeuristicWeights = {
+    [k in keyof HeuristicName]?: number
 }
 
 export function manhattan(a: Pos, b: Pos): number {
@@ -28,7 +28,7 @@ export function chebyshev(a: Pos, b: Pos): number {
     return Math.max(dx, dy);
 }
 
-function composite(weights: heuristicWeights): heursiticFunc {
+function composite(weights: HeuristicWeights): HeuristicFunc {
     return function (a: Pos, b: Pos): number {
         let total = 0
         let weightSum = 0
@@ -44,7 +44,7 @@ function composite(weights: heuristicWeights): heursiticFunc {
     }
 }
 
-export const heuristics: Record<heuristicName, heursiticFunc> = {
+export const heuristics: Record<HeuristicName, HeuristicFunc> = {
     manhattan: manhattan,
     euclidean: euclidean,
     octile: octile,
