@@ -3,7 +3,7 @@ import {aStar, getAlgorithmName} from "~/services/aStar";
 import type {AStarData, AStarNode, DiagonalConfig, PathData, Pos, Weights} from "~/types/pathfinding";
 import {type ChangeEvent, useEffect, useReducer, useState} from "react";
 import {isNodePassable, parsePos, stringifyPos} from "~/utils/grid-helpers";
-import {isNullOrUndefined} from "~/utils/helpers";
+import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import {generateRandomCostGrid} from "~/utils/grid-generation";
 import {type CostAndWeightFunc, type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
 import {type HeuristicFunc, type HeuristicName, heuristics} from "~/utils/heuristics";
@@ -13,6 +13,13 @@ import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "~/components/ui/command";
 import {Button} from "~/components/ui/button";
 import {cn} from "~/lib/utils";
+import {
+    buildTimeline,
+    type FlattenedStep, flattenedTimeline,
+    isFrontierSnapshot, isFrontierStep, isPathSnapshot, isPathStep,
+    isVisitedSnapshot, isVisitedStep,
+    type SnapshotStep
+} from "~/utils/timeline-generation";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -1094,109 +1101,6 @@ function costToColor(cost: number): string {
 }
 
 
-type FrontierSnapshot = {
-    type: "frontier"
-    nodes: AStarNode[]
-}
-type VisitedSnapshot = {
-    type: "visited"
-    node: AStarNode
-}
-type PathSnapshot = {
-    type: "path",
-    node: PathData,
-}
-type SnapshotStep = FrontierSnapshot | VisitedSnapshot | PathSnapshot
-
-function buildTimeline(visitedOrder: AStarNode[],
-                       frontierOrder: AStarNode[][],
-                       pathData: PathData[]): SnapshotStep[] {
-
-    const timeline: SnapshotStep [] = []
-    if (visitedOrder.length !== frontierOrder.length) {
-        throw new Error("both should have the same length")
-    }
-    for (let i = 0; i < visitedOrder.length; i++) {
-        const visitedSnapshot = visitedOrder[i]
-        const frontierSnapshot = frontierOrder[i]
-        timeline.push({type: "frontier", nodes: frontierSnapshot})
-        timeline.push({type: "visited", node: visitedSnapshot})
-    }
-    for (let i = 0; i < pathData.length; i++) {
-        const pathNode = pathData[i]
-        timeline.push({type: "path", node: pathNode})
-    }
-    return timeline
-}
-
-type FrontierStep = {
-    type: "frontier";
-    node: AStarNode;
-    snapShotStep: number
-};
-
-type VisitedStep = {
-    type: "visited";
-    node: AStarNode;
-    snapShotStep: number
-};
-
-type PathStep = {
-    type: "path";
-    node: PathData;
-};
-
-export type FlattenedStep = FrontierStep | VisitedStep | PathStep;
-
-
-function isPathSnapshot(step: SnapshotStep): step is PathSnapshot {
-    return step.type === "path"
-}
-
-function isFrontierSnapshot(step: SnapshotStep): step is FrontierSnapshot {
-    return step.type === "frontier"
-}
-
-function isVisitedSnapshot(step: SnapshotStep): step is VisitedSnapshot {
-    return step.type === "visited"
-}
-
-
-function isPathStep(step: FlattenedStep): step is PathStep {
-    return step.type === "path"
-}
-
-function isFrontierStep(step: FlattenedStep): step is FrontierStep {
-    return step.type === "frontier"
-}
-
-function isVisitedStep(step: FlattenedStep): step is VisitedStep {
-    return step.type === "visited"
-}
-
-
-function flattenedTimeline(timeline: SnapshotStep[]): FlattenedStep[] {
-    let snapshotStep = 0;
-
-    const flattenedSteps: FlattenedStep[] = []
-    for (let i = 0; i < timeline.length; i++) {
-        const node = timeline[i]
-        if (isVisitedSnapshot(node)) {
-            flattenedSteps.push({type: 'visited', node: node.node, snapShotStep: snapshotStep});
-            snapshotStep++
-        } else if (isFrontierSnapshot(node)) {
-            for (const frontierNode of node.nodes) {
-                flattenedSteps.push({type: 'frontier', node: frontierNode, snapShotStep: snapshotStep});
-            }
-        } else if (isPathSnapshot(node)) {
-            flattenedSteps.push({type: 'path', node: node.node});
-        }
-
-
-    }
-    return flattenedSteps
-}
-
 
 function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedStep[]> {
     const res = new Map<number, FlattenedStep[]>();
@@ -1210,6 +1114,4 @@ function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedSt
     return res;
 }
 
-function capitalize(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
+

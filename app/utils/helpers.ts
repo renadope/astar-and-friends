@@ -19,3 +19,7 @@ export function ResultErr<E extends Error = Error>(err: E): Result<never, E> {
         error: err,
     }
 }
+
+export function capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
