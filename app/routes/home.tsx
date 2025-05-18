@@ -63,6 +63,8 @@ type AppState = {
     gwWeights: gwWeights
     diagonalSettings: DiagonalConfig
     cellSelectionState: CellToggle
+    startPos: Pos | undefined
+    goalPos: Pos | undefined
 }
 type Action =
     | { type: "GENERATE_GRID", payload?: number, }
@@ -91,7 +93,10 @@ const initialState: AppState = {
     aStarData: undefined,
     gwWeights: {gWeight: 1, hWeight: 1},
     diagonalSettings: {allowed: true, cornerCutting: "lax", diagonalMultiplier: Math.SQRT2},
-    cellSelectionState: 'inactive'
+    cellSelectionState: 'inactive',
+    startPos: undefined,
+    goalPos: undefined
+
     // activeTimeline: 'granular'
 }
 
@@ -115,6 +120,11 @@ function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData
 
 function setWallInCellData(cellData: CellData[][], wallPos: Pos): CellData[][] {
     const newCellData = copyCellData(cellData)
+    const [r, c] = wallPos
+    const cell = newCellData[r][c]
+    cell.pos = wallPos
+    cell.state = 'wall'
+    cell.cost = 0
 
     return newCellData
 
@@ -195,7 +205,8 @@ function reducer(state: AppState, action: Action): AppState {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
             const weightGrid: number[][] = generateRandomCostGrid(size, predefinedWeightFuncs['biome'])
-            const cellData = initCellData(weightGrid)
+            const cellData = initCellData(weightGrid, state.startPos ?? [0, 0],
+                state.goalPos ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1])
             return {
                 ...state,
                 currentTimelineIndex: 0,
@@ -206,8 +217,12 @@ function reducer(state: AppState, action: Action): AppState {
             if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
                 return state
             }
-            const start: Pos = [0, 0]
-            const goal: Pos = [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
+            // if (!state.startPos || !state.goalPos) {
+            //     console.warn("Start or goal position not set!");
+            //     return state;
+            // }
+            const start: Pos = state.startPos ?? [0, 0]
+            const goal: Pos = state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
             const aStarResult = aStar(state.weightGrid, start, goal, heuristics.manhattan,
                 state.diagonalSettings,
                 {...state.gwWeights, name: "change_this_name_to_the_proper_name"})
@@ -262,7 +277,8 @@ function reducer(state: AppState, action: Action): AppState {
             }
             const idx = Math.min(state.granularTimeline.length - 1, state.currentTimelineIndex)
             const adjustedTimeline = state.granularTimeline.slice(0, idx + 1)
-            const initCell = initCellData(state.weightGrid)
+            const initCell = initCellData(state.weightGrid,
+                state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
             return {
                 ...state,
                 cellData: updateCellDataFlattenedStep(adjustedTimeline, initCell)
@@ -329,14 +345,6 @@ function reducer(state: AppState, action: Action): AppState {
             }
         case "SET_CELL_SELECTION_STATE":
             const cellSelectionState = action.payload
-            if (action.payload !== 'inactive') {
-                const reinitCellData = initCellData(state.weightGrid)
-                return {
-                    ...state,
-                    cellData: reinitCellData,
-                    cellSelectionState
-                }
-            }
             return {
                 ...state,
                 cellSelectionState
@@ -348,31 +356,52 @@ function reducer(state: AppState, action: Action): AppState {
             const [targetRow, targetCol] = action.payload
             const st = state.cellData.flat().find(c => c.state === 'start')
             const go = state.cellData.flat().find(c => c.state === 'goal')
+
+
             if (isNullOrUndefined(go) || isNullOrUndefined(st)) {
                 throw new Error("this should not happen, must have a start &  goal")
             }
+            const [startRow, startCol] = st.pos
+            const [goalRow, goalCol] = go.pos
             if (state.cellSelectionState === 'set_goal') {
-                const [startRow, startCol] = st.pos
                 if (startRow === targetRow && startCol === targetCol) {
                     return state
                 }
                 return {
                     ...state,
-                    cellData: initCellData(state.weightGrid, [startRow, startCol], [targetRow, targetCol])
+                    cellData: initCellData(state.weightGrid, [startRow, startCol], [targetRow, targetCol]),
+                    goalPos: [targetRow, targetCol],
+                    startPos: [startRow, startCol]
                 }
             } else if (state.cellSelectionState === 'set_start') {
-                const [goalRow, goalCol] = go.pos
                 if (goalRow === targetRow && goalCol === targetCol) {
                     return state
                 }
                 return {
                     ...state,
-                    cellData: initCellData(state.weightGrid, [targetRow, targetCol], [goalRow, goalCol])
+                    cellData: initCellData(state.weightGrid, [targetRow, targetCol], [goalRow, goalCol]),
+                    startPos: [targetRow, targetCol],
+                    goalPos: [goalRow, goalCol]
                 }
             } else if (state.cellSelectionState === 'set_wall') {
-
+                if ((targetRow === startRow && targetCol === startCol) || (targetRow === goalRow && targetCol === goalCol)) {
+                    return state
+                }
+                const newWeightGrid = state.weightGrid.map((row, rowIndex) => {
+                    return row.map((weight, colIndex) => {
+                        return rowIndex === targetRow && colIndex === targetCol ? 0 : weight
+                    })
+                })
+                return {
+                    ...state,
+                    weightGrid: newWeightGrid,
+                    cellData: setWallInCellData(state.cellData, [targetRow, targetCol]),
+                    startPos: [startRow, startCol],
+                    goalPos: [goalRow, goalCol]
+                }
 
             }
+            return state
 
         // const initialCellData =
 
@@ -455,12 +484,10 @@ export default function Home() {
                         ${cell.state === "path" && isCurrentStep ? "animate-bounce" : ""}
                         `}
                                     onClick={() => {
-                                        console.log(cell);
-                                        // Add haptic feedback if available
-                                        //oh man this looks cool ad
-                                        if (window.navigator && window.navigator.vibrate) {
-                                            window.navigator.vibrate(50);
-                                        }
+                                        dispatch({
+                                            type: "UPDATE_CELL_STATUS",
+                                            payload: [r, c]
+                                        })
                                     }}
                                     onMouseEnter={(e) => {
                                         if (cell.costUpdateHistory && cell.costUpdateHistory.length > 0) {
@@ -584,7 +611,6 @@ export default function Home() {
                         className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
                         onClick={() => {
                             dispatch({type: "GENERATE_GRID", payload: size})
-                            dispatch({type: "RUN_ASTAR"})
                         }}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20"
