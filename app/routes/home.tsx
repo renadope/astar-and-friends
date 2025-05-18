@@ -8,6 +8,7 @@ import {generateRandomCostGrid} from "~/utils/grid-generation";
 import {predefinedWeightFuncs} from "~/utils/grid-weights";
 import {heuristics} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
+import {RefreshCcw} from "lucide-react";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -83,6 +84,7 @@ type Action =
     | { type: "SET_DIAGONAL_MULTIPLIER", payload: number }
     | { type: "SET_CELL_SELECTION_STATE", payload: CellToggle }
     | { type: "UPDATE_CELL_STATUS", payload: Pos }
+    | { type: "RESET_ASTAR_DATA", }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -405,7 +407,16 @@ function reducer(state: AppState, action: Action): AppState {
             }
             return state
 
-        // const initialCellData =
+        case "RESET_ASTAR_DATA":
+            return {
+                ...state,
+                aStarData: undefined,
+                currentTimelineIndex: -1,
+                cellData: state.weightGrid.length > 0 ? initCellData(state.weightGrid,
+                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]) : [],
+                granularTimeline: [],
+                snapshotTimeline: []
+            }
 
 
         default:
@@ -464,6 +475,7 @@ export default function Home() {
                             const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
                             // const updatedOnThisStep = history.some((h) => h.step === snapShotStep + 1)
                             // const costUpdateOnThisStep = history.find((h) => h.step === snapShotStep + 1)
+                            const isLastStep = timeline.length - 1 === currentTimelineIndex
                             const isCurrentStep = cell.step === currentTimelineIndex;
                             const isInteractive = ["start", "end", "empty"].includes(cell.state);
                             return (
@@ -481,12 +493,13 @@ export default function Home() {
                                     }}
                                     className={`
                         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
-                        ${isCurrentStep ? 'scale-125 animate-pulse' : 'scale-100'} 
+                        ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-125' : 'scale-100'} 
                         ${cellBgColor[cell.state] || "bg-sky-100"}
                         ${isInteractive ? "hover:scale-110 cursor-pointer" : ""}
                         transition-all duration-300 rounded-md flex flex-col items-center 
                         justify-center relative backdrop-blur-sm
-                        ${cell.state === "path" && isCurrentStep ? "animate-bounce" : ""}
+                        ${cell.state === "path" && isCurrentStep && !isLastStep ? "scale-125 animate-bounce" : ""}
+                        ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-125" : ""}
                         `}
                                     onClick={() => {
                                         dispatch({
@@ -500,6 +513,10 @@ export default function Home() {
                                         }
                                     }}
                                 >
+                                    {isCurrentStep && isLastStep && (
+                                        <div className="absolute top-0 left-0 text-lg">🏁</div>
+                                    )}
+
                                     <div className="flex flex-col items-center w-full h-full justify-center group">
                                         <p className={`text-xs font-bold ${textColors[cell.state] || "text-slate-700"} transition-all duration-200 group-hover:text-lg`}>
                                             {cell.state}
@@ -576,7 +593,7 @@ export default function Home() {
                             onClick={() => dispatch({type: "INCREMENT_INDEX"})}
                             className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
                         >
-                            Next
+                            Next:{timeline.length}
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                  stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
@@ -595,6 +612,7 @@ export default function Home() {
                         type="range"
                         min={0}
                         max={timeline.length - 1}
+                        disabled={timeline.length === 0}
                         value={currentTimelineIndex}
                         onChange={(e) =>
                             dispatch({
@@ -602,7 +620,7 @@ export default function Home() {
                                 payload: parseInt(e.target.value, 10),
                             })
                         }
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500 "
                     />
 
                     <div className="w-full flex justify-between mt-1 px-1">
@@ -642,18 +660,13 @@ export default function Home() {
                         Run {algorithmName}
                     </button>
                     <button
-                        className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
+                        className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
                         onClick={() => {
-                            dispatch({type: "RUN_ASTAR"})
+                            dispatch({type: "RESET_ASTAR_DATA"})
                         }}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20"
-                             fill="currentColor">
-                            <path fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                                  clipRule="evenodd"/>
-                        </svg>
-                        Run {algorithmName} & Jump to End
+                        <RefreshCcw/>
+                        Reset
                     </button>
                 </div>
                 <div className={'grid grid-cols-2 gap-2'}>
