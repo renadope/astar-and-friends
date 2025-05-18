@@ -450,7 +450,6 @@ export default function Home() {
     const [state, dispatch] = useReducer(reducer, initialState)
     const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData, diagonalSettings} = state
     const [open, setOpen] = useState(false)
-    const [value, setValue] = useState("")
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
 
 
@@ -859,14 +858,14 @@ export default function Home() {
                                     variant="outline"
                                     role="combobox"
                                     aria-expanded={open}
-                                    className="w-[200px] justify-between"
+                                    className="w-2/3 justify-between"
                                 >
                                     {capitalize(heuristicInfo.find(
                                         (heuristic) => heuristic.value === state.heuristic.name)?.value ?? "no selection")}
                                     <ChevronsUpDown className="opacity-50"/>
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[200px] p-0">
+                            <PopoverContent className="w-2/3">
                                 <Command>
                                     <CommandInput placeholder="Search heuristic..."/>
                                     <CommandList>
@@ -888,7 +887,7 @@ export default function Home() {
                                                     <Check
                                                         className={cn(
                                                             "ml-auto",
-                                                            value === heuristicInfo.value ? "opacity-100" : "opacity-0"
+                                                            state.heuristic.name === heuristicInfo.value ? " opacity-100" : "opacity-0"
                                                         )}
                                                     />
                                                 </CommandItem>
