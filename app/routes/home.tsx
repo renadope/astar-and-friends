@@ -19,6 +19,7 @@ export function meta({}: Route.MetaArgs) {
 //rem
 const gridCellSize = 7
 type gwWeights = Omit<Weights, 'name'>
+type CellToggle = 'set_goal' | 'set_wall' | 'set_start' | "inactive"
 
 type CellData = {
     pos: [number, number]
@@ -61,6 +62,7 @@ type AppState = {
     aStarData: AStarData | undefined
     gwWeights: gwWeights
     diagonalSettings: DiagonalConfig
+    cellSelectionState: CellToggle
 }
 type Action =
     | { type: "GENERATE_GRID", payload?: number, }
@@ -76,6 +78,8 @@ type Action =
     | { type: "TOGGLE_DIAGONAL", payload: boolean }
     | { type: "TOGGLE_CORNER_CUTTING", payload: 'strict' | 'lax' }
     | { type: "SET_DIAGONAL_MULTIPLIER", payload: number }
+    | { type: "SET_CELL_SELECTION_STATE", payload: CellToggle }
+    | { type: "UPDATE_CELL_STATUS", payload: Pos }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -86,7 +90,8 @@ const initialState: AppState = {
     gridSize: 10,
     aStarData: undefined,
     gwWeights: {gWeight: 1, hWeight: 1},
-    diagonalSettings: {allowed: true, cornerCutting: "lax", diagonalMultiplier: Math.SQRT2}
+    diagonalSettings: {allowed: true, cornerCutting: "lax", diagonalMultiplier: Math.SQRT2},
+    cellSelectionState: 'inactive'
     // activeTimeline: 'granular'
 }
 
@@ -106,6 +111,13 @@ function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData
             return cellData
         })
     })
+}
+
+function setWallInCellData(cellData: CellData[][], wallPos: Pos): CellData[][] {
+    const newCellData = copyCellData(cellData)
+
+    return newCellData
+
 }
 
 function updateCellDataSnapshotStep(timeline: SnapshotStep[], cellData: CellData[][]): CellData[][] {
@@ -267,7 +279,6 @@ function reducer(state: AppState, action: Action): AppState {
                 ...state,
                 gwWeights: {...state.gwWeights, gWeight: gWeight}
             }
-
         case "SET_H_WEIGHT":
             const hWeight = Math.max(0, Math.abs(action.payload))
             return {
@@ -316,6 +327,54 @@ function reducer(state: AppState, action: Action): AppState {
                     diagonalMultiplier: diagonalMultiplier
                 }
             }
+        case "SET_CELL_SELECTION_STATE":
+            const cellSelectionState = action.payload
+            if (action.payload !== 'inactive') {
+                const reinitCellData = initCellData(state.weightGrid)
+                return {
+                    ...state,
+                    cellData: reinitCellData,
+                    cellSelectionState
+                }
+            }
+            return {
+                ...state,
+                cellSelectionState
+            }
+        case "UPDATE_CELL_STATUS":
+            if (state.cellSelectionState === 'inactive') {
+                return state
+            }
+            const [targetRow, targetCol] = action.payload
+            const st = state.cellData.flat().find(c => c.state === 'start')
+            const go = state.cellData.flat().find(c => c.state === 'goal')
+            if (isNullOrUndefined(go) || isNullOrUndefined(st)) {
+                throw new Error("this should not happen, must have a start &  goal")
+            }
+            if (state.cellSelectionState === 'set_goal') {
+                const [startRow, startCol] = st.pos
+                if (startRow === targetRow && startCol === targetCol) {
+                    return state
+                }
+                return {
+                    ...state,
+                    cellData: initCellData(state.weightGrid, [startRow, startCol], [targetRow, targetCol])
+                }
+            } else if (state.cellSelectionState === 'set_start') {
+                const [goalRow, goalCol] = go.pos
+                if (goalRow === targetRow && goalCol === targetCol) {
+                    return state
+                }
+                return {
+                    ...state,
+                    cellData: initCellData(state.weightGrid, [targetRow, targetCol], [goalRow, goalCol])
+                }
+            } else if (state.cellSelectionState === 'set_wall') {
+
+
+            }
+
+        // const initialCellData =
 
 
         default:
@@ -341,7 +400,7 @@ export default function Home() {
     }, [currentTimelineIndex]);
     //
     // useEffect(() => {
-    //     if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0) {
+    //     if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0 || state.cellSelectionState !== 'inactive') {
     //         return
     //     }
     //     if (currentTimelineIndex > timeline.length - 1) {
@@ -354,7 +413,7 @@ export default function Home() {
     //     }, 100)
     //     return () => clearInterval(interval)
     //
-    // }, [aStarData, currentTimelineIndex, timeline.length])
+    // }, [aStarData, currentTimelineIndex, timeline.length,state.cellSelectionState])
 
 
     return (
@@ -705,12 +764,17 @@ export default function Home() {
 
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Cell Mode</label>
+                        <label className="text-sm font-medium text-muted-foreground">Cell
+                            Mode:{state.cellSelectionState ? state.cellSelectionState : `${typeof state.cellSelectionState}`}</label>
                         <ToggleGroup
                             type="single"
-                            value={'set_goal'}
-                            onValueChange={(val) => {
-
+                            value={state.cellSelectionState}
+                            onValueChange={(val: string) => {
+                                const st = val.trim()
+                                dispatch({
+                                    type: "SET_CELL_SELECTION_STATE",
+                                    payload: st.length === 0 ? 'inactive' : st as CellToggle
+                                })
                             }}
                             variant="outline"
                             size="default"
@@ -731,11 +795,6 @@ export default function Home() {
                 </div>
 
             </div>
-
-            {/*<SimpleGrid grid={weightGrid}/>*/
-            }
-            {/*<SimpleGrid grid={costs}/>*/
-            }
         </div>
     );
 }
