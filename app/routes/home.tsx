@@ -774,7 +774,7 @@ export default function Home() {
                                   d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
                                   clipRule="evenodd"/>
                         </svg>
-                        Run {algorithmName}
+                        Run {algorithmName} {}
                     </button>
                     <button
                         className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
@@ -898,8 +898,8 @@ export default function Home() {
                                         <input
                                             type="range"
                                             min={1}
-                                            max={3}
-                                            step={0.1}
+                                            max={300}
+                                            step={1}
                                             value={diagonalSettings.diagonalMultiplier}
                                             onChange={(e) => {
                                                 dispatch({

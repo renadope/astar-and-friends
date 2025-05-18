@@ -142,7 +142,7 @@ export function aStar(
                     continue;
                 }
             }
-            const moveMultiplier = isAllowedDiagonalConfig(allowDiagonal) ? allowDiagonal.diagonalMultiplier : 1;
+            const moveMultiplier = isAllowedDiagonalConfig(allowDiagonal) && isDiagonal ? allowDiagonal.diagonalMultiplier : 1;
 
             const neighborRow = currRow + rowDelta;
             const neighborCol = currCol + colDelta;
@@ -290,7 +290,7 @@ function calculateFCost(
     return (weights.gWeight * gCost) + (weights.hWeight * hCost);
 }
 
-function isAllowedDiagonalConfig(config: DiagonalConfig): config is {
+export function isAllowedDiagonalConfig(config: DiagonalConfig): config is {
     allowed: true
     cornerCutting: 'lax' | 'strict',
     diagonalMultiplier: number
