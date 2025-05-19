@@ -8,7 +8,7 @@ import {generateRandomCostGrid, getTerrainWeight} from "~/utils/grid-generation"
 import {type CostAndWeightFunc, type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
 import {type HeuristicFunc, type HeuristicName, heuristics} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
-import {Check, ChevronsUpDown, FastForwardIcon, RefreshCcw, RewindIcon} from "lucide-react";
+import {Check, ChevronsUpDown, FastForwardIcon, Map, RefreshCcw, RewindIcon} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "~/components/ui/command";
 import {Button} from "~/components/ui/button";
@@ -192,6 +192,7 @@ type Action =
     | { type: "SELECT_TIMELINE", payload: TimelineOptions }
     | { type: "JUMP_TO_END", }
     | { type: "JUMP_TO_START", }
+    | { type: "JUMP_TO_PATH_START", }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -606,6 +607,21 @@ function reducer(state: AppState, action: Action): AppState {
                 cellData: initCellData(state.weightGrid,
                     state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
             }
+        case "JUMP_TO_PATH_START":
+            if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
+                return state
+            }
+            const activeTimeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+            for (let i = 0; i < activeTimeline.length; i++) {
+                const t = activeTimeline[i]
+                if (t.type === 'path') {
+                    return {
+                        ...state,
+                        currentTimelineIndex: i
+                    }
+                }
+            }
+            return state
 
 
         default:
@@ -821,6 +837,16 @@ export default function Home() {
                         >
                             <RewindIcon/>
                             Jump to Start
+
+                        </button>
+                        <button
+                            disabled={hasAStarData}
+                            onClick={() => dispatch({type: "JUMP_TO_PATH_START"})}
+                            className="px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex disabled:cursor-not-allowed items-center gap-1"
+                        >
+
+                            Jump to Path Start
+                            <Map/>
 
                         </button>
                         <button
@@ -1292,7 +1318,7 @@ function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedSt
             const group = res.get(node.snapShotStep) ?? [];
             group.push(node);
             res.set(node.snapShotStep, group);
-        }
+    }
     }
     return res;
 }
