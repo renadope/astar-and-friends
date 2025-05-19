@@ -678,7 +678,6 @@ export default function Home() {
                                     className={`
                         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
                         ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-125' : 'scale-100'} 
-           ${cellBgColor[cell.state] || "bg-sky-100"}
                         ${isInteractive ? "hover:scale-110 cursor-pointer" : ""}
                         transition-all duration-300 rounded-md flex flex-col items-center 
                         justify-center relative backdrop-blur-sm
@@ -1137,49 +1136,49 @@ export default function Home() {
                 </div>
 
             </div>
-            {/*<div className="text-sm font-mono whitespace-pre">*/}
-            {/*    {timeline &&*/}
-            {/*        timeline.map((step, index) => {*/}
+            <div className="text-sm font-mono whitespace-pre">
+                {timeline &&
+                    timeline.map((step, index) => {
 
-            {/*            if (isSnapshotStep(step)) {*/}
-            {/*                if (isFrontierSnapshot(step)) {*/}
+                        if (isSnapshotStep(step)) {
+                            if (isFrontierSnapshot(step)) {
 
-            {/*                    return (*/}
-            {/*                        <div key={index}>*/}
-            {/*                            <strong>Step {index} [frontier snapshot]</strong>*/}
-            {/*                            {step.nodes.map((node, i) => {*/}
-            {/*                                const [r, c] = node.pos;*/}
-            {/*                                return (*/}
-            {/*                                    <div key={i}>*/}
-            {/*                                        &nbsp;&nbsp;→ pos=({r},{c}), g={node.gCost}, h={node.hCost},*/}
-            {/*                                        f={node.fCost}*/}
-            {/*                                    </div>*/}
-            {/*                                );*/}
-            {/*                            })}*/}
-            {/*                            /!*{step.snapShotStep !== undefined && (*!/*/}
-            {/*                            /!*    <div><strong>Snapshot Step: {step.snapShotStep}</strong></div>*!/*/}
-            {/*                            /!*)}*!/*/}
-            {/*                        </div>*/}
-            {/*                    );*/}
-            {/*                } else if (isVisitedSnapshot(step) && !isVisitedStep(step)) {*/}
-            {/*                    const {node} = step;*/}
-            {/*                    const [r, c] = node.pos;*/}
-            {/*                    return (*/}
-            {/*                        <div key={index}>*/}
-            {/*                            <strong>Step {index} [visited]</strong> → pos=({r},{c}), g={node.gCost},*/}
-            {/*                            h={node.hCost}, f={node.fCost}*/}
-            {/*                        </div>*/}
-            {/*                    );*/}
+                                return (
+                                    <div key={index}>
+                                        <strong>Step {index} [frontier snapshot]</strong>
+                                        {step.nodes.map((node, i) => {
+                                            const [r, c] = node.pos;
+                                            return (
+                                                <div key={i}>
+                                                    &nbsp;&nbsp;→ pos=({r},{c}), g={node.gCost}, h={node.hCost},
+                                                    f={node.fCost}
+                                                </div>
+                                            );
+                                        })}
+                                        {/*{step.snapShotStep !== undefined && (*/}
+                                        {/*    <div><strong>Snapshot Step: {step.snapShotStep}</strong></div>*/}
+                                        {/*)}*/}
+                                    </div>
+                                );
+                            } else if (isVisitedSnapshot(step) && !isVisitedStep(step)) {
+                                const {node} = step;
+                                const [r, c] = node.pos;
+                                return (
+                                    <div key={index}>
+                                        <strong>Step {index} [visited]</strong> → pos=({r},{c}), g={node.gCost},
+                                        h={node.hCost}, f={node.fCost}
+                                    </div>
+                                );
 
-            {/*                }*/}
+                            }
 
 
-            {/*            } else if (isFlattenedStep(step)) {*/}
+                        } else if (isFlattenedStep(step)) {
 
-            {/*            }*/}
+                        }
 
-            {/*        })}*/}
-            {/*</div>*/}
+                    })}
+            </div>
         </div>
     );
 }
