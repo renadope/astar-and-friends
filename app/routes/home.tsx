@@ -62,13 +62,13 @@ type CellData = {
     costUpdateHistory?: { step: number, gCost: number }[]
 }
 const cellBgColor = {
-    "empty": "#f8fafc",      // slate-50 – neutral background
-    "wall": "#334155",       // slate-800 – sturdy and dark
-    "visited": "#c084fc",    // purple-400 – brighter, playful violet
-    "frontier": "#fde047",   // yellow-300 – golden and cheerful
-    "path": "#34d399",       // emerald-400 – balanced, modern trail
-    "start": "#0ea5e9",      // sky-500 – distinct blue entry point
-    "goal": "#f43f5e"        // rose-500 – emotional, urgent destination
+    "empty": "bg-slate-50",      // slate-50 – neutral background
+    "wall": "bg-slate-800",       // slate-800 – sturdy and dark
+    "visited": "bg-purple-400",    // purple-400 – brighter, playful violet
+    "frontier": "bg-yellow-300",   // yellow-300 – golden and cheerful
+    "path": "bg-emerald-400",       // emerald-400 – balanced, modern trail
+    "start": "bg-sky-500",      // sky-500 – distinct blue entry point
+    "goal": "bg-pink-500"        // rose-500 – emotional, urgent destination
 };
 const textColors: Record<keyof typeof cellBgColor, string> = {
     wall: "text-white",
@@ -661,31 +661,29 @@ export default function Home() {
                             //     : 'scale-100'}
                             const isLastStep = timeline.length - 1 === currentTimelineIndex
                             const isCurrentStep = cell.step === currentTimelineIndex;
-                            const isInteractive = ["start", "end", "empty"].includes(cell.state);
 
                             const next = timeline[currentTimelineIndex + 1]
-                            const isVisitedNext = !isNullOrUndefined(next) ? next.type === 'visited' : false
+                            const isVisitedNext = !isNullOrUndefined(next) && next.type === 'visited'
                             const posUpNext = isVisitedNext && next.type === 'visited' ? next.node.pos : undefined
+
+                            const bestFrontier = cell.state === 'frontier' && isVisitedNext && !isNullOrUndefined(posUpNext) && r === posUpNext[0] && c === posUpNext[1]
                             return (
                                 <div
                                     key={key}
                                     style={{
                                         height: `${gridCellSize}rem`,
                                         width: `${gridCellSize}rem`,
-                                        backgroundColor: cellBgColor[cell.state] || "#dff2fe",
                                         transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
                                         border: `${1 + Math.min(4, Math.sqrt(cell.cost) * .7)}px solid ${costToColor(cell.cost)}`,
-                                        boxShadow: isCurrentStep ? "0 0 15px 5px rgba(59, 130, 246, 0.5)" :
-                                            cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.6)" :
+                                        boxShadow: isCurrentStep ? "0 0 15px 5px rgba(59, 130, 246, 0.6)" :
+                                            cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.7)" :
                                                 "0 2px 4px rgba(0,0,0,0.1)"
                                     }}
-                                    className={`
-                        ${cell.state === 'frontier' && isVisitedNext && !isNullOrUndefined(posUpNext) && r === posUpNext[0] && c === posUpNext[1] ? 'z-10 translate-x-2 translate-y-1.5 scale-150' : ''}
+                                    className={`rounded-md flex flex-col items-center justify-center relative backdrop-blur-sm
+                        ${cellBgColor[cell.state] ?? 'bg-sky-500'}
+                        ${bestFrontier ? 'z-10 translate-x-12 translate-y-6 scale-160' : ''}
                         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
                         ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-110' : 'scale-100'} 
-                        ${isInteractive ? "hover:scale-110 cursor-pointer" : ""}
-                        transition-all duration-300 rounded-md flex flex-col items-center 
-                        justify-center relative backdrop-blur-sm
                         ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-110 animate-bounce" : ""}
                         ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-110 z-10" : ""}
                         `}
