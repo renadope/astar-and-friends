@@ -408,13 +408,13 @@ function reducer(state: AppState, action: Action): AppState {
                 currentTimelineIndex: setIndexIdx
             }
         case "SET_G_WEIGHT":
-            const gWeight = Math.max(0, Math.abs(action.payload))
+            const gWeight = Math.abs(action.payload)
             return {
                 ...state,
                 gwWeights: {...state.gwWeights, gWeight: gWeight}
             }
         case "SET_H_WEIGHT":
-            const hWeight = Math.max(0, Math.abs(action.payload))
+            const hWeight = Math.abs(action.payload)
             return {
                 ...state,
                 gwWeights: {...state.gwWeights, hWeight: hWeight}
