@@ -8,7 +8,7 @@ import {generateRandomCostGrid, getTerrainWeight} from "~/utils/grid-generation"
 import {type CostAndWeightFunc, type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
 import {type HeuristicFunc, type HeuristicName, heuristics} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
-import {ArrowRightCircle, Check, ChevronsUpDown, RefreshCcw} from "lucide-react";
+import {Check, ChevronsUpDown, FastForwardIcon, RefreshCcw, RewindIcon} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "~/components/ui/command";
 import {Button} from "~/components/ui/button";
@@ -191,6 +191,7 @@ type Action =
     | { type: "SET_WEIGHT_PRESET", payload: CostAndWeightKind }
     | { type: "SELECT_TIMELINE", payload: TimelineOptions }
     | { type: "JUMP_TO_END", }
+    | { type: "JUMP_TO_START", }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -588,12 +589,22 @@ function reducer(state: AppState, action: Action): AppState {
             if (state.timeline === 'snapshot') {
                 return {
                     ...state,
-                    currentTimelineIndex: state.snapshotTimeline.length-1
+                    currentTimelineIndex: state.snapshotTimeline.length - 1
                 }
             }
             return {
                 ...state,
-                currentTimelineIndex: state.granularTimeline.length-1
+                currentTimelineIndex: state.granularTimeline.length - 1
+            }
+        case "JUMP_TO_START":
+            if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
+                return state
+            }
+            return {
+                ...state,
+                currentTimelineIndex: -1,
+                cellData: initCellData(state.weightGrid,
+                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
             }
 
 
@@ -610,6 +621,7 @@ export default function Home() {
     const [weightPresetOpen, setWeightPresetOpen] = useState(false)
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+    const hasAStarData = isNullOrUndefined(aStarData)
 
 
     // const groupedBySnapshotStep = groupBySnapshotStep(timeline)
@@ -660,7 +672,7 @@ export default function Home() {
     return (
         <div className={'grid grid-cols-2 p-4 rounded-lg shadow-sm gap-2 '}>
             <div
-                className="flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
+                className="border-8 border-black flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
                 {!(isNullOrUndefined(cellData)) && cellData.length > 0 && cellData.map((row, r) => (
                     <div key={`col-${r}`} className="flex gap-0.5 hover:gap-1 transition-all duration-300">
                         {row.map((cell, c) => {
@@ -780,7 +792,7 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                     <div className="flex gap-2">
                         <button
-                            disabled={isNullOrUndefined(aStarData)}
+                            disabled={hasAStarData}
                             onClick={() => dispatch({type: "DECREMENT_INDEX"})}
                             className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
                         >
@@ -792,7 +804,7 @@ export default function Home() {
                         </button>
 
                         <button
-                            disabled={isNullOrUndefined(aStarData)}
+                            disabled={hasAStarData}
                             onClick={() => dispatch({type: "INCREMENT_INDEX"})}
                             className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
                         >
@@ -803,14 +815,25 @@ export default function Home() {
                             </svg>
                         </button>
                         <button
-                            disabled={isNullOrUndefined(aStarData)}
+                            disabled={hasAStarData}
+                            onClick={() => dispatch({type: "JUMP_TO_START"})}
+                            className="px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex disabled:cursor-not-allowed items-center gap-1"
+                        >
+                            <RewindIcon/>
+                            Jump to Start
+
+                        </button>
+                        <button
+                            disabled={hasAStarData}
                             onClick={() => dispatch({type: "JUMP_TO_END"})}
                             className="px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex disabled:cursor-not-allowed items-center gap-1"
                         >
+
                             Jump to End
-                            <ArrowRightCircle/>
+                            <FastForwardIcon/>
 
                         </button>
+
                     </div>
 
                     <div className="text-sm font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
