@@ -662,6 +662,10 @@ export default function Home() {
                             const isLastStep = timeline.length - 1 === currentTimelineIndex
                             const isCurrentStep = cell.step === currentTimelineIndex;
                             const isInteractive = ["start", "end", "empty"].includes(cell.state);
+
+                            const next = timeline[currentTimelineIndex + 1]
+                            const isVisitedNext = !isNullOrUndefined(next) ? next.type === 'visited' : false
+                            const posUpNext = isVisitedNext && next.type === 'visited' ? next.node.pos : undefined
                             return (
                                 <div
                                     key={key}
@@ -676,13 +680,14 @@ export default function Home() {
                                                 "0 2px 4px rgba(0,0,0,0.1)"
                                     }}
                                     className={`
+                        ${cell.state === 'frontier' && isVisitedNext && !isNullOrUndefined(posUpNext) && r === posUpNext[0] && c === posUpNext[1] ? 'z-10 translate-x-2 translate-y-1.5 scale-150' : ''}
                         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
-                        ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-125' : 'scale-100'} 
+                        ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-110' : 'scale-100'} 
                         ${isInteractive ? "hover:scale-110 cursor-pointer" : ""}
                         transition-all duration-300 rounded-md flex flex-col items-center 
                         justify-center relative backdrop-blur-sm
-                        ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-125 animate-bounce" : ""}
-                        ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-125 z-10" : ""}
+                        ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-110 animate-bounce" : ""}
+                        ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-110 z-10" : ""}
                         `}
                                     onClick={() => {
                                         dispatch({

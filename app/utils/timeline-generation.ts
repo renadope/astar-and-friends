@@ -26,7 +26,7 @@ export function isPathSnapshot(step: SnapshotStep | FlattenedStep): step is Path
     return step.type === "path" && 'node' in step && !('nodes' in step)
 }
 // im realzing theres an overlap between path snapsot and path flattened step, hopefully not an issue
-export function isSnapshotStep(step:SnapshotStep | FlattenedStep):step is SnapshotStep{
+export function isSnapshotStep(step: SnapshotStep | FlattenedStep): step is SnapshotStep {
     return isFrontierSnapshot(step) || isVisitedSnapshot(step) || isPathSnapshot(step)
 }
 
