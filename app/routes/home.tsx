@@ -8,7 +8,7 @@ import {generateRandomCostGrid, getTerrainWeight} from "~/utils/grid-generation"
 import {type CostAndWeightFunc, type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
 import {type HeuristicFunc, type HeuristicName, heuristics} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
-import {Check, ChevronsUpDown, FastForwardIcon, Map, RefreshCcw, RewindIcon} from "lucide-react";
+import {Check, ChevronsUpDown, FastForwardIcon, Map as MapIcon, RefreshCcw, RewindIcon} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "~/components/ui/command";
 import {Button} from "~/components/ui/button";
@@ -846,7 +846,7 @@ export default function Home() {
                         >
 
                             Jump to Path Start
-                            <Map/>
+                            <MapIcon/>
 
                         </button>
                         <button
