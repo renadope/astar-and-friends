@@ -14,6 +14,22 @@ export type PathSnapshot = {
 }
 export type SnapshotStep = FrontierSnapshot | VisitedSnapshot | PathSnapshot
 
+export function isFrontierSnapshot(step: SnapshotStep | FlattenedStep): step is FrontierSnapshot {
+    return step.type === "frontier" && 'nodes' in step && !('node' in step)
+}
+
+export function isVisitedSnapshot(step: SnapshotStep | FlattenedStep): step is VisitedSnapshot {
+    return step.type === "visited" && 'node' in step && !('nodes' in step)
+}
+
+export function isPathSnapshot(step: SnapshotStep | FlattenedStep): step is PathSnapshot {
+    return step.type === "path" && 'node' in step && !('nodes' in step)
+}
+// im realzing theres an overlap between path snapsot and path flattened step, hopefully not an issue
+export function isSnapshotStep(step:SnapshotStep | FlattenedStep):step is SnapshotStep{
+    return isFrontierSnapshot(step) || isVisitedSnapshot(step) || isPathSnapshot(step)
+}
+
 export function buildTimeline(visitedOrder: AStarNode[],
                               frontierOrder: AStarNode[][],
                               pathData: PathData[]): SnapshotStep[] {
@@ -55,29 +71,20 @@ export type PathStep = {
 export type FlattenedStep = FrontierStep | VisitedStep | PathStep;
 
 
-export function isPathSnapshot(step: SnapshotStep): step is PathSnapshot {
-    return step.type === "path"
+export function isFrontierStep(step: FlattenedStep | SnapshotStep): step is FrontierStep {
+    return step.type === "frontier" && 'node' in step && 'snapShotStep' in step
 }
 
-export function isFrontierSnapshot(step: SnapshotStep): step is FrontierSnapshot {
-    return step.type === "frontier"
+export function isVisitedStep(step: FlattenedStep | SnapshotStep): step is VisitedStep {
+    return step.type === "visited" && 'node' in step && 'snapShotStep' in step
 }
 
-export function isVisitedSnapshot(step: SnapshotStep): step is VisitedSnapshot {
-    return step.type === "visited"
+export function isPathStep(step: FlattenedStep | SnapshotStep): step is PathStep {
+    return step.type === "path" && 'node' in step && !('snapShotStep' in step)
 }
 
-
-export function isPathStep(step: FlattenedStep): step is PathStep {
-    return step.type === "path"
-}
-
-export function isFrontierStep(step: FlattenedStep): step is FrontierStep {
-    return step.type === "frontier"
-}
-
-export function isVisitedStep(step: FlattenedStep): step is VisitedStep {
-    return step.type === "visited"
+export function isFlattenedStep(step: FlattenedStep | SnapshotStep): step is FlattenedStep {
+    return isFrontierStep(step) || isVisitedStep(step) || isPathStep(step)
 }
 
 

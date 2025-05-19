@@ -17,10 +17,12 @@ import {
     buildTimeline,
     type FlattenedStep,
     flattenedTimeline,
+    isFlattenedStep,
     isFrontierSnapshot,
     isFrontierStep,
     isPathSnapshot,
     isPathStep,
+    isSnapshotStep,
     isVisitedSnapshot,
     isVisitedStep,
     type SnapshotStep
@@ -623,13 +625,54 @@ export default function Home() {
     //     return () => clearInterval(interval)
     //
     // }, [aStarData, currentTimelineIndex, timeline.length,state.cellSelectionState])
+    function getSmallestFCost(cellData: CellData[][], kind: 'frontier' | 'visited' | 'path' = 'frontier'): number {
+        if (isNullOrUndefined(cellData) || cellData.length === 0) {
+            return 0
+        }
+        const flattenedCellData = cellData.flat().filter((data) => {
+            const fIsDefined = !isNullOrUndefined(data.f)
+            if (!isNullOrUndefined(kind)) {
+                return fIsDefined && data.state === kind
+            }
+            return fIsDefined
+        })
+        if (flattenedCellData.length === 0) {
+            return 0
+        }
+        let minF = Infinity
+        for (let i = 0; i < flattenedCellData.length; i++) {
+            const cell = flattenedCellData[i]
+            if (isNullOrUndefined(cell.f)) {
+                throw new Error("should not happen we already cleared the array")
+            }
+            if (Math.abs(cell.f - minF) < 1e-10) {
+                minF = cell.f
+            }
+        }
+        return minF
+    }
 
+
+    const minFCost = getSmallestFCost(cellData, 'frontier')
+    console.log("Frontier f values:", cellData.flat().map(c => {
+        if (c.state === 'frontier') {
+            return c.f
+        }
+    }).filter((foo) => !isNullOrUndefined(foo)))
+    console.log("minFCost:", minFCost)
+
+    function nodesUpNext(cellData: CellData, minCost: number): boolean {
+        if (isNullOrUndefined(cellData) || isNullOrUndefined(cellData.f)) {
+            return false
+        }
+        return Math.abs(cellData.f - minCost) < 1e-10
+    }
 
     return (
         <div className={'grid grid-cols-2 p-4 rounded-lg shadow-sm gap-2 '}>
             <div
                 className="flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
-                {cellData && cellData.length > 0 && cellData.map((row, r) => (
+                {!(isNullOrUndefined(cellData)) && cellData.length > 0 && cellData.map((row, r) => (
                     <div key={`col-${r}`} className="flex gap-0.5 hover:gap-1 transition-all duration-300">
                         {row.map((cell, c) => {
 
@@ -658,12 +701,14 @@ export default function Home() {
                                     className={`
                         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
                         ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-125' : 'scale-100'} 
-                        ${cellBgColor[cell.state] || "bg-sky-100"}
+${isCurrentStep && !isLastStep && cell.state === 'frontier' && nodesUpNext(cell, minFCost)
+                                        ? 'scale-200 ring-2 ring-amber-400 shadow-md z-10 transition-transform duration-300'
+                                        : 'scale-100'}                        ${cellBgColor[cell.state] || "bg-sky-100"}
                         ${isInteractive ? "hover:scale-110 cursor-pointer" : ""}
                         transition-all duration-300 rounded-md flex flex-col items-center 
                         justify-center relative backdrop-blur-sm
-                        ${cell.state === "path" && isCurrentStep && !isLastStep ? "scale-125 animate-bounce" : ""}
-                        ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-125" : ""}
+                        ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-125 animate-bounce" : ""}
+                        ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-125 z-10" : ""}
                         `}
                                     onClick={() => {
                                         dispatch({
@@ -1091,13 +1136,15 @@ export default function Home() {
                     </div>
                     <div className={'mt-2'}>
                         <label className="text-sm font-medium text-muted-foreground">Enter the multiverse</label>
-                        <Select onValueChange={(value) => {
-                            dispatch({
-                                type: "SELECT_TIMELINE",
-                                payload: value as TimelineOptions
-                            })
+                        <Select
+                            value={state.timeline}
+                            onValueChange={(value) => {
+                                dispatch({
+                                    type: "SELECT_TIMELINE",
+                                    payload: value as TimelineOptions
+                                })
 
-                        }}>
+                            }}>
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Select a timeline"/>
                             </SelectTrigger>
@@ -1114,6 +1161,49 @@ export default function Home() {
 
                 </div>
 
+            </div>
+            <div className="text-sm font-mono whitespace-pre">
+                {timeline &&
+                    timeline.map((step, index) => {
+
+                        if (isSnapshotStep(step)) {
+                            if (isFrontierSnapshot(step)) {
+
+                                return (
+                                    <div key={index}>
+                                        <strong>Step {index} [frontier snapshot]</strong>
+                                        {step.nodes.map((node, i) => {
+                                            const [r, c] = node.pos;
+                                            return (
+                                                <div key={i}>
+                                                    &nbsp;&nbsp;→ pos=({r},{c}), g={node.gCost}, h={node.hCost},
+                                                    f={node.fCost}
+                                                </div>
+                                            );
+                                        })}
+                                        {/*{step.snapShotStep !== undefined && (*/}
+                                        {/*    <div><strong>Snapshot Step: {step.snapShotStep}</strong></div>*/}
+                                        {/*)}*/}
+                                    </div>
+                                );
+                            } else if (isVisitedSnapshot(step) && !isVisitedStep(step)) {
+                                const {node} = step;
+                                const [r, c] = node.pos;
+                                return (
+                                    <div key={index}>
+                                        <strong>Step {index} [visited]</strong> → pos=({r},{c}), g={node.gCost},
+                                        h={node.hCost}, f={node.fCost}
+                                    </div>
+                                );
+
+                            }
+
+
+                        } else if (isFlattenedStep(step)) {
+
+                        }
+
+                    })}
             </div>
         </div>
     );
