@@ -25,6 +25,15 @@ import {
     isVisitedStep,
     type SnapshotStep
 } from "~/utils/timeline-generation";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue
+} from "~/components/ui/select";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -140,12 +149,13 @@ const weightPresets: WeightData[] = [
     }
 ];
 
+type TimelineOptions = 'snapshot' | 'granular'
 
 type AppState = {
     weightGrid: number[][]
     cellData: CellData[][]
     gridSize: number
-    // activeTimeline: 'granular' | 'snapshot'
+    timeline: TimelineOptions
     snapshotTimeline: SnapshotStep[],
     granularTimeline: FlattenedStep[]
     currentTimelineIndex: number,
@@ -177,6 +187,7 @@ type Action =
     | { type: "RESET_ASTAR_DATA", }
     | { type: "SET_HEURISTIC_FUNC", payload: HeuristicName }
     | { type: "SET_WEIGHT_PRESET", payload: CostAndWeightKind }
+    | { type: "SELECT_TIMELINE", payload: TimelineOptions }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -195,7 +206,8 @@ const initialState: AppState = {
     weightPreset: {
         func: predefinedWeightFuncs['uniform'],
         name: 'uniform'
-    }
+    },
+    timeline: 'snapshot'
 
     // activeTimeline: 'granular'
 }
@@ -366,14 +378,27 @@ function reducer(state: AppState, action: Action): AppState {
             if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
                 return state
             }
-            const idx = Math.min(state.granularTimeline.length - 1, state.currentTimelineIndex)
-            const adjustedTimeline = state.granularTimeline.slice(0, idx + 1)
-            const initCell = initCellData(state.weightGrid,
-                state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
-            return {
-                ...state,
-                cellData: updateCellDataFlattenedStep(adjustedTimeline, initCell)
+            if (state.timeline === 'granular') {
+                const idx = Math.min(state.granularTimeline.length - 1, state.currentTimelineIndex)
+                const adjustedTimeline = state.granularTimeline.slice(0, idx + 1)
+                const initCell = initCellData(state.weightGrid,
+                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
+                return {
+                    ...state,
+                    cellData: updateCellDataFlattenedStep(adjustedTimeline, initCell)
+                }
+            } else if (state.timeline === "snapshot") {
+                const idx = Math.min(state.snapshotTimeline.length - 1, state.currentTimelineIndex)
+                const adjustedTimeline = state.snapshotTimeline.slice(0, idx + 1)
+                const initCell = initCellData(state.weightGrid,
+                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
+                return {
+                    ...state,
+                    cellData: updateCellDataSnapshotStep(adjustedTimeline, initCell)
+                }
             }
+            return state
+
         case "SET_INDEX":
             const setIndexIdx = action.payload
             return {
@@ -539,6 +564,20 @@ function reducer(state: AppState, action: Action): AppState {
                     func: predefinedWeightFuncs[newWeightPresetName]
                 }
             }
+        case "SELECT_TIMELINE":
+            const newTimeline = action.payload
+            if (state.timeline === newTimeline) {
+                return state
+            }
+            return {
+                ...state,
+                //reset this badboy
+                currentTimelineIndex: -1,
+                timeline: newTimeline,
+                cellData: state.weightGrid.length > 0 ? initCellData(state.weightGrid,
+                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]) : [],
+
+            }
 
 
         default:
@@ -549,10 +588,11 @@ function reducer(state: AppState, action: Action): AppState {
 export default function Home() {
     const size = 10
     const [state, dispatch] = useReducer(reducer, initialState)
-    const {cellData, currentTimelineIndex, granularTimeline: timeline, aStarData, diagonalSettings} = state
+    const {cellData, currentTimelineIndex, aStarData, diagonalSettings} = state
     const [heuristicPopoverOpen, setHeuristicPopoverOpen] = useState(false)
     const [weightPresetOpen, setWeightPresetOpen] = useState(false)
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
+    const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
 
 
     // const groupedBySnapshotStep = groupBySnapshotStep(timeline)
@@ -781,7 +821,7 @@ export default function Home() {
                                   d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
                                   clipRule="evenodd"/>
                         </svg>
-                        Run {algorithmName} {}
+                        Run {algorithmName}// debug:{state.timeline}
                     </button>
                     <button
                         className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
@@ -1048,6 +1088,27 @@ export default function Home() {
                                 </Command>
                             </PopoverContent>
                         </Popover>
+                    </div>
+                    <div className={'mt-2'}>
+                        <label className="text-sm font-medium text-muted-foreground">Enter the multiverse</label>
+                        <Select onValueChange={(value) => {
+                            dispatch({
+                                type: "SELECT_TIMELINE",
+                                payload: value as TimelineOptions
+                            })
+
+                        }}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select a timeline"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Multiverse</SelectLabel>
+                                    <SelectItem value="granular">Granular</SelectItem>
+                                    <SelectItem value="snapshot">Snapshot</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
                     </div>
 
 
