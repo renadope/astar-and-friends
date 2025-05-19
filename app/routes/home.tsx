@@ -8,7 +8,7 @@ import {generateRandomCostGrid, getTerrainWeight} from "~/utils/grid-generation"
 import {type CostAndWeightFunc, type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
 import {type HeuristicFunc, type HeuristicName, heuristics} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
-import {Check, ChevronsUpDown, RefreshCcw} from "lucide-react";
+import {ArrowRightCircle, Check, ChevronsUpDown, RefreshCcw} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "~/components/ui/command";
 import {Button} from "~/components/ui/button";
@@ -190,6 +190,7 @@ type Action =
     | { type: "SET_HEURISTIC_FUNC", payload: HeuristicName }
     | { type: "SET_WEIGHT_PRESET", payload: CostAndWeightKind }
     | { type: "SELECT_TIMELINE", payload: TimelineOptions }
+    | { type: "JUMP_TO_END", }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -580,6 +581,20 @@ function reducer(state: AppState, action: Action): AppState {
                     state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]) : [],
 
             }
+        case "JUMP_TO_END":
+            if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
+                return state
+            }
+            if (state.timeline === 'snapshot') {
+                return {
+                    ...state,
+                    currentTimelineIndex: state.snapshotTimeline.length-1
+                }
+            }
+            return {
+                ...state,
+                currentTimelineIndex: state.granularTimeline.length-1
+            }
 
 
         default:
@@ -765,6 +780,7 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                     <div className="flex gap-2">
                         <button
+                            disabled={isNullOrUndefined(aStarData)}
                             onClick={() => dispatch({type: "DECREMENT_INDEX"})}
                             className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
                         >
@@ -776,6 +792,7 @@ export default function Home() {
                         </button>
 
                         <button
+                            disabled={isNullOrUndefined(aStarData)}
                             onClick={() => dispatch({type: "INCREMENT_INDEX"})}
                             className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
                         >
@@ -784,6 +801,15 @@ export default function Home() {
                                  stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
                             </svg>
+                        </button>
+                        <button
+                            disabled={isNullOrUndefined(aStarData)}
+                            onClick={() => dispatch({type: "JUMP_TO_END"})}
+                            className="px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex disabled:cursor-not-allowed items-center gap-1"
+                        >
+                            Jump to End
+                            <ArrowRightCircle/>
+
                         </button>
                     </div>
 
