@@ -420,7 +420,7 @@ function reducer(state: AppState, action: Action): AppState {
                 return updateCellDataUsingTimelineData({
                     ...state,
                     isPlaying: false,
-                    currentTimelineIndex: getActiveTimelineLength(state)-1
+                    currentTimelineIndex: getActiveTimelineLength(state) - 1
                 })
             }
 
@@ -757,7 +757,7 @@ export default function Home() {
                             // ${isCurrentStep && !isLastStep && cell.state === 'frontier' && nodesUpNext(cell, minFCost)
                             //     ? 'scale-200 ring-2 ring-amber-400 shadow-md z-10 '
                             //     : 'scale-100'}
-                            const isLastStep = timeline.length - 1 <= currentTimelineIndex
+                            const isLastStep = timeline.length - 1 === currentTimelineIndex
                             const isCurrentStep = cell.step === currentTimelineIndex;
 
                             const next = timeline[currentTimelineIndex + 1]
@@ -947,7 +947,7 @@ export default function Home() {
 
                     <div className="text-sm font mono font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
                         {currentTimelineIndex >= 0 ? (
-                            <span>Step {currentTimelineIndex}</span>
+                            <span>Step {currentTimelineIndex+1}</span>
                         ) : (
                             <span className="italic text-gray-400">Waiting to start...</span>
                         )}                    </div>
