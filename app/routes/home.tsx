@@ -365,6 +365,7 @@ function reducer(state: AppState, action: Action): AppState {
                 aStarData: undefined,
                 snapshotTimeline: [],
                 granularTimeline: [],
+                isPlaying: false,
             }
         case "RUN_ASTAR":
             if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
