@@ -663,15 +663,17 @@ function reducer(state: AppState, action: Action): AppState {
                 return state
             }
             if (state.timeline === 'snapshot') {
-                return {
+                return updateCellDataUsingTimelineData({
+                        ...state,
+                        currentTimelineIndex: state.snapshotTimeline.length - 1
+                    }
+                )
+            }
+            return updateCellDataUsingTimelineData({
                     ...state,
-                    currentTimelineIndex: state.snapshotTimeline.length - 1
+                    currentTimelineIndex: state.granularTimeline.length - 1
                 }
-            }
-            return {
-                ...state,
-                currentTimelineIndex: state.granularTimeline.length - 1
-            }
+            )
         case "JUMP_TO_START":
             if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
                 return state
