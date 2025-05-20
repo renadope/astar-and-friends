@@ -416,11 +416,11 @@ function reducer(state: AppState, action: Action): AppState {
         case "INCREMENT_INDEX":
             const incrStep = Math.abs(action.payload ?? 1)
             const newStep = state.currentTimelineIndex + incrStep
-            if (newStep > getActiveTimelineLength(state)) {
+            if (newStep >= getActiveTimelineLength(state) - 1) {
                 return updateCellDataUsingTimelineData({
                     ...state,
                     isPlaying: false,
-                    currentTimelineIndex: getActiveTimelineLength(state)
+                    currentTimelineIndex: getActiveTimelineLength(state)-1
                 })
             }
 
@@ -441,11 +441,11 @@ function reducer(state: AppState, action: Action): AppState {
         case "SET_INDEX":
             const setIndexIdx = action.payload
 
-            if (setIndexIdx > getActiveTimelineLength(state)) {
+            if (setIndexIdx >= getActiveTimelineLength(state) - 1) {
                 return updateCellDataUsingTimelineData({
                     ...state,
                     isPlaying: false,
-                    currentTimelineIndex: getActiveTimelineLength(state)
+                    currentTimelineIndex: getActiveTimelineLength(state) - 1
                 })
             }
             return updateCellDataUsingTimelineData({
@@ -633,12 +633,12 @@ function reducer(state: AppState, action: Action): AppState {
             if (state.timeline === 'snapshot') {
                 return {
                     ...state,
-                    currentTimelineIndex: state.snapshotTimeline.length
+                    currentTimelineIndex: state.snapshotTimeline.length - 1
                 }
             }
             return {
                 ...state,
-                currentTimelineIndex: state.granularTimeline.length
+                currentTimelineIndex: state.granularTimeline.length - 1
             }
         case "JUMP_TO_START":
             if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
@@ -672,7 +672,8 @@ function reducer(state: AppState, action: Action): AppState {
             }
             const currTimeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
             if (status) {
-                if (state.currentTimelineIndex >= currTimeline.length) {
+                if (state.currentTimelineIndex >= currTimeline.length - 1) {
+                    console.log("DOES THIS FIRE")
                     return {
                         ...state,
                         currentTimelineIndex: NO_TIMELINE,
@@ -756,7 +757,7 @@ export default function Home() {
                             // ${isCurrentStep && !isLastStep && cell.state === 'frontier' && nodesUpNext(cell, minFCost)
                             //     ? 'scale-200 ring-2 ring-amber-400 shadow-md z-10 '
                             //     : 'scale-100'}
-                            const isLastStep = timeline.length - 1 === currentTimelineIndex
+                            const isLastStep = timeline.length - 1 <= currentTimelineIndex
                             const isCurrentStep = cell.step === currentTimelineIndex;
 
                             const next = timeline[currentTimelineIndex + 1]
