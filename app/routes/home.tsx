@@ -45,6 +45,10 @@ export function meta({}: Route.MetaArgs) {
 }
 
 const NO_TIMELINE = -1 as const
+const DEFAULT_PLAYBACK_SPEED_MS = 1000 as const
+const SMALLEST_PLAYBACK_FACTOR = 0.25
+const LARGEST_PLAYBACK_FACTOR = 20
+const PLAYBACK_INCREMENT = 0.25
 //rem
 const gridCellSize = 6.5
 type gwWeights = Omit<Weights, 'name'>
@@ -170,6 +174,7 @@ type AppState = {
     heuristic: { func: HeuristicFunc, name: HeuristicName }
     weightPreset: { func: CostAndWeightFunc, name: CostAndWeightKind }
     isPlaying: boolean
+    playbackSpeedFactor: number
 }
 type Action =
     | { type: "GENERATE_GRID", payload?: number, }
@@ -195,6 +200,7 @@ type Action =
     | { type: "JUMP_TO_START", }
     | { type: "JUMP_TO_PATH_START", }
     | { type: "SET_PLAYING_STATUS", payload: boolean }
+    | { type: "SET_PLAYBACK_SPEED_FACTOR", payload: { factor: number } }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -215,7 +221,8 @@ const initialState: AppState = {
         name: 'uniform'
     },
     timeline: 'snapshot',
-    isPlaying: false
+    isPlaying: false,
+    playbackSpeedFactor: 1
 
     // activeTimeline: 'granular'
 }
@@ -384,7 +391,7 @@ function reducer(state: AppState, action: Action): AppState {
                 snapshotTimeline,
                 granularTimeline,
                 cellSelectionState: "inactive",
-                isPlaying:false,
+                isPlaying: false,
             }
         case "SET_CELL_DATA_COST_HISTORY":
             if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
@@ -683,6 +690,19 @@ function reducer(state: AppState, action: Action): AppState {
                 isPlaying: false
             }
 
+        case "SET_PLAYBACK_SPEED_FACTOR":
+            const factor = action.payload.factor
+            if (factor <= 0) {
+                return {
+                    ...state,
+                    playbackSpeedFactor: SMALLEST_PLAYBACK_FACTOR
+                }
+            }
+            return {
+                ...state,
+                playbackSpeedFactor: Math.max(0.25, Math.min(factor, LARGEST_PLAYBACK_FACTOR))
+            }
+
 
         default:
             return state
@@ -692,7 +712,7 @@ function reducer(state: AppState, action: Action): AppState {
 export default function Home() {
     const size = 10
     const [state, dispatch] = useReducer(reducer, initialState)
-    const {cellData, currentTimelineIndex, aStarData, diagonalSettings} = state
+    const {cellData, currentTimelineIndex, aStarData, diagonalSettings, playbackSpeedFactor} = state
     const [heuristicPopoverOpen, setHeuristicPopoverOpen] = useState(false)
     const [weightPresetOpen, setWeightPresetOpen] = useState(false)
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
@@ -707,14 +727,15 @@ export default function Home() {
         if (!state.isPlaying) {
             return
         }
-        const interval = setInterval(() => {
+        const delay = Math.max(DEFAULT_PLAYBACK_SPEED_MS / playbackSpeedFactor, 50);
+        const interval = setTimeout(() => {
             dispatch({
                 type: 'INCREMENT_INDEX'
             })
-        }, 500)
-        return () => clearInterval(interval)
+        }, delay)
+        return () => clearTimeout(interval)
 
-    }, [aStarData, currentTimelineIndex, timeline.length, state.cellSelectionState, state.isPlaying])
+    }, [aStarData, currentTimelineIndex, timeline.length, state.cellSelectionState, state.isPlaying, playbackSpeedFactor])
 
     return (
         <div className={'grid grid-cols-2 p-4 rounded-lg shadow-sm gap-2 '}>
@@ -900,7 +921,25 @@ export default function Home() {
                                 <PlayIcon/></>}
 
                         </button>
-
+                        <div className="space-y-1">
+                            <label htmlFor="playbackSpeed" className="text-sm font-medium text-muted-foreground">
+                                Playback Speed: {Math.floor(DEFAULT_PLAYBACK_SPEED_MS / playbackSpeedFactor)}ms
+                            </label>
+                            <input
+                                type="range"
+                                min={SMALLEST_PLAYBACK_FACTOR}
+                                max={LARGEST_PLAYBACK_FACTOR}
+                                step={PLAYBACK_INCREMENT}
+                                value={playbackSpeedFactor}
+                                onChange={(e) => {
+                                    dispatch({
+                                        type: 'SET_PLAYBACK_SPEED_FACTOR',
+                                        payload: {factor: Number(e.target.value)}
+                                    })
+                                }}
+                            />
+                        </div>
+                        <p>{playbackSpeedFactor}x</p>
                     </div>
 
                     <div className="text-sm font mono font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
@@ -925,7 +964,7 @@ export default function Home() {
                                 payload: parseInt(e.target.value, 10),
                             })
                         }
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500 "
+                        className="w-full h-2 bg-gray-200 rounded-lg   cursor-pointer accent-blue-500 "
                     />
 
                     <div className="w-full flex justify-between mt-1 px-1">
