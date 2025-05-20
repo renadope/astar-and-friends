@@ -175,6 +175,8 @@ type AppState = {
     weightPreset: { func: CostAndWeightFunc, name: CostAndWeightKind }
     isPlaying: boolean
     playbackSpeedFactor: number
+    configChanged: boolean
+    weightPresetChanged: boolean
 }
 type Action =
     | { type: "GENERATE_GRID", payload?: number, }
@@ -222,7 +224,9 @@ const initialState: AppState = {
     },
     timeline: 'snapshot',
     isPlaying: false,
-    playbackSpeedFactor: 1
+    playbackSpeedFactor: 1,
+    configChanged: false,
+    weightPresetChanged: false,
 
     // activeTimeline: 'granular'
 }
@@ -350,23 +354,30 @@ function updateCellDataFlattenedStep(timeline: FlattenedStep[], cellData: CellDa
     return newCellData
 }
 
+function generateGrid(state: AppState, size: number) {
+    const weightGrid: number[][] = generateRandomCostGrid(size, state.weightPreset.func)
+    const cellData = initCellData(weightGrid, state.startPos ?? [0, 0],
+        state.goalPos ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1])
+    return {
+        ...state,
+        currentTimelineIndex: NO_TIMELINE,
+        weightGrid: weightGrid,
+        cellData: cellData,
+        aStarData: undefined,
+        snapshotTimeline: [],
+        granularTimeline: [],
+        isPlaying: false,
+        configChanged: true,
+        weightPresetChanged: false,
+        gridSize: size,
+    }
+}
+
 function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
-            const weightGrid: number[][] = generateRandomCostGrid(size, state.weightPreset.func)
-            const cellData = initCellData(weightGrid, state.startPos ?? [0, 0],
-                state.goalPos ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1])
-            return {
-                ...state,
-                currentTimelineIndex: NO_TIMELINE,
-                weightGrid: weightGrid,
-                cellData: cellData,
-                aStarData: undefined,
-                snapshotTimeline: [],
-                granularTimeline: [],
-                isPlaying: false,
-            }
+            return generateGrid(state, size)
         case "RUN_ASTAR":
             if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
                 return state
@@ -393,6 +404,8 @@ function reducer(state: AppState, action: Action): AppState {
                 granularTimeline,
                 cellSelectionState: "inactive",
                 isPlaying: false,
+                configChanged: false,
+                weightPresetChanged: false
             }
         case "SET_CELL_DATA_COST_HISTORY":
             if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
@@ -411,7 +424,9 @@ function reducer(state: AppState, action: Action): AppState {
             const givenSize = Math.abs(action.payload ?? 5)
             return {
                 ...state,
-                gridSize: Math.max(2, Math.min(10, givenSize))
+                gridSize: Math.max(2, Math.min(10, givenSize)),
+                configChanged: true,
+                weightPresetChanged: false
             }
         case "INCREMENT_INDEX":
             const incrStep = Math.abs(action.payload ?? 1)
@@ -456,29 +471,40 @@ function reducer(state: AppState, action: Action): AppState {
             const gWeight = Math.abs(action.payload)
             return {
                 ...state,
-                gwWeights: {...state.gwWeights, gWeight: gWeight}
+                gwWeights: {...state.gwWeights, gWeight: gWeight},
+                configChanged: true,
+                weightPresetChanged: false
             }
         case "SET_H_WEIGHT":
             const hWeight = Math.abs(action.payload)
             return {
                 ...state,
-                gwWeights: {...state.gwWeights, hWeight: hWeight}
+                gwWeights: {...state.gwWeights, hWeight: hWeight},
+                configChanged: true,
+                weightPresetChanged: false
             }
         case "TOGGLE_DIAGONAL":
             const toggledVal = action.payload
+            if (toggledVal === state.diagonalSettings.allowed) {
+                return state
+            }
 
             if (toggledVal) {
                 return {
                     ...state,
+                    configChanged: true,
+                    weightPresetChanged: false,
                     diagonalSettings: {
                         allowed: toggledVal,
                         cornerCutting: 'lax',
-                        diagonalMultiplier: Math.SQRT2
+                        diagonalMultiplier: Math.SQRT2,
                     }
                 }
             }
             return {
                 ...state,
+                configChanged: true,
+                weightPresetChanged: false,
                 diagonalSettings: {
                     allowed: false
                 }
@@ -489,6 +515,8 @@ function reducer(state: AppState, action: Action): AppState {
             }
             return {
                 ...state,
+                configChanged: true,
+                weightPresetChanged: false,
                 diagonalSettings: {
                     ...state.diagonalSettings,
                     cornerCutting: action.payload
@@ -501,12 +529,17 @@ function reducer(state: AppState, action: Action): AppState {
             const diagonalMultiplier = Math.abs(action.payload)
             return {
                 ...state,
+                configChanged: true,
+                weightPresetChanged: false,
                 diagonalSettings: {
                     ...state.diagonalSettings,
                     diagonalMultiplier: diagonalMultiplier
                 }
             }
         case "SET_CELL_SELECTION_STATE":
+            if (!isNullOrUndefined(state.aStarData)) {
+                return state
+            }
             const cellSelectionState = action.payload
             return {
                 ...state,
@@ -582,6 +615,8 @@ function reducer(state: AppState, action: Action): AppState {
                 granularTimeline: [],
                 snapshotTimeline: [],
                 isPlaying: false,
+                configChanged: false,
+                weightPresetChanged: false
             }
         case "SET_HEURISTIC_FUNC":
             //paranoid fall back
@@ -590,28 +625,34 @@ function reducer(state: AppState, action: Action): AppState {
             if (isNullOrUndefined(newHeuristic)) {
                 return {
                     ...state,
-                    heuristic: {name: 'manhattan', func: heuristics['manhattan']}
+                    heuristic: {name: 'manhattan', func: heuristics['manhattan']},
+                    configChanged: true,
+                    weightPresetChanged: false
                 }
             }
             return {
                 ...state,
-                heuristic: {name: newHeuristicName, func: newHeuristic}
+                heuristic: {name: newHeuristicName, func: newHeuristic},
+                configChanged: true,
+                weightPresetChanged: false
             }
         case "SET_WEIGHT_PRESET":
             const newWeightPresetName = action.payload
             if (isNullOrUndefined(newWeightPresetName)) {
-                return {
+                return generateGrid({
                     ...state,
-                    weightPreset: {name: 'uniform', func: predefinedWeightFuncs['uniform']}
-                }
+                    weightPresetChanged: true,
+                    weightPreset: {name: 'uniform', func: predefinedWeightFuncs['uniform']},
+                }, state.gridSize)
             }
-            return {
+            return generateGrid({
                 ...state,
+                weightPresetChanged: true,
                 weightPreset: {
                     name: newWeightPresetName,
-                    func: predefinedWeightFuncs[newWeightPresetName]
+                    func: predefinedWeightFuncs[newWeightPresetName],
                 }
-            }
+            }, state.gridSize)
         case "SELECT_TIMELINE":
             const newTimeline = action.payload
             if (state.timeline === newTimeline) {
@@ -713,7 +754,7 @@ function reducer(state: AppState, action: Action): AppState {
 }
 
 export default function Home() {
-    const size = 10
+    const gridSize = 10
     const [state, dispatch] = useReducer(reducer, initialState)
     const {cellData, currentTimelineIndex, aStarData, diagonalSettings, playbackSpeedFactor} = state
     const [heuristicPopoverOpen, setHeuristicPopoverOpen] = useState(false)
@@ -722,6 +763,11 @@ export default function Home() {
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
     const hasNoAStarData = isNullOrUndefined(aStarData)
 
+    useEffect(() => {
+        dispatch({
+            type: 'GENERATE_GRID', payload: gridSize
+        })
+    },[])
 
     useEffect(() => {
         if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0 || state.cellSelectionState !== 'inactive') {
@@ -947,7 +993,7 @@ export default function Home() {
 
                     <div className="text-sm font mono font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
                         {currentTimelineIndex >= 0 ? (
-                            <span>Step {currentTimelineIndex+1}</span>
+                            <span>Step {currentTimelineIndex + 1}</span>
                         ) : (
                             <span className="italic text-gray-400">Waiting to start...</span>
                         )}                    </div>
@@ -976,11 +1022,11 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="flex gap-2 justify-center pt-2">
+                <div className="flex gap-4 justify-center pt-2">
                     <button
                         className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
                         onClick={() => {
-                            dispatch({type: "GENERATE_GRID", payload: size})
+                            dispatch({type: "GENERATE_GRID", payload: gridSize})
                         }}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20"
@@ -993,7 +1039,8 @@ export default function Home() {
                     </button>
 
                     <button
-                        className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
+                        className={`px-4 py-2  ${state.configChanged ? 'scale-105 rotate-2 animate-pulse bg-rose-600 hover:bg-rose-700' : 'scale-100 bg-rose-500 hover:bg-rose-600'}
+                          text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium`}
                         onClick={() => {
                             dispatch({type: "RUN_ASTAR"})
                         }}
