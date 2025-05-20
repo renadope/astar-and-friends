@@ -430,10 +430,11 @@ function reducer(state: AppState, action: Action): AppState {
             })
         case "DECREMENT_INDEX":
             const decrStep = Math.abs(action.payload ?? 1)
-            return {
-                ...state,
-                currentTimelineIndex: Math.max(0, state.currentTimelineIndex - decrStep)
-            }
+            return updateCellDataUsingTimelineData({
+                    ...state,
+                    currentTimelineIndex: Math.max(0, state.currentTimelineIndex - decrStep)
+                }
+            )
         case "UPDATE_CELL_DATA":
             return updateCellDataUsingTimelineData(state)
 
