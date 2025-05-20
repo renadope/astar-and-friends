@@ -47,7 +47,7 @@ export function meta({}: Route.MetaArgs) {
 const NO_TIMELINE = -1 as const
 const DEFAULT_PLAYBACK_SPEED_MS = 1000 as const
 const SMALLEST_PLAYBACK_FACTOR = 0.25
-const LARGEST_PLAYBACK_FACTOR = 20
+const LARGEST_PLAYBACK_FACTOR = 10
 const PLAYBACK_INCREMENT = 0.25
 //rem
 const gridCellSize = 6.5
