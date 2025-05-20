@@ -574,7 +574,7 @@ function reducer(state: AppState, action: Action): AppState {
             return {
                 ...state,
                 aStarData: undefined,
-                currentTimelineIndex: -1,
+                currentTimelineIndex: NO_TIMELINE,
                 cellData: state.weightGrid.length > 0 ? initCellData(state.weightGrid,
                     state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]) : [],
                 granularTimeline: [],
@@ -618,7 +618,7 @@ function reducer(state: AppState, action: Action): AppState {
             return {
                 ...state,
                 //reset this badboy
-                currentTimelineIndex: -1,
+                currentTimelineIndex: NO_TIMELINE,
                 timeline: newTimeline,
                 cellData: state.weightGrid.length > 0 ? initCellData(state.weightGrid,
                     state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]) : [],
@@ -644,7 +644,7 @@ function reducer(state: AppState, action: Action): AppState {
             }
             return {
                 ...state,
-                currentTimelineIndex: -1,
+                currentTimelineIndex: NO_TIMELINE,
                 cellData: initCellData(state.weightGrid,
                     state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
             }
@@ -673,7 +673,7 @@ function reducer(state: AppState, action: Action): AppState {
                 if (state.currentTimelineIndex >= currTimeline.length) {
                     return {
                         ...state,
-                        currentTimelineIndex: -1,
+                        currentTimelineIndex: NO_TIMELINE,
                         isPlaying: true,
                         cellData: initCellData(state.weightGrid,
                             state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
