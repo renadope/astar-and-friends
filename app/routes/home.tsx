@@ -699,10 +699,10 @@ function reducer(state: AppState, action: Action): AppState {
             for (let i = 0; i < activeTimeline.length; i++) {
                 const t = activeTimeline[i]
                 if (t.type === 'path') {
-                    return {
+                    return updateCellDataUsingTimelineData({
                         ...state,
                         currentTimelineIndex: i
-                    }
+                    })
                 }
             }
             return state
