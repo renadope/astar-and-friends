@@ -169,6 +169,7 @@ type AppState = {
     goalPos: Pos | undefined
     heuristic: { func: HeuristicFunc, name: HeuristicName }
     weightPreset: { func: CostAndWeightFunc, name: CostAndWeightKind }
+    isPlaying: boolean
 }
 type Action =
     | { type: "GENERATE_GRID", payload?: number, }
@@ -193,6 +194,7 @@ type Action =
     | { type: "JUMP_TO_END", }
     | { type: "JUMP_TO_START", }
     | { type: "JUMP_TO_PATH_START", }
+    | { type: "SET_PLAYING_STATUS", payload: boolean }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -212,9 +214,17 @@ const initialState: AppState = {
         func: predefinedWeightFuncs['uniform'],
         name: 'uniform'
     },
-    timeline: 'snapshot'
+    timeline: 'snapshot',
+    isPlaying: false
 
     // activeTimeline: 'granular'
+}
+
+function getActiveTimelineLength(state: AppState): number {
+    if (state.timeline === 'snapshot') {
+        return state.snapshotTimeline.length
+    }
+    return state.granularTimeline.length
 }
 
 function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData[][] {
@@ -369,9 +379,18 @@ function reducer(state: AppState, action: Action): AppState {
             }
         case "INCREMENT_INDEX":
             const incrStep = Math.abs(action.payload ?? 1)
+            const newStep = state.currentTimelineIndex + incrStep
+            if (newStep > getActiveTimelineLength(state)) {
+                return {
+                    ...state,
+                    isPlaying:false,
+                    currentTimelineIndex: getActiveTimelineLength(state)
+                }
+            }
+
             return {
                 ...state,
-                currentTimelineIndex: state.currentTimelineIndex + incrStep
+                currentTimelineIndex: newStep
             }
         case "DECREMENT_INDEX":
             const decrStep = Math.abs(action.payload ?? 1)
@@ -406,6 +425,14 @@ function reducer(state: AppState, action: Action): AppState {
 
         case "SET_INDEX":
             const setIndexIdx = action.payload
+
+            if (setIndexIdx > getActiveTimelineLength(state)) {
+                return {
+                    ...state,
+                    isPlaying: false,
+                    currentTimelineIndex: getActiveTimelineLength(state)
+                }
+            }
             return {
                 ...state,
                 currentTimelineIndex: setIndexIdx
@@ -538,7 +565,8 @@ function reducer(state: AppState, action: Action): AppState {
                 cellData: state.weightGrid.length > 0 ? initCellData(state.weightGrid,
                     state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]) : [],
                 granularTimeline: [],
-                snapshotTimeline: []
+                snapshotTimeline: [],
+                isPlaying: false,
             }
         case "SET_HEURISTIC_FUNC":
             //paranoid fall back
@@ -590,12 +618,12 @@ function reducer(state: AppState, action: Action): AppState {
             if (state.timeline === 'snapshot') {
                 return {
                     ...state,
-                    currentTimelineIndex: state.snapshotTimeline.length - 1
+                    currentTimelineIndex: state.snapshotTimeline.length
                 }
             }
             return {
                 ...state,
-                currentTimelineIndex: state.granularTimeline.length - 1
+                currentTimelineIndex: state.granularTimeline.length
             }
         case "JUMP_TO_START":
             if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
@@ -622,6 +650,32 @@ function reducer(state: AppState, action: Action): AppState {
                 }
             }
             return state
+        case "SET_PLAYING_STATUS":
+            const status = action.payload
+            if (state.isPlaying === status) {
+                return state
+            }
+            const currTimeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+            if (status) {
+                if (state.currentTimelineIndex >= currTimeline.length) {
+                    return {
+                        ...state,
+                        currentTimelineIndex: -1,
+                        isPlaying: true,
+                        cellData: initCellData(state.weightGrid,
+                            state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
+                    }
+                }
+                return {
+                    ...state,
+                    isPlaying: true
+                }
+
+            }
+            return {
+                ...state,
+                isPlaying: false
+            }
 
 
         default:
@@ -637,7 +691,7 @@ export default function Home() {
     const [weightPresetOpen, setWeightPresetOpen] = useState(false)
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
-    const hasAStarData = isNullOrUndefined(aStarData)
+    const hasNoAStarData = isNullOrUndefined(aStarData)
 
 
     // const groupedBySnapshotStep = groupBySnapshotStep(timeline)
@@ -652,38 +706,21 @@ export default function Home() {
         }
         dispatch({type: 'UPDATE_CELL_DATA'})
     }, [currentTimelineIndex]);
-    //
-    // useEffect(() => {
-    //     if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0 || state.cellSelectionState !== 'inactive') {
-    //         return
-    //     }
-    //     if (currentTimelineIndex > timeline.length - 1) {
-    //         return
-    //     }
-    //     const interval = setInterval(() => {
-    //         dispatch({
-    //             type: 'INCREMENT_INDEX'
-    //         })
-    //     }, 100)
-    //     return () => clearInterval(interval)
-    //
-    // }, [aStarData, currentTimelineIndex, timeline.length,state.cellSelectionState])
+    useEffect(() => {
+        if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0 || state.cellSelectionState !== 'inactive') {
+            return
+        }
+        if (!state.isPlaying){
+            return
+        }
+        const interval = setInterval(() => {
+            dispatch({
+                type: 'INCREMENT_INDEX'
+            })
+        }, 500)
+        return () => clearInterval(interval)
 
-
-    // const minFCost = getSmallestFCost(cellData, 'frontier')
-    // console.log("Frontier f values:", cellData.flat().map(c => {
-    //     if (c.state === 'frontier') {
-    //         return c.f
-    //     }
-    // }).filter((foo) => !isNullOrUndefined(foo)))
-    // console.log("minFCost:", minFCost)
-
-    // function nodesUpNext(cellData: CellData, minCost: number): boolean {
-    //     if (isNullOrUndefined(cellData) || isNullOrUndefined(cellData.f)) {
-    //         return false
-    //     }
-    //     return Math.abs(cellData.f - minCost) < 1e-10
-    // }
+    }, [aStarData, currentTimelineIndex, timeline.length, state.cellSelectionState, state.isPlaying])
 
     return (
         <div className={'grid grid-cols-2 p-4 rounded-lg shadow-sm gap-2 '}>
@@ -808,7 +845,7 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                     <div className="flex gap-2">
                         <button
-                            disabled={hasAStarData}
+                            disabled={hasNoAStarData}
                             onClick={() => dispatch({type: "DECREMENT_INDEX"})}
                             className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
                         >
@@ -820,7 +857,7 @@ export default function Home() {
                         </button>
 
                         <button
-                            disabled={hasAStarData}
+                            disabled={hasNoAStarData}
                             onClick={() => dispatch({type: "INCREMENT_INDEX"})}
                             className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex items-center gap-1"
                         >
@@ -831,7 +868,7 @@ export default function Home() {
                             </svg>
                         </button>
                         <button
-                            disabled={hasAStarData}
+                            disabled={hasNoAStarData}
                             onClick={() => dispatch({type: "JUMP_TO_START"})}
                             className="px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex disabled:cursor-not-allowed items-center gap-1"
                         >
@@ -840,7 +877,7 @@ export default function Home() {
 
                         </button>
                         <button
-                            disabled={hasAStarData}
+                            disabled={hasNoAStarData}
                             onClick={() => dispatch({type: "JUMP_TO_PATH_START"})}
                             className="px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex disabled:cursor-not-allowed items-center gap-1"
                         >
@@ -850,7 +887,7 @@ export default function Home() {
 
                         </button>
                         <button
-                            disabled={hasAStarData}
+                            disabled={hasNoAStarData}
                             onClick={() => dispatch({type: "JUMP_TO_END"})}
                             className="px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex disabled:cursor-not-allowed items-center gap-1"
                         >
@@ -859,12 +896,25 @@ export default function Home() {
                             <FastForwardIcon/>
 
                         </button>
+                        <button
+                            disabled={hasNoAStarData}
+                            onClick={() => dispatch({type: "SET_PLAYING_STATUS", payload: !state.isPlaying})}
+                            className="px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 flex disabled:cursor-not-allowed items-center gap-1"
+                        >
+
+                            {state.isPlaying ? <><span>Pause</span> <PauseIcon/></> : <><span>Play</span>
+                                <PlayIcon/></>}
+
+                        </button>
 
                     </div>
 
-                    <div className="text-sm font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        Step {currentTimelineIndex + 1} / {timeline.length}
-                    </div>
+                    <div className="text-sm font mono font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
+                        {currentTimelineIndex >= 0 ? (
+                            <span>Step {currentTimelineIndex}</span>
+                        ) : (
+                            <span className="italic text-gray-400">Waiting to start...</span>
+                        )}                    </div>
                 </div>
 
                 <div className="w-full">
@@ -1061,7 +1111,7 @@ export default function Home() {
                     </div>
                     <div className="space-y-2 col-span-full">
                         <label className="text-sm font-medium text-muted-foreground">Cell
-                            Mode:{state.cellSelectionState ? state.cellSelectionState : `${typeof state.cellSelectionState}`}</label>
+                            Mode:{state.cellSelectionState ? state.cellSelectionState : `ghhgfhfh`}</label>
                         <ToggleGroup
                             type="single"
                             value={state.cellSelectionState}
@@ -1075,7 +1125,7 @@ export default function Home() {
                             variant="outline"
                             size="default"
                             className="w-full"
-                            disabled={!!aStarData}
+                            disabled={!hasNoAStarData}
                         >
                             <ToggleGroupItem value="set_goal" aria-label="Set Goal">
                                 Set Goal 🎯
@@ -1318,9 +1368,34 @@ function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedSt
             const group = res.get(node.snapShotStep) ?? [];
             group.push(node);
             res.set(node.snapShotStep, group);
-    }
+        }
     }
     return res;
 }
 
 
+const PlayIcon = () => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        width="24"
+        height="24"
+    >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9L5 3z"/>
+    </svg>
+);
+
+const PauseIcon = () => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        width="24"
+        height="24"
+    >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 4h2v16h-2zM16 4h2v16h-2z"/>
+    </svg>
+);
