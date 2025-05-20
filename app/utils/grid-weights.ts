@@ -100,6 +100,14 @@ function uniform(r: number, c: number, size: number): CostAndWeight {
     }
 }
 
+function highCost(r: number, c: number, size: number): CostAndWeight {
+    const costs = new Map<number, number>()
+    for (let i = 10; i >= 0; i--) {
+        costs.set(i * 10, (i * 10) + Math.random()+1)
+    }
+    return Object.fromEntries(costs)
+}
+
 
 export type CostAndWeightKind =
     "biome"
@@ -110,6 +118,7 @@ export type CostAndWeightKind =
     | "centerRidge"
     | "noise"
     | "uniform"
+    | "highCost"
 
 export const predefinedWeightFuncs: Record<CostAndWeightKind, CostAndWeightFunc> = {
     biome: biomeWeights,
@@ -119,5 +128,6 @@ export const predefinedWeightFuncs: Record<CostAndWeightKind, CostAndWeightFunc>
     circularBasin: circularBasin,
     centerRidge: centerRidge,
     noise: fakeNoise,
-    uniform: uniform
+    uniform: uniform,
+    highCost: highCost
 }

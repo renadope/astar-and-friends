@@ -152,6 +152,13 @@ const weightPresets: WeightData[] = [
         description: "Mimics different biome zones with clustered terrain types.",
         emoji: "🌍",
         tag: "Recommended"
+    },
+    {
+        label: "High Cost",
+        value: "highCost",
+        description: "Generates a grid with higher costs having a greater chace.",
+        emoji: "💰",
+        tag: "Recommended"
     }
 ];
 
