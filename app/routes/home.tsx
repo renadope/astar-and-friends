@@ -220,6 +220,33 @@ const initialState: AppState = {
     // activeTimeline: 'granular'
 }
 
+function updateCellDataUsingTimelineData(state: AppState) {
+    if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
+        return state
+    }
+    if (state.timeline === 'granular') {
+        const idx = Math.min(state.granularTimeline.length - 1, state.currentTimelineIndex)
+        const adjustedTimeline = state.granularTimeline.slice(0, idx + 1)
+        const initCell = initCellData(state.weightGrid,
+            state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
+        return {
+            ...state,
+            cellData: updateCellDataFlattenedStep(adjustedTimeline, initCell)
+        }
+    } else if (state.timeline === "snapshot") {
+        const idx = Math.min(state.snapshotTimeline.length - 1, state.currentTimelineIndex)
+        const adjustedTimeline = state.snapshotTimeline.slice(0, idx + 1)
+        const initCell = initCellData(state.weightGrid,
+            state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
+        return {
+            ...state,
+            cellData: updateCellDataSnapshotStep(adjustedTimeline, initCell)
+        }
+    }
+    return state
+
+}
+
 function getActiveTimelineLength(state: AppState): number {
     if (state.timeline === 'snapshot') {
         return state.snapshotTimeline.length
@@ -357,6 +384,7 @@ function reducer(state: AppState, action: Action): AppState {
                 snapshotTimeline,
                 granularTimeline,
                 cellSelectionState: "inactive",
+                isPlaying:false,
             }
         case "SET_CELL_DATA_COST_HISTORY":
             if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
@@ -381,17 +409,17 @@ function reducer(state: AppState, action: Action): AppState {
             const incrStep = Math.abs(action.payload ?? 1)
             const newStep = state.currentTimelineIndex + incrStep
             if (newStep > getActiveTimelineLength(state)) {
-                return {
+                return updateCellDataUsingTimelineData({
                     ...state,
-                    isPlaying:false,
+                    isPlaying: false,
                     currentTimelineIndex: getActiveTimelineLength(state)
-                }
+                })
             }
 
-            return {
+            return updateCellDataUsingTimelineData({
                 ...state,
                 currentTimelineIndex: newStep
-            }
+            })
         case "DECREMENT_INDEX":
             const decrStep = Math.abs(action.payload ?? 1)
             return {
@@ -399,44 +427,22 @@ function reducer(state: AppState, action: Action): AppState {
                 currentTimelineIndex: Math.max(0, state.currentTimelineIndex - decrStep)
             }
         case "UPDATE_CELL_DATA":
-            if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
-                return state
-            }
-            if (state.timeline === 'granular') {
-                const idx = Math.min(state.granularTimeline.length - 1, state.currentTimelineIndex)
-                const adjustedTimeline = state.granularTimeline.slice(0, idx + 1)
-                const initCell = initCellData(state.weightGrid,
-                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
-                return {
-                    ...state,
-                    cellData: updateCellDataFlattenedStep(adjustedTimeline, initCell)
-                }
-            } else if (state.timeline === "snapshot") {
-                const idx = Math.min(state.snapshotTimeline.length - 1, state.currentTimelineIndex)
-                const adjustedTimeline = state.snapshotTimeline.slice(0, idx + 1)
-                const initCell = initCellData(state.weightGrid,
-                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
-                return {
-                    ...state,
-                    cellData: updateCellDataSnapshotStep(adjustedTimeline, initCell)
-                }
-            }
-            return state
+            return updateCellDataUsingTimelineData(state)
 
         case "SET_INDEX":
             const setIndexIdx = action.payload
 
             if (setIndexIdx > getActiveTimelineLength(state)) {
-                return {
+                return updateCellDataUsingTimelineData({
                     ...state,
                     isPlaying: false,
                     currentTimelineIndex: getActiveTimelineLength(state)
-                }
+                })
             }
-            return {
+            return updateCellDataUsingTimelineData({
                 ...state,
                 currentTimelineIndex: setIndexIdx
-            }
+            })
         case "SET_G_WEIGHT":
             const gWeight = Math.abs(action.payload)
             return {
@@ -694,23 +700,11 @@ export default function Home() {
     const hasNoAStarData = isNullOrUndefined(aStarData)
 
 
-    // const groupedBySnapshotStep = groupBySnapshotStep(timeline)
-
-
-    useEffect(() => {
-        if (state.currentTimelineIndex < 0) {
-            return;
-        }
-        if (state.weightGrid.length === 0) {
-            return
-        }
-        dispatch({type: 'UPDATE_CELL_DATA'})
-    }, [currentTimelineIndex]);
     useEffect(() => {
         if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0 || state.cellSelectionState !== 'inactive') {
             return
         }
-        if (!state.isPlaying){
+        if (!state.isPlaying) {
             return
         }
         const interval = setInterval(() => {
