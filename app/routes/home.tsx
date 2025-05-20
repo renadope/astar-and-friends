@@ -761,6 +761,7 @@ export default function Home() {
     const [weightPresetOpen, setWeightPresetOpen] = useState(false)
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+    const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0
     const hasNoAStarData = isNullOrUndefined(aStarData)
 
     useEffect(() => {
@@ -790,7 +791,7 @@ export default function Home() {
         <div className={'grid grid-cols-2 p-4 rounded-lg shadow-sm gap-2 '}>
             <div
                 className="border-8 border-black flex-col gap-2 transition-all ease-in-out duration-300 p-4 bg-gradient-to-br from-slate-100 to-sky-50 rounded-xl shadow-lg">
-                {!(isNullOrUndefined(cellData)) && cellData.length > 0 && cellData.map((row, r) => (
+                {hasCellData && cellData.map((row, r) => (
                     <div key={`col-${r}`} className="flex gap-0.5 hover:gap-1 transition-all duration-300">
                         {row.map((cell, c) => {
 
@@ -885,23 +886,20 @@ export default function Home() {
                     </div>
                 ))}
 
-                <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                    {["empty", "wall", "visited", "frontier", "path", "start", "goal"].map(state => (
-                        <div key={state}
-                             className="flex items-center gap-1 px-2 py-1 bg-white/50 rounded-full shadow-sm">
-                            <div className={`w-3 h-3 rounded-full ${
-                                state === "wall" ? "bg-slate-800" :
-                                    state === "path" ? "bg-emerald-500" :
-                                        state === "visited" ? "bg-violet-600" :
-                                            state === "frontier" ? "bg-amber-400" :
-                                                state === "start" ? "bg-blue-500" :
-                                                    state === "goal" ? "bg-red-500" :
-                                                        "bg-sky-100"
-                            }`}></div>
-                            <span className="text-xs text-slate-700 capitalize">{state}</span>
-                        </div>
-                    ))}
-                </div>
+                {hasCellData && (
+                    <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                        {["empty", "wall", "visited", "frontier", "path", "start", "goal"].map(state => (
+                            <div key={state}
+                                 className="flex items-center gap-1 px-2 py-1 bg-white rounded-full shadow-2xl">
+                                <div
+                                    className={`w-3 h-3 rounded-full ${cellBgColor[state as keyof typeof cellBgColor]}`}>
+
+                                </div>
+                                <span className="text-xs text-slate-700 capitalize">{state}</span>
+                            </div>
+                        ))}
+                    </div>)
+                }
             </div>
 
 
