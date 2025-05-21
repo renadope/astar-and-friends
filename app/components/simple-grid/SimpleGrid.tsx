@@ -1,8 +1,9 @@
 export type SimpleGridProps = {
-    grid: number[][]
+    grid: number[][],
+    gridCellSize?: number
 }
 
-export default function SimpleGrid({grid}: SimpleGridProps) {
+export default function SimpleGrid({grid, gridCellSize = 8}: SimpleGridProps) {
     return (
         <div className={'flex flex-col gap-2'}>
             {grid.map((row, r) => (
