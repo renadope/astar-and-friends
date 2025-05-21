@@ -545,8 +545,9 @@ function reducer(state: AppState, action: Action): AppState {
                 return state
             }
             const [targetRow, targetCol] = action.payload
-            const st = state.cellData.flat().find(c => c.state === 'start')
-            const go = state.cellData.flat().find(c => c.state === 'goal')
+            const flattened = state.cellData.flat()
+            const st = flattened.find(c => c.state === 'start')
+            const go = flattened.find(c => c.state === 'goal')
 
 
             if (isNullOrUndefined(go) || isNullOrUndefined(st)) {
@@ -781,9 +782,9 @@ export default function Home() {
     }, [aStarData, currentTimelineIndex, timeline.length, state.cellSelectionState, state.isPlaying, playbackSpeedFactor])
 
     return (
-        <div className={'max-w-10/12 mx-auto  border-red-500 border-2 p-2'}>
-            <div className={'flex justify-between p-4 rounded-lg shadow-sm  border-2 border-black gap-2 '}>
-                <div className="p-4 flex flex-col gap-y-2 ">
+        <div className={'max-w-10/12 mx-auto   p-2'}>
+            <div className={'flex p-4 rounded-lg shadow-sm  gap-2 '}>
+                <div className="p-4 flex flex-col gap-y-2 border-2 border-sky-300 rounded-2xl">
                     {hasCellData && cellData.map((row, r) => (
                         <div key={`col-${r}`} className="flex gap-1 hover:gap-2 transition-all duration-200">
                             {row.map((cell, c) => {
