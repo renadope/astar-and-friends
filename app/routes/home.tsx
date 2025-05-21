@@ -800,7 +800,7 @@ export default function Home() {
                                 const history = aStarData ? aStarData.costUpdateHistory[key] ?? [] : []
                                 const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
                                 // const updatedOnThisStep = history.some((h) => h.step === snapShotStep + 1)
-                                // const costUpdateOnThisStep = history.find((h) => h.step === snapShotStep + 1)
+                                const costUpdateOnThisStep = history.find((h) => h.step === snapShotStep + 1)
                                 const isLastStep = timeline.length - 1 === currentTimelineIndex
                                 const isCurrentStep = cell.step === currentTimelineIndex;
 
@@ -869,12 +869,23 @@ export default function Home() {
                                                     dlta:{Math.abs(cell.costUpdateHistory[cell.costUpdateHistory.length-1].gCost-cell.costUpdateHistory[0].gCost).toFixed(2)}
                                                 </p>
                                             )}
+                                            {costUpdateOnThisStep && (
+                                                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                                                    foo:{costUpdateOnThisStep.gCost}
+                                                </p>
+                                            )}
                                             {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
                                                 <div
                                                     className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-xs px-1 rounded-full shadow-sm transform transition-transform group-hover:scale-125">
                                                     {cell.costUpdateHistory.length}
                                                 </div>
                                             )}
+                                            {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
+                                                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                                                    all:{cell.costUpdateHistory.map((foo)=>foo.gCost.toFixed(1)).join(',')}
+                                                </p>
+                                            )}
+
                                         </div>
 
                                         {(cell.state === "path" || isCurrentStep) && (
