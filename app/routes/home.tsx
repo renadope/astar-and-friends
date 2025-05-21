@@ -787,8 +787,8 @@ export default function Home() {
 
     return (
         <div className={'max-w-10/12 mx-auto  border-red-500 border-2 p-2'}>
-            <div className={'flex p-4 rounded-lg shadow-sm  border-2 border-black gap-2 '}>
-                <div className=" rounded-3xl p-4 flex flex-col gap-y-2 border-4 border-sky-300">
+            <div className={'flex justify-between p-4 rounded-lg shadow-sm  border-2 border-black gap-2 '}>
+                <div className="p-4 flex flex-col gap-y-2 ">
                     {hasCellData && cellData.map((row, r) => (
                         <div key={`col-${r}`} className="flex gap-1 hover:gap-2 transition-all duration-200">
                             {row.map((cell, c) => {
@@ -819,7 +819,7 @@ export default function Home() {
                                                 cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.7)" :
                                                     "0 2px 4px rgba(0,0,0,0.1)"
                                         }}
-                                        className={`rounded-md flex flex-col items-center justify-center relative backdrop-blur-sm
+                                        className={` rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm
                         ${cellBgColor[cell.state] ?? 'bg-sky-500'}
                         ${bestFrontier ? 'z-10 translate-x-12 translate-y-6 scale-160' : ''}
                         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
