@@ -803,9 +803,9 @@ export default function Home() {
             <GridProvider>
                 <Foo/>
             </GridProvider>
-            <GridProvider>
-                <Foo/>
-            </GridProvider>
+            {/*<GridProvider>*/}
+            {/*    <Foo/>*/}
+            {/*</GridProvider>*/}
         </div>
     )
 }
