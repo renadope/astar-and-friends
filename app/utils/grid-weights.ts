@@ -106,6 +106,7 @@ function highCost(r: number, c: number, size: number): CostAndWeight {
         const roll = Math.random()
         if (roll >= 0.5) {
             costs.set(i * 10, (i * 10) + Math.random() + 1000)
+            continue
         }
         costs.set(i * 10, (i * 10) + Math.random() + 1)
     }
