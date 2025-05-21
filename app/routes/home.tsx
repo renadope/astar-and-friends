@@ -1013,7 +1013,7 @@ export default function Home() {
                         <input
                             id="timeline"
                             type="range"
-                            min={0}
+                            min={-1}
                             max={timeline.length - 1}
                             disabled={timeline.length === 0}
                             value={currentTimelineIndex}
