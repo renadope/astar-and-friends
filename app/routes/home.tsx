@@ -3,15 +3,14 @@ import {aStar, getAlgorithmName} from "~/services/aStar";
 import {type ChangeEvent, useEffect, useReducer, useState} from "react";
 import {stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
-import {type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
-import {type HeuristicName, heuristics} from "~/utils/heuristics";
+import {type CostAndWeightKind} from "~/utils/grid-weights";
+import {type HeuristicName} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
 import {Check, ChevronsUpDown, FastForwardIcon, Map as MapIcon, RefreshCcw, RewindIcon} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "~/components/ui/command";
 import {Button} from "~/components/ui/button";
 import {cn} from "~/lib/utils";
-import {type FlattenedStep, isPathStep} from "~/utils/timeline-generation";
 import {
     Select,
     SelectContent,
@@ -22,8 +21,8 @@ import {
     SelectValue
 } from "~/components/ui/select";
 import {PauseIcon, PlayIcon} from "~/components/icons/icons";
-import type {AppState, TimelineOptions} from "~/state/types";
-import {reducer} from "~/state/reducer";
+import type {TimelineOptions} from "~/state/types";
+import {initialState, reducer} from "~/state/reducer";
 import {
     DEFAULT_PLAYBACK_SPEED_MS,
     LARGEST_PLAYBACK_FACTOR,
@@ -142,29 +141,7 @@ const weightPresets: WeightData[] = [
 ];
 
 
-const initialState: AppState = {
-    weightGrid: [],
-    cellData: [],
-    snapshotTimeline: [],
-    granularTimeline: [],
-    currentTimelineIndex: 0,
-    gridSize: 10,
-    aStarData: undefined,
-    gwWeights: {gWeight: 1, hWeight: 1},
-    diagonalSettings: {allowed: true, cornerCutting: "lax", diagonalMultiplier: Math.SQRT2},
-    cellSelectionState: 'inactive',
-    startPos: undefined,
-    goalPos: undefined,
-    heuristic: {name: "manhattan", func: heuristics['manhattan']},
-    weightPreset: {
-        func: predefinedWeightFuncs['uniform'],
-        name: 'uniform'
-    },
-    timeline: 'snapshot',
-    isPlaying: false,
-    playbackSpeedFactor: 1,
-    configChanged: false,
-}
+
 
 
 export default function Home() {

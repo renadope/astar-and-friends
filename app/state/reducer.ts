@@ -21,6 +21,29 @@ import {
 import {parsePos} from "~/utils/grid-helpers";
 import {LARGEST_PLAYBACK_FACTOR, NO_TIMELINE, SMALLEST_PLAYBACK_FACTOR} from "~/state/constants";
 
+export const initialState: AppState = {
+    weightGrid: [],
+    cellData: [],
+    snapshotTimeline: [],
+    granularTimeline: [],
+    currentTimelineIndex: 0,
+    gridSize: 10,
+    aStarData: undefined,
+    gwWeights: {gWeight: 1, hWeight: 1},
+    diagonalSettings: {allowed: true, cornerCutting: "lax", diagonalMultiplier: Math.SQRT2},
+    cellSelectionState: 'inactive',
+    startPos: undefined,
+    goalPos: undefined,
+    heuristic: {name: "manhattan", func: heuristics['manhattan']},
+    weightPreset: {
+        func: predefinedWeightFuncs['uniform'],
+        name: 'uniform'
+    },
+    timeline: 'snapshot',
+    isPlaying: false,
+    playbackSpeedFactor: 1,
+    configChanged: false,
+}
 
 function addCostHistoryToCells(state: AppState) {
     if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
