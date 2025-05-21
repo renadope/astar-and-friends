@@ -1,30 +1,17 @@
 import type {Route} from "./+types/home";
 import {aStar, getAlgorithmName} from "~/services/aStar";
-import type {AStarData, DiagonalConfig, Pos, Weights} from "~/types/pathfinding";
 import {type ChangeEvent, useEffect, useReducer, useState} from "react";
-import {isNodePassable, parsePos, stringifyPos} from "~/utils/grid-helpers";
+import {stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
-import {generateRandomCostGrid, getTerrainWeight} from "~/utils/grid-generation";
-import {type CostAndWeightFunc, type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
-import {type HeuristicFunc, type HeuristicName, heuristics} from "~/utils/heuristics";
+import {type CostAndWeightKind, predefinedWeightFuncs} from "~/utils/grid-weights";
+import {type HeuristicName, heuristics} from "~/utils/heuristics";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
 import {Check, ChevronsUpDown, FastForwardIcon, Map as MapIcon, RefreshCcw, RewindIcon} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "~/components/ui/command";
 import {Button} from "~/components/ui/button";
 import {cn} from "~/lib/utils";
-import {
-    buildTimeline,
-    type FlattenedStep,
-    flattenedTimeline,
-    isFrontierSnapshot,
-    isFrontierStep,
-    isPathSnapshot,
-    isPathStep,
-    isVisitedSnapshot,
-    isVisitedStep,
-    type SnapshotStep
-} from "~/utils/timeline-generation";
+import {type FlattenedStep, isPathStep} from "~/utils/timeline-generation";
 import {
     Select,
     SelectContent,
@@ -35,6 +22,15 @@ import {
     SelectValue
 } from "~/components/ui/select";
 import {PauseIcon, PlayIcon} from "~/components/icons/icons";
+import type {AppState, TimelineOptions} from "~/state/types";
+import {reducer} from "~/state/reducer";
+import {
+    DEFAULT_PLAYBACK_SPEED_MS,
+    LARGEST_PLAYBACK_FACTOR,
+    PLAYBACK_INCREMENT,
+    SMALLEST_PLAYBACK_FACTOR
+} from "~/state/constants";
+import type {CellToggle} from "~/cell-data/types";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -43,27 +39,11 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-const NO_TIMELINE = -1 as const
-const DEFAULT_PLAYBACK_SPEED_MS = 1000 as const
-const SMALLEST_PLAYBACK_FACTOR = 0.25
-const LARGEST_PLAYBACK_FACTOR = 10
-const PLAYBACK_INCREMENT = 0.25
+
 //rem
 const gridCellSize = 7
-type gwWeights = Omit<Weights, 'name'>
-type CellToggle = 'set_goal' | 'toggle_wall' | 'set_start' | "inactive"
 
-type CellData = {
-    pos: [number, number]
-    cost: number,
-    state: "empty" | "start" | "goal" | "wall" | "visited" | "frontier" | "path"
-    g?: number,
-    h?: number,
-    f?: number,
-    step?: number,
-    snapShotStep?: number
-    costUpdateHistory?: { step: number, gCost: number }[]
-}
+
 const cellBgColor = {
     "empty": "bg-slate-50",      // slate-50 – neutral background
     "wall": "bg-slate-800",       // slate-800 – sturdy and dark
@@ -161,53 +141,6 @@ const weightPresets: WeightData[] = [
     }
 ];
 
-type TimelineOptions = 'snapshot' | 'granular'
-
-type AppState = {
-    weightGrid: number[][]
-    cellData: CellData[][]
-    gridSize: number
-    timeline: TimelineOptions
-    snapshotTimeline: SnapshotStep[],
-    granularTimeline: FlattenedStep[]
-    currentTimelineIndex: number,
-    aStarData: AStarData | undefined
-    gwWeights: gwWeights
-    diagonalSettings: DiagonalConfig
-    cellSelectionState: CellToggle
-    startPos: Pos | undefined
-    goalPos: Pos | undefined
-    heuristic: { func: HeuristicFunc, name: HeuristicName }
-    weightPreset: { func: CostAndWeightFunc, name: CostAndWeightKind }
-    isPlaying: boolean
-    playbackSpeedFactor: number
-    configChanged: boolean
-}
-type Action =
-    | { type: "GENERATE_GRID", payload?: number, }
-    | { type: "SET_CELL_DATA_COST_HISTORY" }
-    | { type: "RUN_ASTAR" }
-    | { type: "SET_GRID_SIZE", payload?: number }
-    | { type: "INCREMENT_INDEX", payload?: number }
-    | { type: "SET_INDEX", payload: number }
-    | { type: "DECREMENT_INDEX", payload?: number }
-    | { type: "UPDATE_CELL_DATA", }
-    | { type: "SET_G_WEIGHT", payload: number }
-    | { type: "SET_H_WEIGHT", payload: number }
-    | { type: "TOGGLE_DIAGONAL", payload: boolean }
-    | { type: "TOGGLE_CORNER_CUTTING", payload: 'strict' | 'lax' }
-    | { type: "SET_DIAGONAL_MULTIPLIER", payload: number }
-    | { type: "SET_CELL_SELECTION_STATE", payload: CellToggle }
-    | { type: "UPDATE_CELL_STATUS", payload: Pos }
-    | { type: "RESET_ASTAR_DATA", }
-    | { type: "SET_HEURISTIC_FUNC", payload: HeuristicName }
-    | { type: "SET_WEIGHT_PRESET", payload: CostAndWeightKind }
-    | { type: "SELECT_TIMELINE", payload: TimelineOptions }
-    | { type: "JUMP_TO_END", }
-    | { type: "JUMP_TO_START", }
-    | { type: "JUMP_TO_PATH_START", }
-    | { type: "SET_PLAYING_STATUS", payload: boolean }
-    | { type: "SET_PLAYBACK_SPEED_FACTOR", payload: { factor: number } }
 
 const initialState: AppState = {
     weightGrid: [],
@@ -233,524 +166,6 @@ const initialState: AppState = {
     configChanged: false,
 }
 
-function addCostHistoryToCells(state: AppState) {
-    if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
-        return state
-    }
-    const cellDataGrid = copyCellData(state.cellData)
-    const costUpdateHistory = state.aStarData.costUpdateHistory
-    for (const pair in costUpdateHistory) {
-        const updateHistory = costUpdateHistory[pair] ?? []
-        const pos = parsePos(pair)
-        cellDataGrid[pos[0]][pos[1]].costUpdateHistory = [...updateHistory]
-    }
-    return {...state, cellData: cellDataGrid}
-
-}
-
-function updateCellDataUsingTimelineData(state: AppState) {
-    if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
-        return state
-    }
-    const timeline = getActiveTimeline(state)
-    const idx = Math.min(timeline.length - 1, state.currentTimelineIndex)
-    const adjustedTimeline = timeline.slice(0, idx + 1)
-    const initCell = initCellData(state.weightGrid,
-        state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
-    return {
-        ...state,
-        cellData: state.timeline === 'granular' ?
-            updateCellDataFlattenedStep(adjustedTimeline as FlattenedStep[], initCell) :
-            updateCellDataSnapshotStep(adjustedTimeline as SnapshotStep[], initCell)
-    }
-
-}
-
-function getActiveTimeline(state: AppState): SnapshotStep[] | FlattenedStep[] {
-    return state.timeline === 'granular' ? state.granularTimeline : state.snapshotTimeline
-
-}
-
-function getActiveTimelineLength(state: AppState): number {
-    if (state.timeline === 'snapshot') {
-        return state.snapshotTimeline.length
-    }
-    return state.granularTimeline.length
-}
-
-function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData[][] {
-    const st = start ?? [0, 0]
-    const end = goal ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1]
-    return weightGrid.map((row, r) => {
-        return row.map((weight, c) => {
-            const cellData: CellData = {
-                pos: [r, c],
-                cost: weight,
-                state: isNodePassable(weight) ?
-                    (r === st[0] && c === st[1]) ? "start" :
-                        (r === end[0] && c === end[1]) ?
-                            "goal" : "empty" : "wall"
-            }
-            return cellData
-        })
-    })
-}
-
-
-function updateCellDataSnapshotStep(timeline: SnapshotStep[], cellData: CellData[][]): CellData[][] {
-    if (isNullOrUndefined(timeline) || timeline.length === 0) {
-        return cellData
-    }
-    let snapshotStep = 0
-    const newCellData = copyCellData(cellData)
-    for (let i = 0; i < timeline.length; i++) {
-        const node = timeline[i]
-        if (isNullOrUndefined(node)) {
-            continue
-        }
-        if (isFrontierSnapshot(node)) {
-            const nodes = node.nodes
-            for (let j = 0; j < nodes.length; j++) {
-                const frontier = nodes[j]
-                const [r, c] = frontier.pos
-                const cell = newCellData[r][c]
-                cell.state = "frontier"
-                cell.pos = [r, c]
-                cell.g = frontier.gCost
-                cell.h = frontier.hCost
-                cell.f = frontier.fCost
-                cell.step = i
-                cell.snapShotStep = snapshotStep
-            }
-
-        } else if (isVisitedSnapshot(node) || isPathSnapshot(node)) {
-            const [r, c] = node.node.pos
-            const cell = newCellData[r][c]
-            cell.state = node.type
-            cell.pos = [r, c]
-            cell.g = node.node.gCost
-            cell.h = node.node.hCost
-            cell.f = node.node.fCost
-            cell.step = i
-            cell.snapShotStep = isPathSnapshot(node) ? undefined : snapshotStep
-            if (isVisitedSnapshot(node)) {
-                snapshotStep++
-            }
-
-        }
-    }
-    return newCellData
-
-}
-
-function updateCellDataFlattenedStep(timeline: FlattenedStep[], cellData: CellData[][]): CellData[][] {
-    const newCellData = copyCellData(cellData)
-    for (let i = 0; i < timeline.length; i++) {
-        const timeLineNode = timeline[i]
-        if (isNullOrUndefined(timeLineNode)) {
-            continue
-        }
-        const [r, c] = timeLineNode.node.pos
-        const cell = newCellData[r][c]
-        if (isNullOrUndefined(cell)) {
-            continue
-        }
-        cell.state = timeLineNode.type
-        cell.pos = [r, c]
-        cell.g = timeLineNode.node.gCost
-        cell.h = timeLineNode.node.hCost
-        cell.f = timeLineNode.node.fCost
-        cell.step = i
-        cell.snapShotStep = isFrontierStep(timeLineNode) || isVisitedStep(timeLineNode) ? timeLineNode.snapShotStep : undefined
-
-    }
-    return newCellData
-}
-
-function generateGrid(state: AppState, size: number) {
-    const weightGrid: number[][] = generateRandomCostGrid(size, state.weightPreset.func)
-    const cellData = initCellData(weightGrid, state.startPos ?? [0, 0],
-        state.goalPos ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1])
-    return {
-        ...state,
-        currentTimelineIndex: NO_TIMELINE,
-        weightGrid: weightGrid,
-        cellData: cellData,
-        aStarData: undefined,
-        snapshotTimeline: [],
-        granularTimeline: [],
-        isPlaying: false,
-        configChanged: true,
-        gridSize: size,
-    }
-}
-
-function reducer(state: AppState, action: Action): AppState {
-    switch (action.type) {
-        case "GENERATE_GRID":
-            const size = action.payload ?? state.gridSize ?? 5
-            return generateGrid(state, size)
-        case "RUN_ASTAR":
-            if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
-                return state
-            }
-            const start: Pos = state.startPos ?? [0, 0]
-            const goal: Pos = state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]
-            const aStarResult = aStar(state.weightGrid, start, goal, state.heuristic.func,
-                state.diagonalSettings,
-                {...state.gwWeights, name: "change_this_name_to_the_proper_name"})
-
-            if (!aStarResult.success) {
-                // should provide a way for the ui to signal that the criterion wasn't met for Astar to be run
-                return state
-            }
-            const snapshotTimeline = buildTimeline(aStarResult.value.visitedOrder, aStarResult.value.frontier, aStarResult.value.path)
-            const granularTimeline = flattenedTimeline(snapshotTimeline)
-            return {
-                ...state,
-                cellData: initCellData(state.weightGrid, state.startPos ?? [0, 0],
-                    state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]),
-                currentTimelineIndex: NO_TIMELINE,
-                aStarData: aStarResult.value,
-                snapshotTimeline,
-                granularTimeline,
-                cellSelectionState: "inactive",
-                isPlaying: false,
-                configChanged: false,
-            }
-        case "SET_CELL_DATA_COST_HISTORY":
-            return addCostHistoryToCells(state)
-        case "SET_GRID_SIZE":
-            //this one needs a bit more on it, like do we regen a simple-grid, do we 'trim' the simple-grid
-            const givenSize = Math.abs(action.payload ?? 5)
-            return {
-                ...state,
-                gridSize: Math.max(2, Math.min(10, givenSize)),
-                configChanged: true,
-            }
-        case "INCREMENT_INDEX":
-            const incrStep = Math.abs(action.payload ?? 1)
-            const newStep = state.currentTimelineIndex + incrStep
-            if (newStep >= getActiveTimelineLength(state) - 1) {
-                return addCostHistoryToCells(updateCellDataUsingTimelineData({
-                    ...state,
-                    isPlaying: false,
-                    currentTimelineIndex: getActiveTimelineLength(state) - 1
-                }))
-            }
-
-            return updateCellDataUsingTimelineData({
-                ...state,
-                currentTimelineIndex: newStep
-            })
-        case "DECREMENT_INDEX":
-            const decrStep = Math.abs(action.payload ?? 1)
-            return updateCellDataUsingTimelineData({
-                    ...state,
-                    currentTimelineIndex: Math.max(-1, state.currentTimelineIndex - decrStep)
-                }
-            )
-        case "UPDATE_CELL_DATA":
-            return updateCellDataUsingTimelineData(state)
-
-        case "SET_INDEX":
-            const setIndexIdx = action.payload
-
-            if (setIndexIdx >= getActiveTimelineLength(state) - 1) {
-                return addCostHistoryToCells(updateCellDataUsingTimelineData({
-                    ...state,
-                    isPlaying: false,
-                    currentTimelineIndex: getActiveTimelineLength(state) - 1
-                }))
-            }
-            return updateCellDataUsingTimelineData({
-                ...state,
-                currentTimelineIndex: setIndexIdx
-            })
-        case "SET_G_WEIGHT":
-            const gWeight = Math.abs(action.payload)
-            return {
-                ...state,
-                gwWeights: {...state.gwWeights, gWeight: gWeight},
-                configChanged: true,
-
-            }
-        case "SET_H_WEIGHT":
-            const hWeight = Math.abs(action.payload)
-            return {
-                ...state,
-                gwWeights: {...state.gwWeights, hWeight: hWeight},
-                configChanged: true,
-
-            }
-        case "TOGGLE_DIAGONAL":
-            const toggledVal = action.payload
-            if (toggledVal === state.diagonalSettings.allowed) {
-                return state
-            }
-
-            if (toggledVal) {
-                return {
-                    ...state,
-                    configChanged: true,
-
-                    diagonalSettings: {
-                        allowed: toggledVal,
-                        cornerCutting: 'lax',
-                        diagonalMultiplier: Math.SQRT2,
-                    }
-                }
-            }
-            return {
-                ...state,
-                configChanged: true,
-
-                diagonalSettings: {
-                    allowed: false
-                }
-            }
-        case "TOGGLE_CORNER_CUTTING":
-            if (!state.diagonalSettings.allowed) {
-                return state
-            }
-            return {
-                ...state,
-                configChanged: true,
-
-                diagonalSettings: {
-                    ...state.diagonalSettings,
-                    cornerCutting: action.payload
-                }
-            }
-        case "SET_DIAGONAL_MULTIPLIER":
-            if (!state.diagonalSettings.allowed) {
-                return state
-            }
-            const diagonalMultiplier = Math.abs(action.payload)
-            return {
-                ...state,
-                configChanged: true,
-
-                diagonalSettings: {
-                    ...state.diagonalSettings,
-                    diagonalMultiplier: diagonalMultiplier
-                }
-            }
-        case "SET_CELL_SELECTION_STATE":
-            if (!isNullOrUndefined(state.aStarData)) {
-                return state
-            }
-            const cellSelectionState = action.payload
-            return {
-                ...state,
-                cellSelectionState
-            }
-        case "UPDATE_CELL_STATUS":
-            if (state.cellSelectionState === 'inactive') {
-                return state
-            }
-            const [targetRow, targetCol] = action.payload
-            const flattened = state.cellData.flat()
-            const st = flattened.find(c => c.state === 'start')
-            const go = flattened.find(c => c.state === 'goal')
-
-
-            if (isNullOrUndefined(go) || isNullOrUndefined(st)) {
-                throw new Error("this should not happen, must have a start &  goal")
-            }
-            const [startRow, startCol] = st.pos
-            const [goalRow, goalCol] = go.pos
-            if (state.cellSelectionState === 'set_goal') {
-                if (startRow === targetRow && startCol === targetCol) {
-                    return state
-                }
-                return {
-                    ...state,
-                    cellData: initCellData(state.weightGrid, [startRow, startCol], [targetRow, targetCol]),
-                    goalPos: [targetRow, targetCol],
-                    startPos: [startRow, startCol]
-                }
-            } else if (state.cellSelectionState === 'set_start') {
-                if (goalRow === targetRow && goalCol === targetCol) {
-                    return state
-                }
-                return {
-                    ...state,
-                    cellData: initCellData(state.weightGrid, [targetRow, targetCol], [goalRow, goalCol]),
-                    startPos: [targetRow, targetCol],
-                    goalPos: [goalRow, goalCol]
-                }
-            } else if (state.cellSelectionState === 'toggle_wall') {
-                if ((targetRow === startRow && targetCol === startCol) || (targetRow === goalRow && targetCol === goalCol)) {
-                    return state
-                }
-                const newWeightGrid = state.weightGrid.map((row, rowIndex) => {
-                    return row.map((weight, colIndex) => {
-                        if (rowIndex === targetRow && colIndex === targetCol && weight === 0) {
-                            return getTerrainWeight(state.weightPreset.func, rowIndex, colIndex,
-                                Math.min(state.weightGrid.length, state.weightGrid[state.weightGrid.length - 1].length)
-                            )
-                        }
-                        return rowIndex === targetRow && colIndex === targetCol ? 0 : weight
-                    })
-                })
-                return {
-                    ...state,
-                    weightGrid: newWeightGrid,
-                    cellData: initCellData(newWeightGrid, state.startPos ?? [0, 0],
-                        state.goalPos ?? [newWeightGrid.length - 1, newWeightGrid[newWeightGrid.length - 1].length - 1]),
-                    startPos: [startRow, startCol],
-                    goalPos: [goalRow, goalCol]
-                }
-
-            }
-            return state
-
-        case "RESET_ASTAR_DATA":
-            return {
-                ...state,
-                aStarData: undefined,
-                currentTimelineIndex: NO_TIMELINE,
-                cellData: state.weightGrid.length > 0 ? initCellData(state.weightGrid,
-                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]) : [],
-                granularTimeline: [],
-                snapshotTimeline: [],
-                isPlaying: false,
-                configChanged: false,
-
-            }
-        case "SET_HEURISTIC_FUNC":
-            //paranoid fall back
-            const newHeuristicName = action.payload
-            const newHeuristic = heuristics[newHeuristicName]
-            if (isNullOrUndefined(newHeuristic)) {
-                return {
-                    ...state,
-                    heuristic: {name: 'manhattan', func: heuristics['manhattan']},
-                    configChanged: true,
-                }
-            }
-            return {
-                ...state,
-                heuristic: {name: newHeuristicName, func: newHeuristic},
-                configChanged: true,
-            }
-        case "SET_WEIGHT_PRESET":
-            const newWeightPresetName = action.payload
-            if (isNullOrUndefined(newWeightPresetName)) {
-                return generateGrid({
-                    ...state,
-                    weightPreset: {name: 'uniform', func: predefinedWeightFuncs['uniform']},
-                }, state.gridSize)
-            }
-            return generateGrid({
-                ...state,
-                weightPreset: {
-                    name: newWeightPresetName,
-                    func: predefinedWeightFuncs[newWeightPresetName],
-                }
-            }, state.gridSize)
-        case "SELECT_TIMELINE":
-            const newTimeline = action.payload
-            if (state.timeline === newTimeline) {
-                return state
-            }
-            return {
-                ...state,
-                //reset this badboy
-                currentTimelineIndex: NO_TIMELINE,
-                timeline: newTimeline,
-                cellData: state.weightGrid.length > 0 ? initCellData(state.weightGrid,
-                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]) : [],
-
-            }
-        case "JUMP_TO_END":
-            if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
-                return state
-            }
-            if (state.timeline === 'snapshot') {
-                return addCostHistoryToCells(updateCellDataUsingTimelineData({
-                        ...state,
-                        currentTimelineIndex: state.snapshotTimeline.length - 1
-                    }
-                ))
-            }
-            return addCostHistoryToCells(updateCellDataUsingTimelineData({
-                    ...state,
-                    currentTimelineIndex: state.granularTimeline.length - 1
-                }
-            ))
-        case "JUMP_TO_START":
-            if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
-                return state
-            }
-            return {
-                ...state,
-                currentTimelineIndex: NO_TIMELINE,
-                cellData: initCellData(state.weightGrid,
-                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
-            }
-        case "JUMP_TO_PATH_START":
-            if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
-                return state
-            }
-            const activeTimeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
-            for (let i = 0; i < activeTimeline.length; i++) {
-                const t = activeTimeline[i]
-                if (t.type === 'path') {
-                    return updateCellDataUsingTimelineData({
-                        ...state,
-                        currentTimelineIndex: i
-                    })
-                }
-            }
-            return state
-        case "SET_PLAYING_STATUS":
-            const status = action.payload
-            if (state.isPlaying === status) {
-                return state
-            }
-            const currTimeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
-            if (status) {
-                if (state.currentTimelineIndex >= currTimeline.length - 1) {
-                    console.log("DOES THIS FIRE")
-                    return {
-                        ...state,
-                        currentTimelineIndex: NO_TIMELINE,
-                        isPlaying: true,
-                        cellData: initCellData(state.weightGrid,
-                            state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
-                    }
-                }
-                return {
-                    ...state,
-                    isPlaying: true
-                }
-
-            }
-            return {
-                ...state,
-                isPlaying: false
-            }
-
-        case "SET_PLAYBACK_SPEED_FACTOR":
-            const factor = action.payload.factor
-            if (factor <= 0) {
-                return {
-                    ...state,
-                    playbackSpeedFactor: SMALLEST_PLAYBACK_FACTOR
-                }
-            }
-            return {
-                ...state,
-                playbackSpeedFactor: Math.max(0.25, Math.min(factor, LARGEST_PLAYBACK_FACTOR))
-            }
-
-
-        default:
-            return state
-    }
-}
 
 export default function Home() {
     const gridSize = 8
@@ -1396,10 +811,7 @@ export default function Home() {
 }
 
 
-function copyCellData(cellData: CellData[][]): CellData[][] {
-    return cellData.map((row) => row.map((cell) => ({...cell} as CellData)))
 
-}
 
 //not gonna use this method, but wanted a quick and dirty way to just see the weights without inspecting
 function costToColor(cost: number): string {
@@ -1413,16 +825,5 @@ function costToColor(cost: number): string {
 }
 
 
-function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedStep[]> {
-    const res = new Map<number, FlattenedStep[]>();
-    for (const node of timeline) {
-        if (!isPathStep(node) && node.snapShotStep !== undefined) {
-            const group = res.get(node.snapShotStep) ?? [];
-            group.push(node);
-            res.set(node.snapShotStep, group);
-        }
-    }
-    return res;
-}
 
 
