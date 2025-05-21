@@ -785,10 +785,13 @@ export function Foo() {
 }
 
 export default function Home() {
+
     return (
-        <GridProvider>
-            <Foo/>
-        </GridProvider>
+        <div className={'flex flex-col'}>
+            <GridProvider>
+                <Foo/>
+            </GridProvider>
+        </div>
     )
 }
 
