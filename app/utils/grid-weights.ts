@@ -103,7 +103,11 @@ function uniform(r: number, c: number, size: number): CostAndWeight {
 function highCost(r: number, c: number, size: number): CostAndWeight {
     const costs = new Map<number, number>()
     for (let i = 10; i >= 0; i--) {
-        costs.set(i * 10, (i * 10) + Math.random()+1)
+        const roll = Math.random()
+        if (roll >= 0.5) {
+            costs.set(i * 10, (i * 10) + Math.random() + 1000)
+        }
+        costs.set(i * 10, (i * 10) + Math.random() + 1)
     }
     return Object.fromEntries(costs)
 }
