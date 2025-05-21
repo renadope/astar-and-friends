@@ -1,6 +1,6 @@
 import type {Route} from "./+types/home";
 import {aStar, getAlgorithmName} from "~/services/aStar";
-import {type ChangeEvent, useEffect, useReducer, useState} from "react";
+import {type ChangeEvent, useEffect, useState} from "react";
 import {stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import {type CostAndWeightKind} from "~/utils/grid-weights";
@@ -22,7 +22,6 @@ import {
 } from "~/components/ui/select";
 import {PauseIcon, PlayIcon} from "~/components/icons/icons";
 import type {TimelineOptions} from "~/state/types";
-import {initialState, reducer} from "~/state/reducer";
 import {
     DEFAULT_PLAYBACK_SPEED_MS,
     LARGEST_PLAYBACK_FACTOR,
@@ -30,6 +29,7 @@ import {
     SMALLEST_PLAYBACK_FACTOR
 } from "~/state/constants";
 import type {CellToggle} from "~/cell-data/types";
+import {GridProvider, useGridContext} from "~/state/context";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -141,12 +141,9 @@ const weightPresets: WeightData[] = [
 ];
 
 
-
-
-
-export default function Home() {
+export function Foo() {
     const gridSize = 8
-    const [state, dispatch] = useReducer(reducer, initialState)
+    const {state, dispatch} = useGridContext()
     const {cellData, currentTimelineIndex, aStarData, diagonalSettings, playbackSpeedFactor} = state
     const [heuristicPopoverOpen, setHeuristicPopoverOpen] = useState(false)
     const [weightPresetOpen, setWeightPresetOpen] = useState(false)
@@ -254,13 +251,13 @@ export default function Home() {
                                             </p>
                                             {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
                                                 <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
-                                                    cost:{cell.costUpdateHistory[cell.costUpdateHistory.length-1].gCost.toFixed(2)}
+                                                    cost:{cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost.toFixed(2)}
                                                 </p>
                                             )}{cell.costUpdateHistory && cell.costUpdateHistory.length > 1 && (
-                                                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
-                                                    dlta:{Math.abs(cell.costUpdateHistory[cell.costUpdateHistory.length-1].gCost-cell.costUpdateHistory[0].gCost).toFixed(2)}
-                                                </p>
-                                            )}
+                                            <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                                                dlta:{Math.abs(cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost - cell.costUpdateHistory[0].gCost).toFixed(2)}
+                                            </p>
+                                        )}
                                             {costUpdateOnThisStep && (
                                                 <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
                                                     foo:{costUpdateOnThisStep.gCost}
@@ -274,7 +271,7 @@ export default function Home() {
                                             )}
                                             {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
                                                 <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
-                                                    all:{cell.costUpdateHistory.map((foo)=>foo.gCost.toFixed(1)).join(',')}
+                                                    all:{cell.costUpdateHistory.map((foo) => foo.gCost.toFixed(1)).join(',')}
                                                 </p>
                                             )}
 
@@ -787,7 +784,13 @@ export default function Home() {
     );
 }
 
-
+export default function Home() {
+    return (
+        <GridProvider>
+            <Foo/>
+        </GridProvider>
+    )
+}
 
 
 //not gonna use this method, but wanted a quick and dirty way to just see the weights without inspecting
