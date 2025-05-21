@@ -1,6 +1,6 @@
 import type {Route} from "./+types/home";
 import {aStar, getAlgorithmName} from "~/services/aStar";
-import {type ChangeEvent, useEffect, useState} from "react";
+import {type ChangeEvent, useEffect, useId, useState} from "react";
 import {stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import {type CostAndWeightKind} from "~/utils/grid-weights";
@@ -143,6 +143,7 @@ const weightPresets: WeightData[] = [
 
 export function Foo() {
     const gridSize = 8
+    const id = useId()
     const {state, dispatch} = useGridContext()
     const {cellData, currentTimelineIndex, aStarData, diagonalSettings, playbackSpeedFactor} = state
     const [heuristicPopoverOpen, setHeuristicPopoverOpen] = useState(false)
@@ -389,7 +390,8 @@ export function Foo() {
                             <div className="flex gap-3 items-center w-1/2">
                                 <div className="grow">
                                     <div className="flex justify-between mb-1">
-                                        <label htmlFor="playbackSpeed" className="text-xs font-medium text-gray-500">
+                                        <label htmlFor={`${id}-playbackSpeed`}
+                                               className="text-xs font-medium text-gray-500">
                                             Playback
                                             Speed: {Math.floor(DEFAULT_PLAYBACK_SPEED_MS / playbackSpeedFactor)}ms
                                         </label>
@@ -398,7 +400,7 @@ export function Foo() {
                                     </div>
                                     <input
                                         type="range"
-                                        id="playbackSpeed"
+                                        id={`${id}-playbackSpeed`}
                                         min={SMALLEST_PLAYBACK_FACTOR}
                                         max={LARGEST_PLAYBACK_FACTOR}
                                         step={PLAYBACK_INCREMENT}
@@ -431,7 +433,7 @@ export function Foo() {
 
                     <div className="w-full">
                         <input
-                            id="timeline"
+                            id={`${id}-timeline`}
                             type="range"
                             min={-1}
                             max={timeline.length - 1}
@@ -469,7 +471,7 @@ export function Foo() {
                         </button>
 
                         <button
-                            className={`px-4 py-2  ${state.configChanged ? 'scale-105 rotate-2 animate-pulse bg-rose-600 hover:bg-rose-700' : 'scale-100 bg-rose-500 hover:bg-rose-600'}
+                            className={`px-4 py-2  ${state.configChanged ? 'scale-105 rotate-2 animate-bounce bg-rose-600 hover:bg-rose-700' : 'scale-100 bg-rose-500 hover:bg-rose-600'}
                           text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium`}
                             onClick={() => {
                                 dispatch({type: "RUN_ASTAR"})
@@ -498,12 +500,13 @@ export function Foo() {
                             className="flex flex-col gap-4 max-w-md  mt-4 p-4 bg-white hover:bg-slate-50 rounded-lg shadow-md">
                             <h3 className={'text-sm font-mono'}>Control A* Behavior with Weights</h3>
                             <div className="w-full ">
-                                <label htmlFor="gWeight" className="block text-sm font-semibold text-blue-600 mb-1">
+                                <label htmlFor={`${id}_gWeight`}
+                                       className="block text-sm font-semibold text-blue-600 mb-1">
                                     G-Weight (Cost So Far): <span
                                     className="font-mono text-black">{state.gwWeights.gWeight}</span>
                                 </label>
                                 <input
-                                    id={`gWeight`}
+                                    id={`${id}_gWeight`}
                                     type="range"
                                     min={0}
                                     max={10}
@@ -520,12 +523,13 @@ export function Foo() {
                                 />
                             </div>
                             <div className="w-full pt-2">
-                                <label htmlFor="hWeight" className="block text-sm font-semibold text-pink-600 mb-1">
+                                <label htmlFor={`${id}_hWeight`}
+                                       className="block text-sm font-semibold text-pink-600 mb-1">
                                     H-Weight (Heuristic): <span
                                     className="font-mono text-black">{state.gwWeights.hWeight}</span>
                                 </label>
                                 <input
-                                    id={`hWeight`}
+                                    id={`${id}_hWeight`}
                                     type="range"
                                     min={0}
                                     max={10}
@@ -549,8 +553,10 @@ export function Foo() {
                             <fieldset className="border p-3 rounded-md">
                                 <legend className="text-sm font-semibold text-gray-700">Diagonal Movement</legend>
 
-                                <label className="flex items-center gap-2 mt-2">
-                                    <input type="checkbox" checked={diagonalSettings.allowed} onChange={() => {
+                                <label className="flex items-center gap-2 mt-2" htmlFor={`${id}_toggle_diagonal`}>
+                                    <input id={`${id}_toggle_diagonal`} type="checkbox"
+
+                                           checked={diagonalSettings.allowed} onChange={() => {
                                         dispatch({
                                             type: 'TOGGLE_DIAGONAL',
                                             payload: !diagonalSettings.allowed
@@ -563,10 +569,12 @@ export function Foo() {
                                 {diagonalSettings.allowed && (
                                     <div className="ml-4 mt-2 space-y-2">
                                         <div className="flex gap-4">
-                                            <label className="flex items-center gap-2">
+                                            <label className="flex items-center gap-2"
+                                                   htmlFor={`${id}_toggle_diagonal_strict`}>
                                                 <input
+                                                    id={`${id}_toggle_diagonal_strict`}
                                                     type="radio"
-                                                    name="diagonalMode"
+                                                    name={`diagonalMode-${id}`}
                                                     value="strict"
                                                     checked={diagonalSettings.cornerCutting === 'strict'}
                                                     onChange={() => {
@@ -580,10 +588,12 @@ export function Foo() {
                                                 Strict
                                             </label>
 
-                                            <label className="flex items-center gap-2">
+                                            <label className="flex items-center gap-2"
+                                                   htmlFor={`${id}_toggle_diagonal_lax`}>
                                                 <input
                                                     type="radio"
-                                                    name="diagonalMode"
+                                                    id={`${id}_toggle_diagonal_lax`}
+                                                    name={`diagonalMode-${id}`}
                                                     value="lax"
                                                     checked={diagonalSettings.cornerCutting === 'lax'}
                                                     onChange={() => {
@@ -599,11 +609,13 @@ export function Foo() {
                                         </div>
 
                                         <div>
-                                            <label className="text-sm text-gray-600 font-medium">
+                                            <label className="text-sm text-gray-600 font-medium"
+                                                   htmlFor={`${id}_toggle_diagonal_multiplier`}>
                                                 Diagonal Cost
                                                 Multiplier: {diagonalSettings.diagonalMultiplier.toFixed(4)}
                                             </label>
                                             <input
+                                                id={`${id}_toggle_diagonal_multiplier`}
                                                 type="range"
                                                 min={0.1}
                                                 max={10}
@@ -788,6 +800,9 @@ export default function Home() {
 
     return (
         <div className={'flex flex-col'}>
+            <GridProvider>
+                <Foo/>
+            </GridProvider>
             <GridProvider>
                 <Foo/>
             </GridProvider>
