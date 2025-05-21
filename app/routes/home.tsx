@@ -34,6 +34,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "~/components/ui/select";
+import {PauseIcon, PlayIcon } from "~/components/icons/icons";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -112,7 +113,7 @@ const weightPresets: WeightData[] = [
     {
         label: "Center Ridge",
         value: "centerRidge",
-        description: "Creates a high-cost ridge down the center of the grid.",
+        description: "Creates a high-cost ridge down the center of the simple-grid.",
         emoji: "⛰️",
         tag: "Challenging"
     },
@@ -154,7 +155,7 @@ const weightPresets: WeightData[] = [
     {
         label: "High Cost",
         value: "highCost",
-        description: "Generates a grid with higher costs having a greater chace.",
+        description: "Generates a simple-grid with higher costs having a greater chace.",
         emoji: "💰",
         tag: "Recommended"
     }
@@ -421,7 +422,7 @@ function reducer(state: AppState, action: Action): AppState {
             }
             return {...state, cellData: cellDataGrid}
         case "SET_GRID_SIZE":
-            //this one needs a bit more on it, like do we regen a grid, do we 'trim' the grid
+            //this one needs a bit more on it, like do we regen a simple-grid, do we 'trim' the simple-grid
             const givenSize = Math.abs(action.payload ?? 5)
             return {
                 ...state,
@@ -1068,7 +1069,7 @@ export default function Home() {
                             Reset
                         </button>
                     </div>
-                    <div className={'grid grid-cols-2 gap-2'}>
+                    <div className={'simple-grid simple-grid-cols-2 gap-2'}>
                         <div
                             className="flex flex-col gap-4 max-w-md  mt-4 p-4 bg-white hover:bg-slate-50 rounded-lg shadow-md">
                             <h3 className={'text-sm font-mono'}>Control A* Behavior with Weights</h3>
@@ -1359,37 +1360,7 @@ export default function Home() {
     );
 }
 
-type SimpleGridProps = {
-    grid: number[][]
-}
 
-function SimpleGrid({grid}: SimpleGridProps) {
-    return (
-        <div className={'flex flex-col gap-2'}>
-            {grid.map((row, r) => (
-                    <div key={r} className={'flex gap-x-0.5'}>
-                        {row.map((value, c) => {
-                            const key = `${r},${c}`
-                            return (
-                                <div key={key}
-                                     style={{
-                                         height: `${gridCellSize}rem`,
-                                         width: `${gridCellSize}rem`,
-                                         backgroundColor: "#dff2fe"
-                                     }}
-                                     className={` rounded flex items-center justify-center shadow-sm border border-sky-300 `}>
-                                    <p className="text-gray-800 font-medium">
-                                        {value.toFixed(2)}</p>
-                                </div>
-                            )
-                        })}
-                    </div>
-                )
-            )}
-        </div>
-    )
-
-}
 
 
 function copyCellData(cellData: CellData[][]): CellData[][] {
@@ -1422,28 +1393,3 @@ function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedSt
 }
 
 
-const PlayIcon = () => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        width="24"
-        height="24"
-    >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9L5 3z"/>
-    </svg>
-);
-
-const PauseIcon = () => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        width="24"
-        height="24"
-    >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 4h2v16h-2zM16 4h2v16h-2z"/>
-    </svg>
-);
