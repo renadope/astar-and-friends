@@ -307,21 +307,25 @@ export function getAlgorithmName(gWeight: number, hWeight: number): string {
     }
 
     if (g === 0 && h > 0) {
-        return h === 1 ? "Greedy Best-First Search" : `Greedy BFS (×${h})`;
+        // return h === 1 ? "Greedy Best-First Search" : `Greedy BFS (×${h})`;
+        return h === 1 ? "Greedy Best-First Search" : `Greedy BFS`;
     }
 
     if (g > 0 && h === 0) {
-        return g === 1 ? "Dijkstra's Algorithm" : `Weighted Dijkstra (×${g})`;
+        // return g === 1 ? "Dijkstra's Algorithm" : `Weighted Dijkstra (×${g})`;
+        return g === 1 ? "Dijkstra's Algorithm" : `Weighted Dijkstra`;
     }
 
     if (g === 1 && h === 1) {
         return "A* Search";
     }
     if (g !== 1 && h !== 1 && g === h) {
-        return `Aggressive ${g}x A* Search `;
+        // return `Aggressive ${g}x A* Search `;
+        return `Aggressive A* Search `;
     }
 
 
-    return `Weighted A* (g×${g}, h×${h})`;
+    // return `Weighted A* (g×${g}, h×${h})`;
+    return `Weighted A*`;
 }
 

@@ -49,7 +49,7 @@ const SMALLEST_PLAYBACK_FACTOR = 0.25
 const LARGEST_PLAYBACK_FACTOR = 10
 const PLAYBACK_INCREMENT = 0.25
 //rem
-const gridCellSize = 6
+const gridCellSize = 7
 type gwWeights = Omit<Weights, 'name'>
 type CellToggle = 'set_goal' | 'toggle_wall' | 'set_start' | "inactive"
 
@@ -233,6 +233,21 @@ const initialState: AppState = {
     configChanged: false,
 }
 
+function addCostHistoryToCells(state: AppState) {
+    if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
+        return state
+    }
+    const cellDataGrid = copyCellData(state.cellData)
+    const costUpdateHistory = state.aStarData.costUpdateHistory
+    for (const pair in costUpdateHistory) {
+        const updateHistory = costUpdateHistory[pair] ?? []
+        const pos = parsePos(pair)
+        cellDataGrid[pos[0]][pos[1]].costUpdateHistory = [...updateHistory]
+    }
+    return {...state, cellData: cellDataGrid}
+
+}
+
 function updateCellDataUsingTimelineData(state: AppState) {
     if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
         return state
@@ -404,17 +419,7 @@ function reducer(state: AppState, action: Action): AppState {
                 configChanged: false,
             }
         case "SET_CELL_DATA_COST_HISTORY":
-            if (state.cellData.length === 0 || isNullOrUndefined(state.aStarData)) {
-                return state
-            }
-            const cellDataGrid = copyCellData(state.cellData)
-            const costUpdateHistory = state.aStarData.costUpdateHistory
-            for (const pair in costUpdateHistory) {
-                const updateHistory = costUpdateHistory[pair] ?? []
-                const pos = parsePos(pair)
-                cellDataGrid[pos[0]][pos[1]].costUpdateHistory = [...updateHistory]
-            }
-            return {...state, cellData: cellDataGrid}
+            return addCostHistoryToCells(state)
         case "SET_GRID_SIZE":
             //this one needs a bit more on it, like do we regen a simple-grid, do we 'trim' the simple-grid
             const givenSize = Math.abs(action.payload ?? 5)
@@ -427,11 +432,11 @@ function reducer(state: AppState, action: Action): AppState {
             const incrStep = Math.abs(action.payload ?? 1)
             const newStep = state.currentTimelineIndex + incrStep
             if (newStep >= getActiveTimelineLength(state) - 1) {
-                return updateCellDataUsingTimelineData({
+                return addCostHistoryToCells(updateCellDataUsingTimelineData({
                     ...state,
                     isPlaying: false,
                     currentTimelineIndex: getActiveTimelineLength(state) - 1
-                })
+                }))
             }
 
             return updateCellDataUsingTimelineData({
@@ -452,11 +457,11 @@ function reducer(state: AppState, action: Action): AppState {
             const setIndexIdx = action.payload
 
             if (setIndexIdx >= getActiveTimelineLength(state) - 1) {
-                return updateCellDataUsingTimelineData({
+                return addCostHistoryToCells(updateCellDataUsingTimelineData({
                     ...state,
                     isPlaying: false,
                     currentTimelineIndex: getActiveTimelineLength(state) - 1
-                })
+                }))
             }
             return updateCellDataUsingTimelineData({
                 ...state,
@@ -664,17 +669,17 @@ function reducer(state: AppState, action: Action): AppState {
                 return state
             }
             if (state.timeline === 'snapshot') {
-                return updateCellDataUsingTimelineData({
+                return addCostHistoryToCells(updateCellDataUsingTimelineData({
                         ...state,
                         currentTimelineIndex: state.snapshotTimeline.length - 1
                     }
-                )
+                ))
             }
-            return updateCellDataUsingTimelineData({
+            return addCostHistoryToCells(updateCellDataUsingTimelineData({
                     ...state,
                     currentTimelineIndex: state.granularTimeline.length - 1
                 }
-            )
+            ))
         case "JUMP_TO_START":
             if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
                 return state
@@ -768,6 +773,7 @@ export default function Home() {
         if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0 || state.cellSelectionState !== 'inactive') {
             return
         }
+
         if (!state.isPlaying) {
             return
         }
@@ -849,9 +855,20 @@ export default function Home() {
                                             </p>
 
                                             <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
-                                                {cell.cost}
+                                                g:{cell.cost}
                                             </p>
-
+                                            <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                                                {!isNullOrUndefined(cell.h) ? `h:${cell.h.toFixed(2)}` : ''}
+                                            </p>
+                                            {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
+                                                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                                                    cost:{cell.costUpdateHistory[cell.costUpdateHistory.length-1].gCost.toFixed(2)}
+                                                </p>
+                                            )}{cell.costUpdateHistory && cell.costUpdateHistory.length > 1 && (
+                                                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                                                    dlta:{Math.abs(cell.costUpdateHistory[cell.costUpdateHistory.length-1].gCost-cell.costUpdateHistory[0].gCost).toFixed(2)}
+                                                </p>
+                                            )}
                                             {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
                                                 <div
                                                     className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-xs px-1 rounded-full shadow-sm transform transition-transform group-hover:scale-125">
@@ -1001,7 +1018,9 @@ export default function Home() {
                                 <div className="size-2 rounded-full bg-sky-500"></div>
                                 <div className="text-sm font-medium text-gray-700">
                                     {currentTimelineIndex >= 0 ? (
-                                        <span>Step {currentTimelineIndex + 1} of {timeline.length}</span>
+                                        <>
+                                            <span>Step {currentTimelineIndex + 1} of {timeline.length}</span>
+                                        </>
                                     ) : (
                                         <span className="text-gray-400">Waiting to start...</span>
                                     )}
@@ -1062,7 +1081,7 @@ export default function Home() {
                                       d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
                                       clipRule="evenodd"/>
                             </svg>
-                            Run {algorithmName}// debug:{state.timeline}
+                            Run {algorithmName}
                         </button>
                         <button
                             className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"
