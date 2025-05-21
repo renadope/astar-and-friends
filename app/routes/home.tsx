@@ -29,7 +29,7 @@ import {
 } from "~/state/constants";
 import type {CellToggle} from "~/cell-data/types";
 import {GridProvider, useGridContext} from "~/state/context";
-import CellData from "~/components/cell-data";
+import Grid from "~/components/grid";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -161,7 +161,7 @@ export function Foo() {
     return (
         <div className={'max-w-10/12 mx-auto   p-2'}>
             <div className={'flex p-4 rounded-lg shadow-sm  gap-2 '}>
-                <CellData/>
+                <Grid/>
                 <div
                     className=" flex flex-col gap-4 p-4  backdrop-blur-sm rounded-xl shadow-sm border-fuchsia-500 border-2">
                     <div className="flex items-center justify-between">
