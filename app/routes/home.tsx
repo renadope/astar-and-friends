@@ -34,7 +34,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "~/components/ui/select";
-import {PauseIcon, PlayIcon } from "~/components/icons/icons";
+import {PauseIcon, PlayIcon} from "~/components/icons/icons";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -231,34 +231,28 @@ const initialState: AppState = {
     isPlaying: false,
     playbackSpeedFactor: 1,
     configChanged: false,
-
-    // activeTimeline: 'granular'
 }
 
 function updateCellDataUsingTimelineData(state: AppState) {
     if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
         return state
     }
-    if (state.timeline === 'granular') {
-        const idx = Math.min(state.granularTimeline.length - 1, state.currentTimelineIndex)
-        const adjustedTimeline = state.granularTimeline.slice(0, idx + 1)
-        const initCell = initCellData(state.weightGrid,
-            state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
-        return {
-            ...state,
-            cellData: updateCellDataFlattenedStep(adjustedTimeline, initCell)
-        }
-    } else if (state.timeline === "snapshot") {
-        const idx = Math.min(state.snapshotTimeline.length - 1, state.currentTimelineIndex)
-        const adjustedTimeline = state.snapshotTimeline.slice(0, idx + 1)
-        const initCell = initCellData(state.weightGrid,
-            state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
-        return {
-            ...state,
-            cellData: updateCellDataSnapshotStep(adjustedTimeline, initCell)
-        }
+    const timeline = getActiveTimeline(state)
+    const idx = Math.min(timeline.length - 1, state.currentTimelineIndex)
+    const adjustedTimeline = timeline.slice(0, idx + 1)
+    const initCell = initCellData(state.weightGrid,
+        state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
+    return {
+        ...state,
+        cellData: state.timeline === 'granular' ?
+            updateCellDataFlattenedStep(adjustedTimeline as FlattenedStep[], initCell) :
+            updateCellDataSnapshotStep(adjustedTimeline as SnapshotStep[], initCell)
     }
-    return state
+
+}
+
+function getActiveTimeline(state: AppState): SnapshotStep[] | FlattenedStep[] {
+    return state.timeline === 'granular' ? state.granularTimeline : state.snapshotTimeline
 
 }
 
@@ -897,19 +891,23 @@ export default function Home() {
                         </div>)
                     }
                 </div>
-                <div className=" flex flex-col gap-4 p-4  backdrop-blur-sm rounded-xl shadow-sm border-fuchsia-500 border-2">
+                <div
+                    className=" flex flex-col gap-4 p-4  backdrop-blur-sm rounded-xl shadow-sm border-fuchsia-500 border-2">
                     <div className="flex items-center justify-between">
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-wrap gap-2">
                                 <div className="flex gap-1.5">
                                     <button
                                         disabled={hasNoAStarData}
-                                        onClick={() => dispatch({type: "SET_PLAYING_STATUS", payload: !state.isPlaying})}
+                                        onClick={() => dispatch({
+                                            type: "SET_PLAYING_STATUS",
+                                            payload: !state.isPlaying
+                                        })}
                                         className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 font-medium"
                                     >
                                         {state.isPlaying ?
-                                            <><PauseIcon /> <span>Pause</span></> :
-                                            <><PlayIcon  /> <span>Play</span></>
+                                            <><PauseIcon/> <span>Pause</span></> :
+                                            <><PlayIcon/> <span>Play</span></>
                                         }
                                     </button>
 
@@ -918,8 +916,10 @@ export default function Home() {
                                         onClick={() => dispatch({type: "DECREMENT_INDEX"})}
                                         className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none"
+                                             viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                  d="M15 19l-7-7 7-7"/>
                                         </svg>
                                         <span>Back</span>
                                     </button>
@@ -930,8 +930,10 @@ export default function Home() {
                                         className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                     >
                                         <span>Next</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none"
+                                             viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                  d="M9 5l7 7-7 7"/>
                                         </svg>
                                     </button>
                                 </div>
@@ -942,7 +944,7 @@ export default function Home() {
                                         onClick={() => dispatch({type: "JUMP_TO_START"})}
                                         className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                     >
-                                        <RewindIcon className="h-4 w-4" />
+                                        <RewindIcon className="h-4 w-4"/>
                                         <span>Start</span>
                                     </button>
 
@@ -951,7 +953,7 @@ export default function Home() {
                                         onClick={() => dispatch({type: "JUMP_TO_PATH_START"})}
                                         className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                     >
-                                        <MapIcon className="h-4 w-4" />
+                                        <MapIcon className="h-4 w-4"/>
                                         <span>Path Start</span>
                                     </button>
 
@@ -960,7 +962,7 @@ export default function Home() {
                                         onClick={() => dispatch({type: "JUMP_TO_END"})}
                                         className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                     >
-                                        <FastForwardIcon className="h-4 w-4" />
+                                        <FastForwardIcon className="h-4 w-4"/>
                                         <span>End</span>
                                     </button>
                                 </div>
@@ -970,9 +972,11 @@ export default function Home() {
                                 <div className="grow">
                                     <div className="flex justify-between mb-1">
                                         <label htmlFor="playbackSpeed" className="text-xs font-medium text-gray-500">
-                                            Playback Speed: {Math.floor(DEFAULT_PLAYBACK_SPEED_MS / playbackSpeedFactor)}ms
+                                            Playback
+                                            Speed: {Math.floor(DEFAULT_PLAYBACK_SPEED_MS / playbackSpeedFactor)}ms
                                         </label>
-                                        <span className="text-xs font-medium text-blue-600">{playbackSpeedFactor}x</span>
+                                        <span
+                                            className="text-xs font-medium text-blue-600">{playbackSpeedFactor}x</span>
                                     </div>
                                     <input
                                         type="range"
@@ -1359,8 +1363,6 @@ export default function Home() {
         </div>
     );
 }
-
-
 
 
 function copyCellData(cellData: CellData[][]): CellData[][] {
