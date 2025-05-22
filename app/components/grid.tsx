@@ -1,6 +1,5 @@
 import {isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
-import type {Pos} from "~/types/pathfinding";
 import GridCell, {cellBgColor} from "~/components/gridCell";
 
 
