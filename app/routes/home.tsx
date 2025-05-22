@@ -123,7 +123,7 @@ const weightPresets: WeightData[] = [
 ];
 
 
-export function Foo() {
+export function Main() {
     const gridSize = 8
     const id = useId()
     const {state, dispatch} = useGridContext()
@@ -653,7 +653,7 @@ export default function Home() {
     return (
         <div className={'flex flex-col'}>
             <GridProvider>
-                <Foo/>
+                <Main/>
             </GridProvider>
             {/*<GridProvider>*/}
             {/*    <Foo/>*/}
