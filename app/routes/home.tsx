@@ -5,7 +5,7 @@ import {isNullOrUndefined} from "~/utils/helpers";
 import {DEFAULT_PLAYBACK_SPEED_MS} from "~/state/constants";
 import {GridProvider, useGridContext} from "~/state/context";
 import Grid from "~/components/grid";
-import ControlPanel from "~/components/control-panel";
+import ControlPanel from "~/components/control-panel/control-panel";
 
 export function meta({}: Route.MetaArgs) {
     return [
