@@ -84,33 +84,33 @@ export default function GridCell({pos}: CellProps) {
                 <div className="absolute top-0 left-0 text-lg">🏁</div>
             )}
 
-            <div className="flex flex-col items-center w-full h-full justify-center group">
+            <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
                 <p className={`text-xs font-bold ${textColors[cell.state] || "text-slate-700"} transition-all duration-200 group-hover:text-lg`}>
                     {capitalize(cell.state)}
                 </p>
 
-                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
                     {cell.pos.join(',')}
                 </p>
 
-                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>
+                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
                     g:{cell.cost}
                 </p>
                 {/*    We'd put this stuff in a popover or hover card, we also may want a way to directly set weights on a cell, so wed see*/}
-                {/*    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>*/}
-                {/*        {!isNullOrUndefined(cell.h) ? `h:${cell.h.toFixed(2)}` : ''}*/}
-                {/*    </p>*/}
+                    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
+                        {!isNullOrUndefined(cell.h) ? `h:${cell.h.toFixed(2)}` : ''}
+                    </p>
                 {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
-                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>*/}
+                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
                 {/*            cost:{cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost.toFixed(2)}*/}
                 {/*        </p>*/}
                 {/*    )}{cell.costUpdateHistory && cell.costUpdateHistory.length > 1 && (*/}
-                {/*    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>*/}
+                {/*    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
                 {/*        dlta:{Math.abs(cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost - cell.costUpdateHistory[0].gCost).toFixed(2)}*/}
                 {/*    </p>*/}
                 {/*)}*/}
                 {/*    {costUpdateOnThisStep && (*/}
-                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>*/}
+                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
                 {/*            foo:{costUpdateOnThisStep.gCost}*/}
                 {/*        </p>*/}
                 {/*    )}*/}
@@ -121,7 +121,7 @@ export default function GridCell({pos}: CellProps) {
                 {/*        </div>*/}
                 {/*    )}*/}
                 {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
-                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-70 group-hover:opacity-100`}>*/}
+                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
                 {/*            all:{cell.costUpdateHistory.map((foo) => foo.gCost.toFixed(1)).join(',')}*/}
                 {/*        </p>*/}
                 {/*    )}*/}
