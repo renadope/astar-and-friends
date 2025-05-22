@@ -222,31 +222,25 @@ export function reducer(state: AppState, action: Action): AppState {
 
             }
         case "TOGGLE_DIAGONAL":
-            const toggledVal = action.payload
-            if (toggledVal === state.diagonalSettings.allowed) {
-                return state
-            }
-
-            if (toggledVal) {
+            const toggleConfig = action.payload
+            if (toggleConfig === 'none') {
                 return {
                     ...state,
-                    configChanged: true,
-
                     diagonalSettings: {
-                        allowed: toggledVal,
-                        cornerCutting: 'lax',
-                        diagonalMultiplier: Math.SQRT2,
+                        allowed: false
                     }
                 }
             }
             return {
                 ...state,
-                configChanged: true,
-
                 diagonalSettings: {
-                    allowed: false
+                    allowed: true,
+                    cornerCutting: toggleConfig,
+                    diagonalMultiplier: Math.SQRT2
                 }
             }
+
+
         case "TOGGLE_CORNER_CUTTING":
             if (!state.diagonalSettings.allowed) {
                 return state

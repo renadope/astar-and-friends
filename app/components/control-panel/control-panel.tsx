@@ -5,7 +5,6 @@ import {isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import {getAlgorithmName} from "~/services/aStar";
 import {CostWeightSliders} from "~/components/control-panel/cost-weight-sliders";
-import {DiagonalControls} from "~/components/control-panel/diagonal-controls";
 import {ToggleCell} from "~/components/control-panel/toggle-cell";
 import {HeuristicPreset} from "~/components/control-panel/heuristic-preset";
 import {WeightPreset} from "~/components/control-panel/weight-preset";
@@ -13,6 +12,7 @@ import {MultiVerse} from "~/components/control-panel/multi-verse";
 import {ForwardIcon, PauseIcon, PlayIcon, PreviousIcon} from "~/components/icons/icons";
 import {PlaybackSpeedSlider} from "~/components/control-panel/playback-speed-slider";
 import {cn} from "~/lib/utils";
+import {ToggleDiagonal} from "~/components/control-panel/toggle-diagonal";
 
 export default function ControlPanel() {
     const gridSize = 8//really need to remove this and add a selector/option for it
@@ -92,7 +92,7 @@ export default function ControlPanel() {
             </div>
             <div className={'grid  gap-2'}>
                 <CostWeightSliders/>
-                <DiagonalControls/>
+                <ToggleDiagonal/>
                 <ToggleCell/>
                 <div className={'grid grid-cols-2 gap-2'}>
                     <HeuristicPreset/>

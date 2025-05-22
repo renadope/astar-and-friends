@@ -1,6 +1,7 @@
 import {isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import GridCell, {cellBgColor} from "~/components/gridCell";
+import {stringifyPos} from "~/utils/grid-helpers";
 
 
 export default function Grid() {
@@ -12,7 +13,7 @@ export default function Grid() {
             {hasCellData && cellData.map((row, r) => (
                 <div key={`col-${r}`} className="flex gap-1 hover:gap-2 transition-all duration-200">
                     {row.map((_, c) => (
-                        <GridCell pos={[r, c]}/>
+                        <GridCell key={stringifyPos(r, c)} pos={[r, c]}/>
                     ))}
                 </div>
             ))}

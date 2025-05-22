@@ -38,7 +38,7 @@ export type Action =
     | { type: "UPDATE_CELL_DATA", }
     | { type: "SET_G_WEIGHT", payload: number }
     | { type: "SET_H_WEIGHT", payload: number }
-    | { type: "TOGGLE_DIAGONAL", payload: boolean }
+    | { type: "TOGGLE_DIAGONAL", payload: 'none' | 'strict' | 'lax' }
     | { type: "TOGGLE_CORNER_CUTTING", payload: 'strict' | 'lax' }
     | { type: "SET_DIAGONAL_MULTIPLIER", payload: number }
     | { type: "SET_CELL_SELECTION_STATE", payload: CellToggle }

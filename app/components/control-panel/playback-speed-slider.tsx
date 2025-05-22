@@ -22,8 +22,8 @@ export function PlaybackSpeedSlider() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <div className="px-2 py-1 bg-sky-50 border border-blue-200 rounded-md">
-                        <span className="text-sm font-semibold text-blue-700">{playbackSpeedFactor}×</span>
+                    <div className="px-2 py-1 bg-sky-50 border border-sky-200 rounded-md">
+                        <span className="text-sm font-semibold text-sky-700">{playbackSpeedFactor}×</span>
                     </div>
                     <div className="px-2 py-1 bg-gray-50 border border-gray-200 rounded-md">
                         <span
@@ -46,7 +46,7 @@ export function PlaybackSpeedSlider() {
             {/*                payload: {factor: Number(e.target.value)}*/}
             {/*            })*/}
             {/*        }}*/}
-            {/*        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-700 transition-all duration-200"*/}
+            {/*        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-600 hover:accent-sky-700 transition-all duration-200"*/}
             {/*        style={{*/}
             {/*            background: `linear-gradient(to right, #dbeafe 0%, #3b82f6 ${((playbackSpeedFactor - SMALLEST_PLAYBACK_FACTOR) / (LARGEST_PLAYBACK_FACTOR - SMALLEST_PLAYBACK_FACTOR)) * 100}%, #e5e7eb ${((playbackSpeedFactor - SMALLEST_PLAYBACK_FACTOR) / (LARGEST_PLAYBACK_FACTOR - SMALLEST_PLAYBACK_FACTOR)) * 100}%, #e5e7eb 100%)`*/}
             {/*        }}*/}
@@ -63,8 +63,8 @@ export function PlaybackSpeedSlider() {
                         })}
                         className={`p-3 text-xs font-medium rounded transition-all duration-200 ${
                             playbackSpeedFactor === speed
-                                ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-sm rounded-full'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
+                                ? 'border-2 border-black bg-sky-500 hover:bg-sky-600 text-white shadow-sm rounded-full'
+                                : 'border border-black bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 rounded-md'
                         }`}
                     >
                         {speed}×
