@@ -121,7 +121,7 @@ export type CostAndWeightKind =
     | "wall"
     | "circularBasin"
     | "centerRidge"
-    | "noise"
+    | "fake_noise"
     | "uniform"
     | "highCost"
 
@@ -132,7 +132,7 @@ export const predefinedWeightFuncs: Record<CostAndWeightKind, CostAndWeightFunc>
     wall: wallCorridorBias,
     circularBasin: circularBasin,
     centerRidge: centerRidge,
-    noise: fakeNoise,
+    fake_noise: fakeNoise,
     uniform: uniform,
     highCost: highCost
 }

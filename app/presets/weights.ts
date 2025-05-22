@@ -17,7 +17,7 @@ export const weightPresets: WeightData[] = [
     },
     {
         label: "Fake Noise",
-        value: "noise",
+        value: "fake_noise",
         description: "Adds pseudo-random variation in weights to simulate natural terrain.",
         emoji: "🌫️",
         tag: "Experimental"

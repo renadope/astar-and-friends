@@ -228,175 +228,11 @@ export default function ControlPanel() {
                     Reset
                 </button>
             </div>
-            <div className={'simple-grid simple-grid-cols-2 gap-2'}>
-                <div
-                    className="flex flex-col gap-4 max-w-md  mt-4 p-4 bg-white hover:bg-slate-50 rounded-lg shadow-md">
-                    <h3 className={'text-sm font-mono'}>Control A* Behavior with Weights</h3>
-                    <div className="w-full ">
-                        <label htmlFor={`${id}_gWeight`}
-                               className="block text-sm font-semibold text-blue-600 mb-1">
-                            G-Weight (Cost So Far): <span
-                            className="font-mono text-black">{state.gwWeights.gWeight}</span>
-                        </label>
-                        <input
-                            id={`${id}_gWeight`}
-                            type="range"
-                            min={0}
-                            max={10}
-                            step={0.5}
-                            value={state.gwWeights.gWeight}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                dispatch({
-                                    type: 'SET_G_WEIGHT',
-                                    payload: Number(e.target.value),
-                                })
-                            }
-                            }
-                            className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                        />
-                    </div>
-                    <div className="w-full pt-2">
-                        <label htmlFor={`${id}_hWeight`}
-                               className="block text-sm font-semibold text-pink-600 mb-1">
-                            H-Weight (Heuristic): <span
-                            className="font-mono text-black">{state.gwWeights.hWeight}</span>
-                        </label>
-                        <input
-                            id={`${id}_hWeight`}
-                            type="range"
-                            min={0}
-                            max={10}
-                            step={0.5}
-                            value={state.gwWeights.hWeight}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                dispatch({
-                                    type: 'SET_H_WEIGHT',
-                                    payload: Number(e.target.value),
-                                })
-                            }
+            <div className={'grid  gap-2'}>
+                <CostWeightSliders/>
+                <DiagonalControls/>
+                <ToggleCell/>
 
-                            }
-                            className="w-full h-2 bg-pink-200 rounded-lg appearance-none cursor-pointer accent-pink-600"
-                        />
-                    </div>
-                </div>
-                <div
-                    className="flex flex-col gap-4 max-w-md  mt-4 p-4 bg-white hover:bg-slate-50 rounded-lg shadow-md">
-                    <h3 className={'text-sm font-mono'}>Diagonal Contorls</h3>
-                    <fieldset className="border p-3 rounded-md">
-                        <legend className="text-sm font-semibold text-gray-700">Diagonal Movement</legend>
-
-                        <label className="flex items-center gap-2 mt-2" htmlFor={`${id}_toggle_diagonal`}>
-                            <input id={`${id}_toggle_diagonal`} type="checkbox"
-
-                                   checked={diagonalSettings.allowed} onChange={() => {
-                                dispatch({
-                                    type: 'TOGGLE_DIAGONAL',
-                                    payload: !diagonalSettings.allowed
-                                })
-
-                            }}/>
-                            Allow Diagonal
-                        </label>
-
-                        {diagonalSettings.allowed && (
-                            <div className="ml-4 mt-2 space-y-2">
-                                <div className="flex gap-4">
-                                    <label className="flex items-center gap-2"
-                                           htmlFor={`${id}_toggle_diagonal_strict`}>
-                                        <input
-                                            id={`${id}_toggle_diagonal_strict`}
-                                            type="radio"
-                                            name={`diagonalMode-${id}`}
-                                            value="strict"
-                                            checked={diagonalSettings.cornerCutting === 'strict'}
-                                            onChange={() => {
-                                                dispatch({
-                                                    type: "TOGGLE_CORNER_CUTTING",
-                                                    payload: "strict"
-                                                })
-
-                                            }}
-                                        />
-                                        Strict
-                                    </label>
-
-                                    <label className="flex items-center gap-2"
-                                           htmlFor={`${id}_toggle_diagonal_lax`}>
-                                        <input
-                                            type="radio"
-                                            id={`${id}_toggle_diagonal_lax`}
-                                            name={`diagonalMode-${id}`}
-                                            value="lax"
-                                            checked={diagonalSettings.cornerCutting === 'lax'}
-                                            onChange={() => {
-                                                dispatch({
-                                                    type: "TOGGLE_CORNER_CUTTING",
-                                                    payload: "lax"
-                                                })
-
-                                            }}
-                                        />
-                                        Lax
-                                    </label>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm text-gray-600 font-medium"
-                                           htmlFor={`${id}_toggle_diagonal_multiplier`}>
-                                        Diagonal Cost
-                                        Multiplier: {diagonalSettings.diagonalMultiplier.toFixed(4)}
-                                    </label>
-                                    <input
-                                        id={`${id}_toggle_diagonal_multiplier`}
-                                        type="range"
-                                        min={0.1}
-                                        max={10}
-                                        step={.1}
-                                        value={diagonalSettings.diagonalMultiplier}
-                                        onChange={(e) => {
-                                            dispatch({
-                                                type: "SET_DIAGONAL_MULTIPLIER",
-                                                payload: Number(e.target.value)
-                                            })
-                                        }}
-                                        className="w-full accent-purple-500"
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </fieldset>
-
-                </div>
-                <div className="space-y-2 col-span-full">
-                    <label className="text-sm font-medium text-muted-foreground">Cell
-                        Mode:{state.cellSelectionState ? state.cellSelectionState : `ghhgfhfh`}</label>
-                    <ToggleGroup
-                        type="single"
-                        value={state.cellSelectionState}
-                        onValueChange={(val: string) => {
-                            const st = val.trim()
-                            dispatch({
-                                type: "SET_CELL_SELECTION_STATE",
-                                payload: st.length === 0 ? 'inactive' : st as CellToggle
-                            })
-                        }}
-                        variant="outline"
-                        size="default"
-                        className="w-full"
-                        disabled={!hasNoAStarData}
-                    >
-                        <ToggleGroupItem value="set_goal" aria-label="Set Goal">
-                            Set Goal 🎯
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="set_start" aria-label="Set Start">
-                            Set Start 🏁
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="toggle_wall" aria-label="Toggle Wall">
-                            Toggle Wall 🚧
-                        </ToggleGroupItem>
-                    </ToggleGroup>
-                </div>
 
                 <div className={'space-y-2 flex flex-col'}>
                     <label className="text-sm font-medium text-muted-foreground">Select Heuristic
@@ -523,6 +359,196 @@ export default function ControlPanel() {
 
             </div>
 
+        </div>
+    )
+}
+
+export function CostWeightSliders() {
+    const id = useId()
+    const {state, dispatch} = useGridContext()
+    return (
+        <div
+            className="flex flex-col gap-4 max-w-md  mt-4 p-4 bg-white hover:bg-slate-50 rounded-lg shadow-md">
+            <h3 className={'text-sm font-mono'}>Control A* Behavior with Weights</h3>
+            <div className="w-full ">
+                <label htmlFor={`${id}_gWeight`}
+                       className="block text-sm font-semibold text-blue-600 mb-1">
+                    G-Weight (Cost So Far): <span
+                    className="font-mono text-black">{state.gwWeights.gWeight}</span>
+                </label>
+                <input
+                    id={`${id}_gWeight`}
+                    type="range"
+                    min={0}
+                    max={10}
+                    step={0.5}
+                    value={state.gwWeights.gWeight}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        dispatch({
+                            type: 'SET_G_WEIGHT',
+                            payload: Number(e.target.value),
+                        })
+                    }
+                    }
+                    className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+            </div>
+            <div className="w-full pt-2">
+                <label htmlFor={`${id}_hWeight`}
+                       className="block text-sm font-semibold text-pink-600 mb-1">
+                    H-Weight (Heuristic): <span
+                    className="font-mono text-black">{state.gwWeights.hWeight}</span>
+                </label>
+                <input
+                    id={`${id}_hWeight`}
+                    type="range"
+                    min={0}
+                    max={10}
+                    step={0.5}
+                    value={state.gwWeights.hWeight}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        dispatch({
+                            type: 'SET_H_WEIGHT',
+                            payload: Number(e.target.value),
+                        })
+                    }
+
+                    }
+                    className="w-full h-2 bg-pink-200 rounded-lg appearance-none cursor-pointer accent-pink-600"
+                />
+            </div>
+        </div>
+    )
+}
+
+export function DiagonalControls() {
+    const id = useId()
+    const {state: {diagonalSettings}, dispatch} = useGridContext()
+    return (
+        <div
+            className="flex flex-col gap-4 max-w-md  mt-4 p-4 bg-white hover:bg-slate-50 rounded-lg shadow-md">
+            <h3 className={'text-sm font-mono'}>Diagonal Contorls</h3>
+            <fieldset className="border p-3 rounded-md">
+                <legend className="text-sm font-semibold text-gray-700">Diagonal Movement</legend>
+
+                <label className="flex items-center gap-2 mt-2" htmlFor={`${id}_toggle_diagonal`}>
+                    <input id={`${id}_toggle_diagonal`} type="checkbox"
+
+                           checked={diagonalSettings.allowed} onChange={() => {
+                        dispatch({
+                            type: 'TOGGLE_DIAGONAL',
+                            payload: !diagonalSettings.allowed
+                        })
+
+                    }}/>
+                    Allow Diagonal
+                </label>
+
+                {diagonalSettings.allowed && (
+                    <div className="ml-4 mt-2 space-y-2">
+                        <div className="flex gap-4">
+                            <label className="flex items-center gap-2"
+                                   htmlFor={`${id}_toggle_diagonal_strict`}>
+                                <input
+                                    id={`${id}_toggle_diagonal_strict`}
+                                    type="radio"
+                                    name={`diagonalMode-${id}`}
+                                    value="strict"
+                                    checked={diagonalSettings.cornerCutting === 'strict'}
+                                    onChange={() => {
+                                        dispatch({
+                                            type: "TOGGLE_CORNER_CUTTING",
+                                            payload: "strict"
+                                        })
+
+                                    }}
+                                />
+                                Strict
+                            </label>
+
+                            <label className="flex items-center gap-2"
+                                   htmlFor={`${id}_toggle_diagonal_lax`}>
+                                <input
+                                    type="radio"
+                                    id={`${id}_toggle_diagonal_lax`}
+                                    name={`diagonalMode-${id}`}
+                                    value="lax"
+                                    checked={diagonalSettings.cornerCutting === 'lax'}
+                                    onChange={() => {
+                                        dispatch({
+                                            type: "TOGGLE_CORNER_CUTTING",
+                                            payload: "lax"
+                                        })
+
+                                    }}
+                                />
+                                Lax
+                            </label>
+                        </div>
+
+                        <div>
+                            <label className="text-sm text-gray-600 font-medium"
+                                   htmlFor={`${id}_toggle_diagonal_multiplier`}>
+                                Diagonal Cost
+                                Multiplier: {diagonalSettings.diagonalMultiplier.toFixed(4)}
+                            </label>
+                            <input
+                                id={`${id}_toggle_diagonal_multiplier`}
+                                type="range"
+                                min={0.1}
+                                max={10}
+                                step={.1}
+                                value={diagonalSettings.diagonalMultiplier}
+                                onChange={(e) => {
+                                    dispatch({
+                                        type: "SET_DIAGONAL_MULTIPLIER",
+                                        payload: Number(e.target.value)
+                                    })
+                                }}
+                                className="w-full accent-purple-500"
+                            />
+                        </div>
+                    </div>
+                )}
+            </fieldset>
+
+        </div>
+    )
+}
+
+export function ToggleCell() {
+    const {state, dispatch} = useGridContext()
+    const hasNoAStarData = isNullOrUndefined(state.aStarData)
+
+    return (
+        <div className="space-y-2 col-span-full">
+            <label className="text-sm font-medium text-muted-foreground">Cell
+                Mode:{state.cellSelectionState ? state.cellSelectionState : `ghhgfhfh`}</label>
+            <ToggleGroup
+                type="single"
+                value={state.cellSelectionState}
+                onValueChange={(val: string) => {
+                    const st = val.trim()
+                    dispatch({
+                        type: "SET_CELL_SELECTION_STATE",
+                        payload: st.length === 0 ? 'inactive' : st as CellToggle
+                    })
+                }}
+                variant="outline"
+                size="default"
+                className="w-full"
+                disabled={!hasNoAStarData}
+            >
+                <ToggleGroupItem value="set_goal" aria-label="Set Goal">
+                    Set Goal 🎯
+                </ToggleGroupItem>
+                <ToggleGroupItem value="set_start" aria-label="Set Start">
+                    Set Start 🏁
+                </ToggleGroupItem>
+                <ToggleGroupItem value="toggle_wall" aria-label="Toggle Wall">
+                    Toggle Wall 🚧
+                </ToggleGroupItem>
+            </ToggleGroup>
         </div>
     )
 }
