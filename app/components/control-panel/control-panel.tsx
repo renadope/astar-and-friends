@@ -6,7 +6,7 @@ import {
     PLAYBACK_INCREMENT,
     SMALLEST_PLAYBACK_FACTOR
 } from "~/state/constants";
-import {useId} from "react";
+import {useEffect, useId} from "react";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import {getAlgorithmName} from "~/services/aStar";
@@ -25,6 +25,31 @@ export default function ControlPanel() {
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
     const hasNoAStarData = isNullOrUndefined(aStarData)
+
+    useEffect(() => {
+        dispatch({
+            type: 'GENERATE_GRID', payload: gridSize
+        })
+    }, [])
+
+    useEffect(() => {
+        if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0 || state.cellSelectionState !== 'inactive') {
+            return
+        }
+
+        if (!state.isPlaying) {
+            return
+        }
+        const delay = Math.max(DEFAULT_PLAYBACK_SPEED_MS / playbackSpeedFactor, 50);
+        const interval = setTimeout(() => {
+            dispatch({
+                type: 'INCREMENT_INDEX'
+            })
+        }, delay)
+        return () => clearTimeout(interval)
+
+    }, [aStarData, currentTimelineIndex, timeline.length, state.cellSelectionState, state.isPlaying, playbackSpeedFactor])
+
 
     return (
         <div
