@@ -54,15 +54,13 @@ export default function GridCell({pos}: CellProps) {
         <div
             key={key}
             style={{
-                height: `${gridCellSize}rem`,
-                width: `${gridCellSize}rem`,
                 transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
                 border: `${1 + Math.min(1, 5, Math.sqrt(cell.cost) * .7)}px solid ${costToColor(cell.cost)}`,
                 boxShadow: isCurrentStep ? "0 0 15px 5px rgba(59, 130, 246, 0.6)" :
                     cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.7)" :
                         "0 2px 4px rgba(0,0,0,0.1)"
             }}
-            className={` rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm
+            className={`sm:size-20 md:size-22 lg:size-24 xl:size-28 2xl:size-32 rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm
                         ${cellBgColor[cell.state] ?? 'bg-sky-500'}
                         ${bestFrontier ? 'z-10 translate-x-12 translate-y-6 scale-160' : ''}
                         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
