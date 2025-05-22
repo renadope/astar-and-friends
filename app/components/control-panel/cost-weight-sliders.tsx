@@ -1,11 +1,13 @@
-import {type ChangeEvent, useId} from "react";
+import {type ChangeEvent, type ComponentPropsWithoutRef, useId} from "react";
 import {useGridContext} from "~/state/context";
+import {cn} from "~/lib/utils";
 
-export function CostWeightSliders() {
+export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const id = useId()
     const {state, dispatch} = useGridContext()
     return (
-        <div className="flex flex-col gap-4 max-w-md  mt-4 p-4 bg-white hover:bg-slate-50 rounded-lg shadow-md">
+        <div className={cn("flex flex-col gap-4 max-w-md bg-white hover:bg-slate-50 rounded-lg shadow-md", className)}
+             {...props}>
             <h3 className={'text-sm font-mono'}>Control A* Behavior with Weights</h3>
             <div className="w-full ">
                 <label htmlFor={`${id}_gWeight`}
