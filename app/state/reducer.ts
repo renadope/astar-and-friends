@@ -223,9 +223,13 @@ export function reducer(state: AppState, action: Action): AppState {
             }
         case "TOGGLE_DIAGONAL":
             const toggleConfig = action.payload
+            if (toggleConfig === 'none' && !state.diagonalSettings.allowed) {
+                return state
+            }
             if (toggleConfig === 'none') {
                 return {
                     ...state,
+                    configChanged: true,
                     diagonalSettings: {
                         allowed: false
                     }
@@ -233,27 +237,15 @@ export function reducer(state: AppState, action: Action): AppState {
             }
             return {
                 ...state,
+                configChanged: true,
                 diagonalSettings: {
                     allowed: true,
                     cornerCutting: toggleConfig,
-                    diagonalMultiplier: Math.SQRT2
+                    diagonalMultiplier: state.diagonalSettings.allowed ? state.diagonalSettings.diagonalMultiplier : Math.SQRT2
                 }
             }
 
 
-        case "TOGGLE_CORNER_CUTTING":
-            if (!state.diagonalSettings.allowed) {
-                return state
-            }
-            return {
-                ...state,
-                configChanged: true,
-
-                diagonalSettings: {
-                    ...state.diagonalSettings,
-                    cornerCutting: action.payload
-                }
-            }
         case "SET_DIAGONAL_MULTIPLIER":
             if (!state.diagonalSettings.allowed) {
                 return state
