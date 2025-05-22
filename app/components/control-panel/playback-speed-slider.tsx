@@ -1,0 +1,76 @@
+import {useId} from "react";
+import {useGridContext} from "~/state/context";
+import {DEFAULT_PLAYBACK_SPEED_MS,} from "~/state/constants";
+
+export function PlaybackSpeedSlider() {
+    const id = useId()
+    const {state, dispatch} = useGridContext()
+    const {playbackSpeedFactor} = state
+
+    return (
+        <div className="space-y-3">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <label htmlFor={`${id}-playbackSpeed`} className="text-sm font-medium text-gray-700">
+                        Playback Speed
+                    </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <div className="px-2 py-1 bg-sky-50 border border-blue-200 rounded-md">
+                        <span className="text-sm font-semibold text-blue-700">{playbackSpeedFactor}×</span>
+                    </div>
+                    <div className="px-2 py-1 bg-gray-50 border border-gray-200 rounded-md">
+                        <span
+                            className="text-xs text-gray-600">{Math.floor(DEFAULT_PLAYBACK_SPEED_MS / playbackSpeedFactor)}ms</span>
+                    </div>
+                </div>
+            </div>
+
+            {/*<div className="relative px-2">*/}
+            {/*    <input*/}
+            {/*        type="range"*/}
+            {/*        id={`${id}-playbackSpeed`}*/}
+            {/*        min={SMALLEST_PLAYBACK_FACTOR}*/}
+            {/*        max={LARGEST_PLAYBACK_FACTOR}*/}
+            {/*        step={PLAYBACK_INCREMENT}*/}
+            {/*        value={playbackSpeedFactor}*/}
+            {/*        onChange={(e) => {*/}
+            {/*            dispatch({*/}
+            {/*                type: 'SET_PLAYBACK_SPEED_FACTOR',*/}
+            {/*                payload: {factor: Number(e.target.value)}*/}
+            {/*            })*/}
+            {/*        }}*/}
+            {/*        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-700 transition-all duration-200"*/}
+            {/*        style={{*/}
+            {/*            background: `linear-gradient(to right, #dbeafe 0%, #3b82f6 ${((playbackSpeedFactor - SMALLEST_PLAYBACK_FACTOR) / (LARGEST_PLAYBACK_FACTOR - SMALLEST_PLAYBACK_FACTOR)) * 100}%, #e5e7eb ${((playbackSpeedFactor - SMALLEST_PLAYBACK_FACTOR) / (LARGEST_PLAYBACK_FACTOR - SMALLEST_PLAYBACK_FACTOR)) * 100}%, #e5e7eb 100%)`*/}
+            {/*        }}*/}
+            {/*    />*/}
+            {/*</div>*/}
+
+            <div className="flex gap-2 justify-center">
+                {[0.25, 0.5, 1, 2, 4, 5, 10].map(speed => (
+                    <button
+                        key={speed}
+                        onClick={() => dispatch({
+                            type: 'SET_PLAYBACK_SPEED_FACTOR',
+                            payload: {factor: speed}
+                        })}
+                        className={`p-3 text-xs font-medium rounded transition-all duration-200 ${
+                            playbackSpeedFactor === speed
+                                ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-sm rounded-full'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
+                        }`}
+                    >
+                        {speed}×
+                    </button>
+                ))}
+            </div>
+        </div>
+    )
+}

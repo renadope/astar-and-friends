@@ -21,7 +21,7 @@ export function WeightPreset() {
                         variant="outline"
                         role="combobox"
                         aria-expanded={weightPresetOpen}
-                        className="w-2/3 justify-between"
+                        className="w-full justify-between"
                     >
                         {capitalize(weightPresets.find(
                             (weightPreset) => weightPreset.value === state.weightPreset.name)?.label ?? "no selection")}

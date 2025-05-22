@@ -24,7 +24,7 @@ export function MultiVerse() {
                     })
 
                 }}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a timeline"/>
                 </SelectTrigger>
                 <SelectContent>

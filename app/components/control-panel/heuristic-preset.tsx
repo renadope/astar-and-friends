@@ -23,7 +23,7 @@ export function HeuristicPreset() {
                         variant="outline"
                         role="combobox"
                         aria-expanded={heuristicPopoverOpen}
-                        className="w-2/3 justify-between"
+                        className="w-full justify-between"
                     >
                         {capitalize(heuristicInfo.find(
                             (heuristic) => heuristic.value === state.heuristic.name)?.value ?? "no selection")}
