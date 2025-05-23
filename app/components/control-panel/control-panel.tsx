@@ -19,6 +19,7 @@ export default function ControlPanel() {
     const {currentTimelineIndex, aStarData, playbackSpeedFactor} = state
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+    const hasAStarData = !isNullOrUndefined(aStarData)
     useEffect(() => {
         dispatch({
             type: 'GENERATE_GRID', payload: gridSize
@@ -76,6 +77,15 @@ export default function ControlPanel() {
             <div className="border-t border-gray-200 pt-4">
                 <AlgoButtons />
             </div>
+
+            {hasAStarData && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        📹 Playback Controls
+                    </h4>
+                    <PlaybackControls />
+                </div>
+            )}
         </div>
     )
 }
