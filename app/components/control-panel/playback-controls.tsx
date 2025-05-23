@@ -48,7 +48,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "JUMP_TO_START"})}
-                        className="p-1 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Jump to Start"
                     >
                         <RewindIcon className="size-3"/>
@@ -57,7 +57,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "DECREMENT_INDEX"})}
-                        className="p-1 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Previous Step"
                     >
                         <PreviousIcon className="size-3"/>
@@ -69,7 +69,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             type: "SET_PLAYING_STATUS",
                             payload: !state.isPlaying
                         })}
-                        className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="p-3.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title={state.isPlaying ? "Pause" : "Play"}
                     >
                         {state.isPlaying ?
@@ -81,7 +81,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "INCREMENT_INDEX"})}
-                        className="p-1 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Next Step"
                     >
                         <ForwardIcon className="size-3"/>
@@ -90,19 +90,18 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "JUMP_TO_END"})}
-                        className="p-1 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Jump to End"
                     >
                         <FastForwardIcon className="size-3"/>
                     </button>
                 </div>
                 <div className="flex items-center gap-3">
-                    {/*<PlaybackSpeedSlider/>*/}
 
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "JUMP_TO_PATH_START"})}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-medium rounded border border-emerald-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="inline-flex items-center gap-3.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-medium rounded border border-emerald-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Jump to Path Start"
                     >
                         <MapIcon className="size-3"/>

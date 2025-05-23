@@ -20,11 +20,12 @@ export function Main() {
             <div className={'grid grid-cols-3 border-black border-8 rounded-lg'}>
                 <div className={'col-span-2'}>
                     <div className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
-                            📹 Playback Controls
+                        <h4 className="font-semibold  text-gray-900 flex justify-between items-center gap-2 mb-4">
+                            <p>📹 Playback Controls</p>
+                            <PlaybackSpeedSlider/>
+
                         </h4>
                         <PlaybackControls className={'w-full'}/>
-
                     </div>
                 </div>
                 <div className="flex sm:flex-col 2xl:flex-row p-4 col-span-full rounded-lg shadow-sm gap-2">
