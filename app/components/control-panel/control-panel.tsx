@@ -177,7 +177,47 @@ export function PlaybackControls() {
     return (
         <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-6">
             <div className="space-y-4">
+                <div className="relative">
+                    <div className="border-t border-gray-100 pt-4 space-y-3">
+                        <div className="px-2">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-gray-700">Timeline</span>
+                                <span className="text-xs text-gray-500">
+                        {timeline.length > 0 ? `${timeline.length} steps` : 'No data'}
+                    </span>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <input
+                        id={`${id}-timeline`}
+                        type="range"
+                        min={-1}
+                        max={timeline.length - 1}
+                        disabled={timeline.length === 0}
+                        value={currentTimelineIndex}
+                        onChange={(e) =>
+                            dispatch({
+                                type: 'SET_INDEX',
+                                payload: parseInt(e.target.value, 10),
+                            })
+                        }
+                        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-40 disabled:cursor-not-allowed slider-thumb"
+                        style={{
+                            background: timeline.length > 0 && currentTimelineIndex >= 0
+                                ? `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((currentTimelineIndex + 1) / timeline.length) * 100}%, #e5e7eb ${((currentTimelineIndex + 1) / timeline.length) * 100}%, #e5e7eb 100%)`
+                                : '#e5e7eb'
+                        }}
+                    />
+                </div>
+                <div className="flex justify-between mt-2 px-1">
+                    <span className="text-xs text-gray-500 font-medium">Start</span>
+                    <span className="text-xs text-gray-500 font-medium">End</span>
+                </div>
                 <div className="flex items-center justify-center gap-3">
+
+
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "JUMP_TO_START"})}
@@ -244,44 +284,7 @@ export function PlaybackControls() {
                 </div>
             </div>
 
-            <div className="border-t border-gray-100 pt-4 space-y-3">
-                <div className="px-2">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">Timeline</span>
-                        <span className="text-xs text-gray-500">
-                        {timeline.length > 0 ? `${timeline.length} steps` : 'No data'}
-                    </span>
-                    </div>
 
-                    <div className="relative">
-                        <input
-                            id={`${id}-timeline`}
-                            type="range"
-                            min={-1}
-                            max={timeline.length - 1}
-                            disabled={timeline.length === 0}
-                            value={currentTimelineIndex}
-                            onChange={(e) =>
-                                dispatch({
-                                    type: 'SET_INDEX',
-                                    payload: parseInt(e.target.value, 10),
-                                })
-                            }
-                            className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-40 disabled:cursor-not-allowed slider-thumb"
-                            style={{
-                                background: timeline.length > 0 && currentTimelineIndex >= 0
-                                    ? `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((currentTimelineIndex + 1) / timeline.length) * 100}%, #e5e7eb ${((currentTimelineIndex + 1) / timeline.length) * 100}%, #e5e7eb 100%)`
-                                    : '#e5e7eb'
-                            }}
-                        />
-                    </div>
-
-                    <div className="flex justify-between mt-2 px-1">
-                        <span className="text-xs text-gray-500 font-medium">Start</span>
-                        <span className="text-xs text-gray-500 font-medium">End</span>
-                    </div>
-                </div>
-            </div>
 
             <div className="border-t border-gray-100 pt-4">
                 <PlaybackSpeedSlider/>
