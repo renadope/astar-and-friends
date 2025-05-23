@@ -8,7 +8,7 @@ import {toast} from "sonner";
 export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
     return (
-        <div className={cn("bg-white rounded-xl border border-gray-200 shadow-sm p-3", className)} {...props}>
+        <div className={cn("bg-white rounded-xl p-3", className)} {...props}>
             <div className="flex flex-row gap-3 justify-center">
                 <button
                     className="group px-6 py-3 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 font-semibold text-sm transform hover:scale-105 hover:-translate-y-0.5"
@@ -33,7 +33,7 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                 <button
                     className={`group relative px-8 py-3 bg-gradient-to-r text-white rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center gap-2 font-bold text-sm overflow-hidden ${
                         state.configChanged
-                            ? 'from-lime-600 to-green-600 hover:from-lime-700 hover:to-green-700 animate-pulse shadow-rose-500/25 shadow-2xl transform scale-105'
+                            ? 'from-lime-600 to-green-600 hover:from-lime-700 hover:to-green-700 animate-pulse shadow-lime-500/25 shadow-2xl transform scale-105'
                             : 'from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 hover:scale-105 hover:-translate-y-0.5'
                     } hover:shadow-xl`}
                     onClick={() => {
@@ -56,12 +56,12 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                         </div>
                         <span className="relative">
                         Run Algorithm
-                            {state.configChanged && (
-                                <span
-                                    className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 text-white animate-bounce">
-                                Updated!
-                            </span>
-                            )}
+                            {/*{state.configChanged && (*/}
+                            {/*    <span*/}
+                            {/*        className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 text-white animate-bounce">*/}
+                            {/*    Updated!*/}
+                            {/*</span>*/}
+                            {/*)}*/}
                     </span>
                     </div>
                 </button>
@@ -101,16 +101,6 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                     <RefreshCcw className="w-5 h-5 group-hover:-rotate-180 transition-transform duration-500"/>
                 </button>
             </div>
-
-            {state.configChanged && (
-                <div className="mt-4 flex items-center justify-center gap-2 text-sm">
-                    <div
-                        className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-                        <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-                        <span className="text-amber-700 font-medium">Configuration updated - ready to run!</span>
-                    </div>
-                </div>
-            )}
 
             {/* Stuff to add later on */}
             {/*<div className="mt-6 flex flex-wrap gap-2 justify-center">*/}
