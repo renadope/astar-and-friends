@@ -18,7 +18,6 @@ export default function ControlPanel() {
     const {currentTimelineIndex, aStarData, playbackSpeedFactor} = state
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
-    const hasAStarData = !isNullOrUndefined(aStarData)
     useEffect(() => {
         dispatch({
             type: 'GENERATE_GRID', payload: gridSize
@@ -48,9 +47,13 @@ export default function ControlPanel() {
         <div className={`${state.configChanged ? 'border-fuchsia-500' : 'border-violet-500'} 
     flex flex-col gap-6 p-6 backdrop-blur-sm rounded-xl shadow-sm border-2`}>
 
-            <div className="border-b border-gray-200 pb-4">
-                <h3 className="text-3xl font-bold">{algorithmName}</h3>
-                <p className="text-sm text-gray-600 mt-1">Configure and visualize pathfinding</p>
+
+            <div className={'flex justify-between flex-wrap '}>
+                <div className="border-b border-gray-200 pb-4">
+                    <h3 className="text-3xl font-bold">{algorithmName}</h3>
+                    <p className="text-sm text-gray-600 mt-1">Configure and visualize pathfinding</p>
+                </div>
+                <AlgoButtons/>
             </div>
 
             <div className={'grid grid-cols-2'}>
@@ -75,11 +78,6 @@ export default function ControlPanel() {
                     <MultiVerse/>
                 </div>
             </div>
-
-            <div className="border-t border-gray-200 pt-4">
-                <AlgoButtons/>
-            </div>
-
         </div>
     )
 }

@@ -9,7 +9,7 @@ export function PlaybackSpeedSlider({className, ...props}: ComponentPropsWithout
     const {playbackSpeedFactor} = state
 
     return (
-        <div className={cn(`space-y-3`,className)}{...props}>
+        <div className={cn(`space-y-3`, className)}{...props}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none"
@@ -33,26 +33,6 @@ export function PlaybackSpeedSlider({className, ...props}: ComponentPropsWithout
                 </div>
             </div>
 
-            {/*<div className="relative px-2">*/}
-            {/*    <input*/}
-            {/*        type="range"*/}
-            {/*        id={`${id}-playbackSpeed`}*/}
-            {/*        min={SMALLEST_PLAYBACK_FACTOR}*/}
-            {/*        max={LARGEST_PLAYBACK_FACTOR}*/}
-            {/*        step={PLAYBACK_INCREMENT}*/}
-            {/*        value={playbackSpeedFactor}*/}
-            {/*        onChange={(e) => {*/}
-            {/*            dispatch({*/}
-            {/*                type: 'SET_PLAYBACK_SPEED_FACTOR',*/}
-            {/*                payload: {factor: Number(e.target.value)}*/}
-            {/*            })*/}
-            {/*        }}*/}
-            {/*        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-600 hover:accent-sky-700 transition-all duration-200"*/}
-            {/*        style={{*/}
-            {/*            background: `linear-gradient(to right, #dbeafe 0%, #3b82f6 ${((playbackSpeedFactor - SMALLEST_PLAYBACK_FACTOR) / (LARGEST_PLAYBACK_FACTOR - SMALLEST_PLAYBACK_FACTOR)) * 100}%, #e5e7eb ${((playbackSpeedFactor - SMALLEST_PLAYBACK_FACTOR) / (LARGEST_PLAYBACK_FACTOR - SMALLEST_PLAYBACK_FACTOR)) * 100}%, #e5e7eb 100%)`*/}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</div>*/}
 
             <div className="flex gap-2 justify-center">
                 {[0.25, 0.5, 1, 2, 4, 5, 10].map(speed => (
