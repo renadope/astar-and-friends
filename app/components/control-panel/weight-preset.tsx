@@ -1,5 +1,5 @@
 import {useGridContext} from "~/state/context";
-import {useState} from "react";
+import {type ComponentPropsWithoutRef, useState} from "react";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Button} from "~/components/ui/button";
 import {capitalize} from "~/utils/helpers";
@@ -9,11 +9,11 @@ import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandL
 import type {CostAndWeightKind} from "~/utils/grid-weights";
 import {cn} from "~/lib/utils";
 
-export function WeightPreset() {
+export function WeightPreset({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
     const [weightPresetOpen, setWeightPresetOpen] = useState(false)
     return (
-        <div className={'space-y-2 flex flex-col'}>
+        <div className={cn('space-y-2 flex flex-col')}{...props}>
             <label className="text-sm font-medium text-muted-foreground">Select Weight Preset</label>
             <Popover open={weightPresetOpen} onOpenChange={setWeightPresetOpen}>
                 <PopoverTrigger asChild>

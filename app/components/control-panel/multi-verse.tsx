@@ -9,11 +9,12 @@ import {
     SelectValue
 } from "~/components/ui/select";
 import type {TimelineOptions} from "~/state/types";
+import type {ComponentPropsWithoutRef} from "react";
 
-export function MultiVerse() {
+export function MultiVerse({...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
     return (
-        <div className={'mt-2'}>
+        <div {...props}>
             <label className="text-sm font-medium text-muted-foreground">Enter the multiverse</label>
             <Select
                 value={state.timeline}

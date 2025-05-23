@@ -1,14 +1,15 @@
-import {useId} from "react";
+import {type ComponentPropsWithoutRef, useId} from "react";
 import {useGridContext} from "~/state/context";
 import {DEFAULT_PLAYBACK_SPEED_MS,} from "~/state/constants";
+import {cn} from "~/lib/utils";
 
-export function PlaybackSpeedSlider() {
+export function PlaybackSpeedSlider({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const id = useId()
     const {state, dispatch} = useGridContext()
     const {playbackSpeedFactor} = state
 
     return (
-        <div className="space-y-3">
+        <div className={cn(`space-y-3`,className)}{...props}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none"

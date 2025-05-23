@@ -1,15 +1,17 @@
 import {useGridContext} from "~/state/context";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {ToggleGroup, ToggleGroupItem} from "~/components/ui/toggle-group";
-import {useId} from "react";
+import {type ComponentPropsWithoutRef, useId} from "react";
+import {cn} from "~/lib/utils";
 
-export function ToggleDiagonal() {
+export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
     const {diagonalSettings} = state
     const id = useId()
 
     return (
-        <div className="space-y-4 col-span-full border-t-2 border-b-2 border-gray-300 p-2 rounded-lg">
+        <div className={cn("space-y-4 col-span-full border-t-2 border-b-2 border-gray-300 p-2 rounded-lg", className)}
+             {...props}>
             <h3 className="text-sm font-semibold text-gray-800">Diagonal Movement</h3>
 
             <div className="space-y-2">

@@ -1,5 +1,5 @@
 import {useGridContext} from "~/state/context";
-import {useState} from "react";
+import {type ComponentPropsWithoutRef, useState} from "react";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Button} from "~/components/ui/button";
 import {capitalize} from "~/utils/helpers";
@@ -9,12 +9,12 @@ import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandL
 import type {HeuristicName} from "~/utils/heuristics";
 import {cn} from "~/lib/utils";
 
-export function HeuristicPreset() {
+export function HeuristicPreset({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
     const [heuristicPopoverOpen, setHeuristicPopoverOpen] = useState(false)
 
     return (
-        <div className={'space-y-2 flex flex-col'}>
+        <div className={cn('space-y-2 flex flex-col', className)}{...props}>
             <label className="text-sm font-medium text-muted-foreground">Select Heuristic
                 Function</label>
             <Popover open={heuristicPopoverOpen} onOpenChange={setHeuristicPopoverOpen}>
