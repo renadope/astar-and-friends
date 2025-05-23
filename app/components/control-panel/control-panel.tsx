@@ -19,7 +19,6 @@ export default function ControlPanel() {
     const {currentTimelineIndex, aStarData, playbackSpeedFactor} = state
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
-
     useEffect(() => {
         dispatch({
             type: 'GENERATE_GRID', payload: gridSize
@@ -46,27 +45,36 @@ export default function ControlPanel() {
 
 
     return (
-        <div
-            className={`${state.configChanged ? ' border-fuchsia-500' : 'border-violet-500'}
-             flex flex-col gap-2  px-4   backdrop-blur-sm rounded-xl shadow-sm border-2`}>
-            <div className={'px-4 mt-2 '}>
-                <h3 className={'text-3xl'}>{algorithmName}</h3>
+        <div className={`${state.configChanged ? 'border-fuchsia-500' : 'border-violet-500'} 
+    flex flex-col gap-6 p-6 backdrop-blur-sm rounded-xl shadow-sm border-2`}>
+
+            <div className="border-b border-gray-200 pb-4">
+                <h3 className="text-3xl font-bold">{algorithmName}</h3>
+                <p className="text-sm text-gray-600 mt-1">Configure and visualize pathfinding</p>
             </div>
-            <div className={'grid  gap-1'}>
-                <CostWeightSliders className={'px-4 mt-4'}/>
-                <ToggleDiagonal/>
-                <ToggleCell/>
-                <div className={'grid grid-cols-2 gap-2'}>
-                    <HeuristicPreset/>
-                    <WeightPreset/>
-                    <MultiVerse/>
+
+            <div className="bg-blue-50 rounded-lg p-4 space-y-4">
+                <h4 className="font-semibold text-blue-900 flex items-center gap-2">
+                    🏗️ Grid Setup
+                </h4>
+                <ToggleCell />
+                <MultiVerse />
+            </div>
+
+            <div className="bg-purple-50 rounded-lg p-4 space-y-4">
+                <h4 className="font-semibold text-purple-900 flex items-center gap-2">
+                    ⚙️ Algorithm Settings
+                </h4>
+                <ToggleDiagonal />
+                <CostWeightSliders />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <HeuristicPreset />
+                    <WeightPreset />
                 </div>
             </div>
-            <div>
-                <AlgoButtons/>
-            </div>
-            <div className="flex items-center justify-between">
-                <PlaybackControls/>
+
+            <div className="border-t border-gray-200 pt-4">
+                <AlgoButtons />
             </div>
         </div>
     )
