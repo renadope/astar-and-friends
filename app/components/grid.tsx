@@ -11,7 +11,7 @@ export default function Grid() {
     return (
         <div className="p-4 flex flex-col gap-y-2 border-2 border-sky-300 rounded-2xl">
             {hasCellData && cellData.map((row, r) => (
-                <div key={`col-${r}`} className="flex gap-1 hover:gap-2 transition-all duration-200">
+                <div key={`col-${r}`} className="flex gap-1">
                     {row.map((_, c) => (
                         <GridCell key={stringifyPos(r, c)} pos={[r, c]}/>
                     ))}
