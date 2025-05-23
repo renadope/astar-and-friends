@@ -221,6 +221,15 @@ export function reducer(state: AppState, action: Action): AppState {
                 configChanged: true,
 
             }
+        case "SET_BOTH_WEIGHTS":
+            const ghWeights = action.payload
+            return {
+                ...state,
+                gwWeights: ghWeights,
+                configChanged: true,
+
+            }
+
         case "TOGGLE_DIAGONAL":
             const toggleConfig = action.payload
             if (toggleConfig === 'none' && !state.diagonalSettings.allowed) {
