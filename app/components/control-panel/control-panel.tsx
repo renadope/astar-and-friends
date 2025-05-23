@@ -9,7 +9,6 @@ import {HeuristicPreset} from "~/components/control-panel/heuristic-preset";
 import {WeightPreset} from "~/components/control-panel/weight-preset";
 import {MultiVerse} from "~/components/control-panel/multi-verse";
 import {ToggleDiagonal} from "~/components/control-panel/toggle-diagonal";
-import {PlaybackControls} from "~/components/control-panel/playback-controls";
 import {AlgoButtons} from "~/components/control-panel/algo-buttons";
 
 export const gridSize = 8//really need to remove this and add a selector/option for it
@@ -54,38 +53,33 @@ export default function ControlPanel() {
                 <p className="text-sm text-gray-600 mt-1">Configure and visualize pathfinding</p>
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-4 space-y-4">
-                <h4 className="font-semibold text-blue-900 flex items-center gap-2">
-                    🏗️ Grid Setup
-                </h4>
-                <ToggleCell />
-                <MultiVerse />
-            </div>
+            <div className={'grid grid-cols-2'}>
+                <div className="bg-blue-50 rounded-lg p-4 space-y-4">
+                    <h4 className="font-semibold text-blue-900 flex items-center gap-2">
+                        🏗️ Grid Setup
+                    </h4>
+                    <ToggleCell/>
+                    <CostWeightSliders/>
 
-            <div className="bg-purple-50 rounded-lg p-4 space-y-4">
-                <h4 className="font-semibold text-purple-900 flex items-center gap-2">
-                    ⚙️ Algorithm Settings
-                </h4>
-                <ToggleDiagonal />
-                <CostWeightSliders />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <HeuristicPreset />
-                    <WeightPreset />
+                </div>
+
+                <div className="bg-purple-50 rounded-lg p-4 space-y-4">
+                    <h4 className="font-semibold text-purple-900 flex items-center gap-2">
+                        ⚙️ Algorithm Settings
+                    </h4>
+                    <ToggleDiagonal/>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <HeuristicPreset/>
+                        <WeightPreset/>
+                    </div>
+                    <MultiVerse/>
                 </div>
             </div>
 
             <div className="border-t border-gray-200 pt-4">
-                <AlgoButtons />
+                <AlgoButtons/>
             </div>
 
-            {hasAStarData && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
-                        📹 Playback Controls
-                    </h4>
-                    <PlaybackControls />
-                </div>
-            )}
         </div>
     )
 }

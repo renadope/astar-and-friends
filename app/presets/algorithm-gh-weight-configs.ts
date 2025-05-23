@@ -44,11 +44,5 @@ export const DEFAULT_ALGORITHMS: Algorithm[] = [
         weights: {gWeight: 1, hWeight: 2},
         variant: 'default'
     },
-    {
-        id: 'aggressive-astar',
-        label: 'Aggressive A*',
-        title: 'Aggressive A*',
-        weights: {gWeight: 10, hWeight: 10},
-        variant: 'default'
-    }
+
 ];

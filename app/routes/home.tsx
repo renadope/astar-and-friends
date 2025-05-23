@@ -1,5 +1,5 @@
 import type {Route} from "./+types/home";
-import {aStar, getAlgorithmName} from "~/services/aStar";
+import {aStar} from "~/services/aStar";
 import {GridProvider, useGridContext} from "~/state/context";
 import Grid from "~/components/grid";
 import ControlPanel from "~/components/control-panel/control-panel";
@@ -20,18 +20,22 @@ export function Main() {
     const hasAStarData = !isNullOrUndefined(state.aStarData)
     return (
         <div className={'max-w-10/12 mx-auto   p-2'}>
-            <div className={'flex p-4 rounded-lg shadow-sm  gap-2 '}>
-                <Grid/>
-                <ControlPanel/>
-            </div>
-            {hasAStarData && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
-                        📹 Playback Controls
-                    </h4>
-                    <PlaybackControls />
+            <div className={'grid grid-cols-2'}>
+                <div className={'flex p-4 col-span-full rounded-lg shadow-sm  gap-2 '}>
+                    <Grid/>
+                    <ControlPanel/>
                 </div>
-            )}
+                <div className={'place-content-end'}>
+                    {hasAStarData && (
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                                📹 Playback Controls
+                            </h4>
+                            <PlaybackControls className={'w-2/3'}/>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }

@@ -35,7 +35,7 @@ export default function AlgorithmSelector({
 
     return (
         <div className={`border-t border-gray-200 pt-4 ${className}`}>
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-2 justify-center flex-wrap">
                 {algorithms.map((algorithm) => (
                     <button
                         key={algorithm.id}

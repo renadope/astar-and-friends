@@ -12,7 +12,6 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
             className={cn("bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-6 space-y-6", className)}
             {...props}>
 
-            {/* Header */}
             <div className="flex items-center gap-3">
                 <div
                     className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-100 to-pink-100 rounded-lg">
@@ -28,7 +27,6 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
                 </div>
             </div>
 
-            {/* G-Weight Control */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -82,7 +80,6 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
                 </p>
             </div>
 
-            {/* H-Weight Control */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

@@ -60,7 +60,7 @@ export default function GridCell({pos}: CellProps) {
                     cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.7)" :
                         "0 2px 4px rgba(0,0,0,0.1)"
             }}
-            className={`sm:size-20 md:size-22 lg:size-24 xl:size-28 2xl:size-32 rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm
+            className={`sm:size-14 md:size-16 lg:size-18 xl:size-22 2xl:size-26 rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm
                         ${cellBgColor[cell.state] ?? 'bg-sky-500'}
                         ${bestFrontier ? 'z-10 translate-x-12 translate-y-6 scale-160' : ''}
                         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
@@ -94,37 +94,37 @@ export default function GridCell({pos}: CellProps) {
                 </p>
 
                 <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                    g:{cell.cost}
+                    {cell.cost}
                 </p>
                 {/*    We'd put this stuff in a popover or hover card, we also may want a way to directly set weights on a cell, so wed see*/}
-                    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                        {!isNullOrUndefined(cell.h) ? `h:${cell.h.toFixed(2)}` : ''}
-                    </p>
-                    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
-                        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                            cost:{cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost.toFixed(2)}
-                        </p>
-                    )}{cell.costUpdateHistory && cell.costUpdateHistory.length > 1 && (
-                    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                        dlta:{Math.abs(cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost - cell.costUpdateHistory[0].gCost).toFixed(2)}
-                    </p>
-                )}
-                    {costUpdateOnThisStep && (
-                        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                            foo:{costUpdateOnThisStep.gCost}
-                        </p>
-                    )}
-                    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
-                        <div
-                            className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-xs px-1 rounded-full shadow-sm transform transition-transform group-hover:scale-125">
-                            {cell.costUpdateHistory.length}
-                        </div>
-                    )}
-                    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
-                        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                            all:{cell.costUpdateHistory.map((foo) => foo.gCost.toFixed(1)).join(',')}
-                        </p>
-                    )}
+                {/*    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
+                {/*        {!isNullOrUndefined(cell.h) ? `h:${cell.h.toFixed(2)}` : ''}*/}
+                {/*    </p>*/}
+                {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
+                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
+                {/*            cost:{cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost.toFixed(2)}*/}
+                {/*        </p>*/}
+                {/*    )}{cell.costUpdateHistory && cell.costUpdateHistory.length > 1 && (*/}
+                {/*    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
+                {/*        dlta:{Math.abs(cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost - cell.costUpdateHistory[0].gCost).toFixed(2)}*/}
+                {/*    </p>*/}
+                {/*)}*/}
+                {/*    {costUpdateOnThisStep && (*/}
+                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
+                {/*            foo:{costUpdateOnThisStep.gCost}*/}
+                {/*        </p>*/}
+                {/*    )}*/}
+                {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
+                {/*        <div*/}
+                {/*            className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-xs px-1 rounded-full shadow-sm transform transition-transform group-hover:scale-125">*/}
+                {/*            {cell.costUpdateHistory.length}*/}
+                {/*        </div>*/}
+                {/*    )}*/}
+                {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
+                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
+                {/*            all:{cell.costUpdateHistory.map((foo) => foo.gCost.toFixed(1)).join(',')}*/}
+                {/*        </p>*/}
+                {/*    )}*/}
 
             </div>
 
