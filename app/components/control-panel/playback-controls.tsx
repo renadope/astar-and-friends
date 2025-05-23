@@ -13,67 +13,54 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
     const id = useId()
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
     return (
-        <div className={cn("w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-6", className)}
-             {...props}>
-            <div className="space-y-4">
-                <div className="relative">
-                    <div className="border-t border-gray-100 pt-4 space-y-3">
-                        <div className="px-2">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-gray-700">Timeline</span>
-                                <span className="text-xs text-gray-500">
-                        {timeline.length > 0 ? `${timeline.length} steps` : 'No data'}
-                    </span>
-                            </div>
+        <div className={cn("w-full bg-white border-b border-gray-200 shadow-sm", className)} {...props}>
+            <div className="flex items-center gap-4 px-4 py-3 h-12">
+                <div className="flex-1 flex items-center gap-3 min-w-0">
 
-
-                        </div>
+                    <div className="flex-1 relative">
+                        <input
+                            id={`${id}-timeline`}
+                            type="range"
+                            min={-1}
+                            max={timeline.length - 1}
+                            disabled={timeline.length === 0}
+                            value={currentTimelineIndex}
+                            onChange={(e) =>
+                                dispatch({
+                                    type: 'SET_INDEX',
+                                    payload: parseInt(e.target.value, 10),
+                                })
+                            }
+                            className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-blue-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                            style={{
+                                background: timeline.length > 0 && currentTimelineIndex >= 0
+                                    ? `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((currentTimelineIndex + 1) / timeline.length) * 100}%, #e5e7eb ${((currentTimelineIndex + 1) / timeline.length) * 100}%, #e5e7eb 100%)`
+                                    : '#e5e7eb'
+                            }}
+                        />
                     </div>
-                    <input
-                        id={`${id}-timeline`}
-                        type="range"
-                        min={-1}
-                        max={timeline.length - 1}
-                        disabled={timeline.length === 0}
-                        value={currentTimelineIndex}
-                        onChange={(e) =>
-                            dispatch({
-                                type: 'SET_INDEX',
-                                payload: parseInt(e.target.value, 10),
-                            })
-                        }
-                        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-40 disabled:cursor-not-allowed slider-thumb"
-                        style={{
-                            background: timeline.length > 0 && currentTimelineIndex >= 0
-                                ? `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((currentTimelineIndex + 1) / timeline.length) * 100}%, #e5e7eb ${((currentTimelineIndex + 1) / timeline.length) * 100}%, #e5e7eb 100%)`
-                                : '#e5e7eb'
-                        }}
-                    />
-                </div>
-                <div className="flex justify-between mt-2 px-1">
-                    <span className="text-xs text-gray-500 font-medium">Start</span>
-                    <span className="text-xs text-gray-500 font-medium">End</span>
-                </div>
-                <div className="flex items-center justify-center gap-3">
 
 
+                    <PlaybackStatusIndicator/>
+
+                </div>
+                <div className="flex items-center bg-gray-50 rounded-full px-1 py-0.5 gap-0.5">
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "JUMP_TO_START"})}
-                        className="p-3 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-800 rounded-full shadow-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed group"
+                        className="p-1 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Jump to Start"
                     >
-                        <RewindIcon className={"size-5 group-hover:scale-110 transition-transform"}/>
+                        <RewindIcon className="size-3"/>
                     </button>
 
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "DECREMENT_INDEX"})}
-                        className="p-3 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-800 rounded-full shadow-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed group"
+                        className="p-1 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Previous Step"
                     >
-                        <PreviousIcon className={"size-5 group-hover:scale-110 transition-transform"}/>
-
+                        <PreviousIcon className="size-3"/>
                     </button>
 
                     <button
@@ -82,53 +69,48 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             type: "SET_PLAYING_STATUS",
                             payload: !state.isPlaying
                         })}
-                        className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed group hover:shadow-xl transform hover:scale-105"
+                        className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title={state.isPlaying ? "Pause" : "Play"}
                     >
                         {state.isPlaying ?
-                            <PauseIcon className="h-6 w-6 group-hover:scale-110 transition-transform"/> :
-                            <PlayIcon className="h-6 w-6 group-hover:scale-110 transition-transform"/>
+                            <PauseIcon className="size-3"/> :
+                            <PlayIcon className="size-3"/>
                         }
                     </button>
 
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "INCREMENT_INDEX"})}
-                        className="p-3 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-800 rounded-full shadow-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed group"
+                        className="p-1 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Next Step"
                     >
-                        <ForwardIcon className={"size-5 group-hover:scale-110 transition-transform"}/>
+                        <ForwardIcon className="size-3"/>
                     </button>
 
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "JUMP_TO_END"})}
-                        className="p-3 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-800 rounded-full shadow-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed group"
+                        className="p-1 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Jump to End"
                     >
-                        <FastForwardIcon className="size-5 group-hover:scale-110 transition-transform"/>
+                        <FastForwardIcon className="size-3"/>
                     </button>
                 </div>
+                <div className="flex items-center gap-3">
+                    {/*<PlaybackSpeedSlider/>*/}
 
-                <div className="flex justify-center">
                     <button
                         disabled={hasNoAStarData}
                         onClick={() => dispatch({type: "JUMP_TO_PATH_START"})}
-                        className={`inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 rounded-lg border border-emerald-200 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed group`}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-medium rounded border border-emerald-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Jump to Path Start"
                     >
-                        <MapIcon className="size-4 group-hover:scale-110 transition-transform"/>
-                        <span className="text-sm font-medium">Path Start</span>
+                        <MapIcon className="size-3"/>
+                        Path
                     </button>
                 </div>
             </div>
-
-
-            <div className="border-t border-gray-100 pt-4">
-                <PlaybackSpeedSlider/>
-            </div>
-            <PlaybackStatusIndicator/>
-
+            {/*<PlaybackSpeedSlider className={'ml-auto'}/>*/}
         </div>
     )
 }
@@ -140,7 +122,7 @@ function PlaybackStatusIndicator({className, ...props}: ComponentPropsWithoutRef
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
     return (
         <div
-            className={cn(`flex items-center justify-center gap-3 pt-2 border-t border-gray-300`, className)}{...props}>
+            className={cn(`flex items-center justify-center gap-3 pt-2`, className)}{...props}>
             <div className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 ${
                 !hasNoAStarData && currentTimelineIndex >= 0
                     ? 'bg-blue-50 border border-blue-200'

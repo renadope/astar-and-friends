@@ -34,15 +34,15 @@ export function PlaybackSpeedSlider({className, ...props}: ComponentPropsWithout
             </div>
 
 
-            <div className="flex gap-2 justify-center">
-                {[0.25, 0.5, 1, 2, 4, 5, 10].map(speed => (
+            <div className="flex gap-2 justify-center flex-wrap">
+                {[0.5, 1, 2, 4, 5, 10].map(speed => (
                     <button
                         key={speed}
                         onClick={() => dispatch({
                             type: 'SET_PLAYBACK_SPEED_FACTOR',
                             payload: {factor: speed}
                         })}
-                        className={`p-3 text-xs font-medium rounded transition-all duration-200 ${
+                        className={`p-2 text-xs font-medium rounded transition-all duration-200 ${
                             playbackSpeedFactor === speed
                                 ? 'border-2 border-black bg-sky-500 hover:bg-sky-600 text-white shadow-sm rounded-full'
                                 : 'border border-black bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 rounded-md'
