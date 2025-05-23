@@ -16,25 +16,43 @@ export function meta({}: Route.MetaArgs) {
 export function Main() {
 
     return (
-        <div className={'max-w-10/12 mx-auto   p-2'}>
-            <div className={'grid grid-cols-3 border-black border-8 rounded-lg'}>
-                <div className={'col-span-2'}>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-semibold  text-gray-900 flex justify-between items-center gap-2 mb-4">
-                            <p>📹 Playback Controls</p>
-                            <PlaybackSpeedSlider/>
+        <div className="w-full max-w-[90%] mx-auto p-2">
+            <div className="flex flex-col gap-4">
 
-                        </h4>
-                        <PlaybackControls className={'w-full'}/>
+                <div className="w-full min-w-0">
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                        <div className="flex flex-col xs:flex-row xs:justify-start sm:justify-between xs:items-start gap-2 xs:gap-3 mb-3 sm:mb-4">
+                            <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
+                                📹 Playback Controls
+                            </h4>
+                            <div className="xs:flex-shrink-0">
+                                <PlaybackSpeedSlider />
+                            </div>
+                        </div>
+                        <div className="w-full min-w-0 overflow-hidden">
+                            <PlaybackControls className="w-full" />
+                        </div>
                     </div>
                 </div>
-                <div className="flex sm:flex-col 2xl:flex-row p-4 col-span-full rounded-lg shadow-sm gap-2">
-                    <Grid/>
-                    <ControlPanel/>
+
+                <div className="w-full min-w-0">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+                        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6">
+                            <div className="lg:flex-shrink-0 lg:w-auto min-w-0">
+                                <Grid />
+                            </div>
+
+                            <div className="lg:flex-1 lg:min-w-[320px]">
+                                <ControlPanel />
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
 
             </div>
         </div>
+
     );
 }
 
