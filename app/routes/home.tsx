@@ -44,9 +44,9 @@ export default function Home() {
             <GridProvider>
                 <Main/>
             </GridProvider>
-            <GridProvider>
-                <Main/>
-            </GridProvider>
+            {/*<GridProvider>*/}
+            {/*    <Main/>*/}
+            {/*</GridProvider>*/}
         </div>
     )
 }

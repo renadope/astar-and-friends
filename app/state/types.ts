@@ -30,7 +30,7 @@ export type AppState = {
 export type Action =
     | { type: "GENERATE_GRID", payload?: number, }
     | { type: "SET_CELL_DATA_COST_HISTORY" }
-    | { type: "RUN_ASTAR" }
+    | { type: "RUN_ASTAR", payload?: { options: { autoRun: boolean } } }
     | { type: "SET_GRID_SIZE", payload?: number }
     | { type: "INCREMENT_INDEX", payload?: number }
     | { type: "SET_INDEX", payload: number }

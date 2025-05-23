@@ -129,6 +129,7 @@ export function reducer(state: AppState, action: Action): AppState {
             const size = action.payload ?? state.gridSize ?? 5
             return generateGrid(state, size)
         case "RUN_ASTAR":
+            const autoRun = action.payload ? action.payload.options.autoRun : false
             if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
                 return state
             }
@@ -153,7 +154,7 @@ export function reducer(state: AppState, action: Action): AppState {
                 snapshotTimeline,
                 granularTimeline,
                 cellSelectionState: "inactive",
-                isPlaying: false,
+                isPlaying: autoRun,
                 configChanged: false,
             }
         case "SET_CELL_DATA_COST_HISTORY":

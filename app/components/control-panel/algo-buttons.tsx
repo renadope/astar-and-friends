@@ -3,12 +3,13 @@ import {useGridContext} from "~/state/context";
 import {cn} from "~/lib/utils";
 import {RefreshCcw} from "lucide-react";
 import {gridSize} from "~/components/control-panel/control-panel";
+import {toast} from "sonner";
 
 export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
     return (
         <div className={cn("bg-white rounded-xl border border-gray-200 shadow-sm p-3", className)} {...props}>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-row gap-3 justify-center">
                 <button
                     className="group px-6 py-3 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 font-semibold text-sm transform hover:scale-105 hover:-translate-y-0.5"
                     onClick={() => {
@@ -32,11 +33,11 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                 <button
                     className={`group relative px-8 py-3 bg-gradient-to-r text-white rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center gap-2 font-bold text-sm overflow-hidden ${
                         state.configChanged
-                            ? 'from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 animate-pulse shadow-rose-500/25 shadow-2xl transform scale-105'
-                            : 'from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 hover:scale-105 hover:-translate-y-0.5'
+                            ? 'from-lime-600 to-green-600 hover:from-lime-700 hover:to-green-700 animate-pulse shadow-rose-500/25 shadow-2xl transform scale-105'
+                            : 'from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 hover:scale-105 hover:-translate-y-0.5'
                     } hover:shadow-xl`}
                     onClick={() => {
-                        dispatch({type: "RUN_ASTAR"})
+                        dispatch({type: "RUN_ASTAR", payload: {options: {autoRun: true}}})
                     }}
                 >
 
@@ -64,19 +65,40 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                     </span>
                     </div>
                 </button>
+                <button
+                    className={`group relative px-6 py-2 border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 rounded-xl shadow-sm transition-all duration-300 flex items-center justify-center gap-3 font-medium hover:scale-105 hover:-translate-y-0.5 hover:shadow-md ${
+                        state.configChanged ? 'border-blue-400 bg-blue-50 text-blue-700 shadow-blue-100' : ''
+                    }`}
+                    onClick={() => {
+                        dispatch({type: "RUN_ASTAR"})
+                        toast("✨AStar Data Loaded✨", {
+                            description: "Data has been loaded, you can now manually scrub",
+                            position: "top-center",
+                        })
+                    }
+                    }
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" strokeWidth="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    <div className="text-left">
+                        <div className="text-sm font-medium">Calculate Path</div>
+                    </div>
+                </button>
 
                 <button
                     className={`group px-6 py-3 bg-gradient-to-br
                          from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700
                          text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300
-                          flex items-center justify-center gap-2 font-semibold text-sm transform 
+                          font-semibold text-sm transform 
                           hover:scale-105 hover:-translate-y-0.5`}
                     onClick={() => {
                         dispatch({type: "RESET_ASTAR_DATA"})
                     }}
                 >
                     <RefreshCcw className="w-5 h-5 group-hover:-rotate-180 transition-transform duration-500"/>
-                    <span>Reset</span>
                 </button>
             </div>
 
