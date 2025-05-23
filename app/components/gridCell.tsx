@@ -60,14 +60,16 @@ export default function GridCell({pos}: CellProps) {
                     cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.7)" :
                         "0 2px 4px rgba(0,0,0,0.1)"
             }}
-            className={`sm:size-14 md:size-16 lg:size-18 xl:size-22 2xl:size-26 rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm
-                        ${cellBgColor[cell.state] ?? 'bg-sky-500'}
-                        ${bestFrontier ? 'z-10 translate-x-12 translate-y-6 scale-160' : ''}
-                        ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
-                        ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-110' : 'scale-100'} 
-                        ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-110 animate-bounce" : ""}
-                        ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-110 z-10" : ""}
-                        `}
+            className={`
+        size-11 2xs:size-10 xs:size-13 sm:size-14 md:size-16 lg:size-18 xl:size-20 2xl:size-22 3xl:size-24
+        rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm
+        ${cellBgColor[cell.state] ?? 'bg-sky-500'}
+        ${bestFrontier ? 'z-10 2xs:translate-x-8 2xs:translate-y-4 2xs:scale-125 sm:translate-x-10 sm:translate-y-5 sm:scale-140 lg:translate-x-12 lg:translate-y-6 lg:scale-150' : ''}
+        ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
+        ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-105 sm:scale-110' : 'scale-100'} 
+        ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-105 sm:scale-110 animate-bounce" : ""}
+        ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-105 sm:scale-110 z-10" : ""}
+        `}
             onClick={() => {
                 dispatch({
                     type: "UPDATE_CELL_STATUS",
