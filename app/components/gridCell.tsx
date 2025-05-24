@@ -79,6 +79,8 @@ export default function GridCell({pos}: CellProps) {
             onMouseEnter={(e) => {
                 if (cell.costUpdateHistory && cell.costUpdateHistory.length > 0) {
                     e.currentTarget.setAttribute('title', `Cost updates: ${cell.costUpdateHistory.map((c) => c.gCost.toFixed(2)).join(' → ')}`);
+                }else {
+                    e.currentTarget.removeAttribute('title')
                 }
             }}
         >
@@ -124,11 +126,11 @@ export default function GridCell({pos}: CellProps) {
                 {/*            {cell.costUpdateHistory.length}*/}
                 {/*        </div>*/}
                 {/*    )}*/}
-                {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
-                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
-                {/*            all:{cell.costUpdateHistory.map((foo) => foo.gCost.toFixed(1)).join(',')}*/}
-                {/*        </p>*/}
-                {/*    )}*/}
+                    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
+                        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
+                            all:{cell.costUpdateHistory.map((foo) => foo.gCost.toFixed(1)).join(',')}
+                        </p>
+                    )}
 
             </div>
 
@@ -153,7 +155,7 @@ export default function GridCell({pos}: CellProps) {
 //not gonna use this method, but wanted a quick and dirty way to just see the weights without inspecting
 function costToColor(cost: number): string {
     if (cost === 0) return "#1e293b"; // slate-800 — walls/obstacles
-    if (cost < 2) return "#22c55e";   // green-500 — grass (easy)
+    if (cost < 2) return "#1bc2b3";   // blue green kinda
     if (cost < 4) return "#84cc16";   // lime-500 — plains
     if (cost < 7) return "#eab308";   // yellow-500 — desert/sand
     if (cost < 11) return "#f97316";  // orange-500 — rocky/hills

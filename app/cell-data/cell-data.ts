@@ -2,9 +2,11 @@ import type {Pos} from "~/types/pathfinding";
 import {isNodePassable} from "~/utils/grid-helpers";
 import {
     type FlattenedStep,
-    isFrontierSnapshot, isFrontierStep,
+    isFrontierSnapshot,
+    isFrontierStep,
     isPathSnapshot,
-    isVisitedSnapshot, isVisitedStep,
+    isVisitedSnapshot,
+    isVisitedStep,
     type SnapshotStep
 } from "~/utils/timeline-generation";
 import {isNullOrUndefined} from "~/utils/helpers";
@@ -18,10 +20,15 @@ export function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): C
             const cellData: CellData = {
                 pos: [r, c],
                 cost: weight,
+                h: undefined,
+                f: undefined,
+                costUpdateHistory: undefined,
+                step: undefined,
+                snapShotStep: undefined,
                 state: isNodePassable(weight) ?
                     (r === st[0] && c === st[1]) ? "start" :
                         (r === end[0] && c === end[1]) ?
-                            "goal" : "empty" : "wall"
+                            "goal" : "empty" : "wall",
             }
             return cellData
         })
@@ -53,6 +60,8 @@ export function updateCellDataSnapshotStep(timeline: SnapshotStep[], cellData: C
                 cell.f = frontier.fCost
                 cell.step = i
                 cell.snapShotStep = snapshotStep
+                cell.costUpdateHistory = undefined
+
             }
 
         } else if (isVisitedSnapshot(node) || isPathSnapshot(node)) {
@@ -65,6 +74,8 @@ export function updateCellDataSnapshotStep(timeline: SnapshotStep[], cellData: C
             cell.f = node.node.fCost
             cell.step = i
             cell.snapShotStep = isPathSnapshot(node) ? undefined : snapshotStep
+            cell.costUpdateHistory = undefined
+
             if (isVisitedSnapshot(node)) {
                 snapshotStep++
             }
@@ -94,6 +105,7 @@ export function updateCellDataFlattenedStep(timeline: FlattenedStep[], cellData:
         cell.f = timeLineNode.node.fCost
         cell.step = i
         cell.snapShotStep = isFrontierStep(timeLineNode) || isVisitedStep(timeLineNode) ? timeLineNode.snapShotStep : undefined
+        cell.costUpdateHistory = undefined
 
     }
     return newCellData
