@@ -62,7 +62,7 @@ export default function GridCell({pos}: CellProps) {
             }}
             className={`
         size-9 2xs:size-10 xs:size-13 sm:size-14 md:size-16 lg:size-18 xl:size-20 2xl:size-22 3xl:size-24 
-        rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm
+        rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm hover:scale-105
         ${cellBgColor[cell.state] ?? 'bg-sky-500'}
         ${bestFrontier ? 'z-10 2xs:translate-x-8 2xs:translate-y-4 2xs:scale-125 sm:translate-x-10 sm:translate-y-5 sm:scale-140 lg:translate-x-12 lg:translate-y-6 lg:scale-150' : ''}
         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
