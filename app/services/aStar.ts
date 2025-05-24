@@ -6,6 +6,12 @@ import {makeNode} from "~/queue/helpers";
 import {PriorityQueue} from "~/queue/priority-queue";
 
 
+/*NOTE:I realized, when storing the heuristic, we didnt store the weighted heuristic
+* So yes, technically we calculate the f score correctly
+* but the h score is stored as the non-weighted value
+* currently in our ui when i realized this, i just multiplied it there,
+* however if we do end up changing it here, remember to remove that multiplication in the tooltip */
+
 export const fourDirection = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 export const diagonals = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
 
