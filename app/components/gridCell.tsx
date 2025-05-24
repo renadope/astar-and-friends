@@ -126,11 +126,11 @@ export default function GridCell({pos}: CellProps) {
                 {/*            {cell.costUpdateHistory.length}*/}
                 {/*        </div>*/}
                 {/*    )}*/}
-                    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (
-                        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                            all:{cell.costUpdateHistory.map((foo) => foo.gCost.toFixed(1)).join(',')}
-                        </p>
-                    )}
+                {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
+                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
+                {/*            all:{cell.costUpdateHistory.map((foo) => foo.gCost.toFixed(1)).join(',')}*/}
+                {/*        </p>*/}
+                {/*    )}*/}
 
             </div>
 
