@@ -440,6 +440,9 @@ export function reducer(state: AppState, action: Action): AppState {
             }
             return state
         case "SET_PLAYING_STATUS":
+            if (isNullOrUndefined(state.aStarData)) {
+                return state
+            }
             const status = action.payload
             if (state.isPlaying === status) {
                 return state
@@ -447,7 +450,6 @@ export function reducer(state: AppState, action: Action): AppState {
             const currTimeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
             if (status) {
                 if (state.currentTimelineIndex >= currTimeline.length - 1) {
-                    console.log("DOES THIS FIRE")
                     return {
                         ...state,
                         currentTimelineIndex: NO_TIMELINE,
