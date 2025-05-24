@@ -4,7 +4,8 @@ import Grid from "~/components/grid";
 import ControlPanel from "~/components/control-panel/control-panel";
 import {PlaybackControls} from "~/components/control-panel/playback-controls";
 import {PlaybackSpeedSlider} from "~/components/control-panel/playback-speed-slider";
-import {useEffect, useRef} from "react";
+import {useEffect, useMemo, useRef} from "react";
+import {useShortcuts} from "~/hooks/useShortcuts";
 
 export function meta({}: Route.MetaArgs) {
     return [
