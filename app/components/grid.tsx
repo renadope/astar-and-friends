@@ -9,9 +9,10 @@ export default function Grid() {
     const {cellData} = state
     const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0
     return (
-        <div className="p-2 2xs:p-3 sm:p-4 lg:p-6 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl">
+        <div className="p-2 2xs:p-1 sm:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl">
             {hasCellData && (
-                <div className="flex flex-col gap-1 2xs:gap-1.5 sm:gap-2 items-center justify-center">
+                <div
+                    className="flex flex-col gap-1 2xs:gap-1.5 xs:gap-2 sm:gap-3   items-center justify-center">
                     {cellData.map((row, r) => (
                         <div key={`col-${r}`} className="flex gap-0.5 2xs:gap-1 sm:gap-1.5">
                             {row.map((_, c) => (

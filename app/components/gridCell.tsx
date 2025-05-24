@@ -1,6 +1,6 @@
 import {useGridContext} from "~/state/context";
 import {stringifyPos} from "~/utils/grid-helpers";
-import {capitalize, isNullOrUndefined} from "~/utils/helpers";
+import {isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
 
 //consider adding this to the state
@@ -61,7 +61,7 @@ export default function GridCell({pos}: CellProps) {
                         "0 2px 4px rgba(0,0,0,0.1)"
             }}
             className={`
-        size-11 2xs:size-10 xs:size-13 sm:size-14 md:size-16 lg:size-18 xl:size-20 2xl:size-22 3xl:size-24
+        size-9 2xs:size-10 xs:size-13 sm:size-14 md:size-16 lg:size-18 xl:size-20 2xl:size-22 3xl:size-24 
         rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm
         ${cellBgColor[cell.state] ?? 'bg-sky-500'}
         ${bestFrontier ? 'z-10 2xs:translate-x-8 2xs:translate-y-4 2xs:scale-125 sm:translate-x-10 sm:translate-y-5 sm:scale-140 lg:translate-x-12 lg:translate-y-6 lg:scale-150' : ''}
@@ -87,17 +87,19 @@ export default function GridCell({pos}: CellProps) {
             )}
 
             <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
-                <p className={`text-xs font-bold ${textColors[cell.state] || "text-slate-700"} transition-all duration-200 group-hover:text-lg`}>
-                    {capitalize(cell.state)}
-                </p>
 
-                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                    {cell.pos.join(',')}
-                </p>
+                {/*<p className={`hidden lg:block text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
+                {/*    {cell.pos.join(',')}*/}
+                {/*</p>*/}
 
-                <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
+                <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
                     {cell.cost}
                 </p>
+                {cell.f !== undefined && (
+                    <p className="md:hidden text-xs font-light sm:font-bold text-white">
+                        f:{cell.f.toFixed(1)}
+                    </p>
+                )}
                 {/*    We'd put this stuff in a popover or hover card, we also may want a way to directly set weights on a cell, so wed see*/}
                 {/*    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
                 {/*        {!isNullOrUndefined(cell.h) ? `h:${cell.h.toFixed(2)}` : ''}*/}
@@ -135,9 +137,11 @@ export default function GridCell({pos}: CellProps) {
                     className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             )}
 
+
+            {/* F-score corner badge on large screens */}
             {cell.f !== undefined && (
                 <div
-                    className="absolute top-0 right-0 text-xs bg-white/80 text-black px-1 py-0.5 rounded-bl-md rounded-tr-md font-mono shadow-sm">
+                    className="hidden md:block absolute top-0 right-0 text-xs bg-slate-800 text-white px-1.5 py-0.5 rounded-bl-lg rounded-tr-lg font-bold shadow-lg">
                     f:{cell.f.toFixed(1)}
                 </div>
             )}
@@ -148,11 +152,12 @@ export default function GridCell({pos}: CellProps) {
 
 //not gonna use this method, but wanted a quick and dirty way to just see the weights without inspecting
 function costToColor(cost: number): string {
-    if (cost === 0) return "#334155"; // wall — dark and sturdy (unchanged)
-
-    if (cost < 3) return "#22d3ee";   // cyan-400 — easy, chill terrain
-    if (cost < 5) return "#fcd34d";   // yellow-300 — sandy, cautious zone
-    if (cost < 8) return "#fb923c";   // orange-400 — rugged area
-    if (cost < 15) return "#f87171";  // red-400 — painful, but passable
-    return "#c084fc";                // purple-400 — extreme zone
+    if (cost === 0) return "#1e293b"; // slate-800 — walls/obstacles
+    if (cost < 2) return "#22c55e";   // green-500 — grass (easy)
+    if (cost < 4) return "#84cc16";   // lime-500 — plains
+    if (cost < 7) return "#eab308";   // yellow-500 — desert/sand
+    if (cost < 11) return "#f97316";  // orange-500 — rocky/hills
+    if (cost < 16) return "#dc2626";  // red-600 — mountains
+    if (cost < 22) return "#7c3aed";  // violet-600 — extreme terrain
+    return "#be185d";                 // pink-700 — lava/impassable
 }
