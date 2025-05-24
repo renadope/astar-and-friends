@@ -44,7 +44,7 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                     <div className="relative flex items-center gap-1 2xs:gap-1.5 min-w-0">
                         <div className="relative flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg"
-                                 className={`w-4 2xs:w-5 h-4 2xs:h-5 transition-transform duration-300 ${state.configChanged ? 'animate-spin' : 'group-hover:scale-110'}`}
+                                 className={`w-3 2xs:size-4 2xs:size-5 transition-transform duration-300 ${state.configChanged ? 'animate-spin' : 'group-hover:scale-110'}`}
                                  viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd"
                                       d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
@@ -54,7 +54,12 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                                 <div className="absolute -inset-1 bg-white/30 rounded-full animate-ping"></div>
                             )}
                         </div>
-                        <span className="relative hidden sm:inline truncate">Run Algorithm</span>
+                        <span className="relative hidden sm:inline truncate">
+                            <span className="ml-1 text-sm opacity-60">
+                                {navigator.userAgent.includes('Mac') ? '⌘R' : 'Ctrl+R'}
+                            </span>
+                            {' '}Run Algorithm
+                        </span>
                         <span className="relative sm:hidden truncate">Run</span>
                     </div>
                 </button>
@@ -71,7 +76,8 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                         })
                     }}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 2xs:w-5 h-4 2xs:h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none"
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 2xs:w-5 h-4 2xs:h-5 flex-shrink-0"
+                         viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" strokeWidth="2">
                         <path d="M9 12l2 2 4-4"/>
                         <circle cx="12" cy="12" r="10"/>
@@ -94,7 +100,8 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                         dispatch({type: "RESET_ASTAR_DATA"})
                     }}
                 >
-                    <RefreshCcw className="w-4 2xs:w-5 h-4 2xs:h-5 group-hover:-rotate-180 transition-transform duration-500"/>
+                    <RefreshCcw
+                        className="w-4 2xs:w-5 h-4 2xs:h-5 group-hover:-rotate-180 transition-transform duration-500"/>
                 </button>
             </div>
         </div>
