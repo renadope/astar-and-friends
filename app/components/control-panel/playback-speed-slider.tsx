@@ -1,5 +1,6 @@
 import {type ComponentPropsWithoutRef} from "react";
 import {useGridContext} from "~/state/context";
+import {speedPresets} from "~/presets/speed";
 
 export function PlaybackSpeedSlider({...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
@@ -8,7 +9,7 @@ export function PlaybackSpeedSlider({...props}: ComponentPropsWithoutRef<'div'>)
     return (
         <div {...props}>
             <div className="flex gap-2 justify-center flex-wrap">
-                {[0.5, 1, 2, 4, 5, 10].map(speed => (
+                {speedPresets.map(speed => (
                     <button
                         key={speed}
                         onClick={() => dispatch({

@@ -4,8 +4,8 @@ import Grid from "~/components/grid";
 import ControlPanel from "~/components/control-panel/control-panel";
 import {PlaybackControls} from "~/components/control-panel/playback-controls";
 import {PlaybackSpeedSlider} from "~/components/control-panel/playback-speed-slider";
-import {useEffect, useMemo, useRef} from "react";
-import {useShortcuts} from "~/hooks/useShortcuts";
+import {useEffect, useRef} from "react";
+import {speedPresets} from "~/presets/speed";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -73,6 +73,21 @@ export function Main() {
                 dispatch({
                     type: "INCREMENT_INDEX"
                 })
+            }
+            if (event.key >= '1' && event.key <= '5') {
+                event.preventDefault();
+                const speedIndex = parseInt(event.key) - 1;
+                dispatch({
+                    type: "SET_PLAYBACK_SPEED_FACTOR",
+                    payload: {factor: speedPresets[speedIndex]}
+                });
+            }
+            if (event.key === '0') {
+                event.preventDefault();
+                dispatch({
+                    type: "SET_PLAYBACK_SPEED_FACTOR",
+                    payload: {factor: 10}
+                });
             }
         }
 

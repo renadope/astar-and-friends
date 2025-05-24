@@ -2,7 +2,7 @@ import {type ComponentPropsWithoutRef, useId} from "react";
 import {useGridContext} from "~/state/context";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {cn} from "~/lib/utils";
-import {FastForwardIcon, Map as MapIcon, RewindIcon} from "lucide-react";
+import {FastForwardIcon, Map as MapIcon, QuoteIcon, RewindIcon} from "lucide-react";
 import {ForwardIcon, PauseIcon, PlayIcon, PreviousIcon} from "~/components/icons/icons";
 
 export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef<'div'>) {
@@ -48,7 +48,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                     </div>
                 </div>
 
-                <div className="flex flex-col xs:flex-row xs:items-center gap-3 xs:justify-between">
+                <div className="flex flex-col xs:flex-row xs:items-center gap-3 xs:justify-between md:justify-center">
 
                     <div className="flex justify-center xs:justify-start">
                         <div className="inline-flex items-center gap-1 2xs:gap-1.5 sm:gap-2 bg-gray-50 px-1.5 2xs:px-2 py-1 rounded-full">
@@ -105,21 +105,19 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             >
                                 <FastForwardIcon className="size-3 2xs:size-3.5 sm:size-4"/>
                             </button>
+                            <button
+                                disabled={hasNoAStarData}
+                                onClick={() => dispatch({type: "JUMP_TO_PATH_START"})}
+                                className="inline-flex items-center gap-2 2xs:gap-2.5 sm:gap-3 px-2 2xs:px-2.5 sm:px-3 py-1 2xs:py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs 2xs:text-sm font-medium rounded border border-emerald-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                title="Jump to Path Start"
+                            >
+                                <MapIcon className="size-3 2xs:size-3.5 sm:size-4"/>
+                                <span className="hidden 2xs:inline">Path</span>
+                                <span className="2xs:hidden">P</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div className="flex justify-center xs:justify-end flex-shrink-0">
-                        <button
-                            disabled={hasNoAStarData}
-                            onClick={() => dispatch({type: "JUMP_TO_PATH_START"})}
-                            className="inline-flex items-center gap-2 2xs:gap-2.5 sm:gap-3 px-2 2xs:px-2.5 sm:px-3 py-1 2xs:py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs 2xs:text-sm font-medium rounded border border-emerald-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                            title="Jump to Path Start"
-                        >
-                            <MapIcon className="size-3 2xs:size-3.5 sm:size-4"/>
-                            <span className="hidden 2xs:inline">Path</span>
-                            <span className="2xs:hidden">P</span>
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -141,7 +139,7 @@ function PlaybackStatusIndicator({className, ...props}: ComponentPropsWithoutRef
             }`}>
                 <div className={`size-2 rounded-full transition-all duration-300 ${
                     !hasNoAStarData && currentTimelineIndex >= 0
-                        ? 'bg-blue-500 animate-pulse'
+                        ? 'bg-or animate-pulse'
                         : hasNoAStarData && currentTimelineIndex < 0 ? 'bg-gray-400' : 'bg-green-400'
                 }`}></div>
                 <div className="text-sm font-medium">
