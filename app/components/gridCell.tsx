@@ -1,6 +1,6 @@
 import {useGridContext} from "~/state/context";
 import {stringifyPos} from "~/utils/grid-helpers";
-import {isNullOrUndefined} from "~/utils/helpers";
+import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
 import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip";
 
@@ -109,10 +109,16 @@ export default function GridCell({pos}: CellProps) {
                                 <span className="text-muted-foreground">Cost:</span>
                                 <span>{cell.cost}</span>
                             </div>
+                            {!isNullOrUndefined(cell.g) && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">G-Score:</span>
+                                    <span>{(cell.g).toFixed(2)}</span>
+                                </div>
+                            )}
                             {!isNullOrUndefined(cell.h) && (
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">H-Score:</span>
-                                    <span>{cell.h.toFixed(2)}</span>
+                                    <span>{(cell.h * state.gwWeights.hWeight).toFixed(2)}</span>
                                 </div>
                             )}
                             {!isNullOrUndefined(cell.f) && (
@@ -125,7 +131,7 @@ export default function GridCell({pos}: CellProps) {
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">State:</span>
                                 <span className={'text-white'}>
-                                        {cell.state}
+                                        {capitalize(cell.state)}
                                 </span>
                             </div>
                         </div>
@@ -135,7 +141,8 @@ export default function GridCell({pos}: CellProps) {
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Updates:</span>
                                     <span
-                                        className="bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded">
+                                        className={`bg-gradient-to-l from-amber-700 via-yellow-700 to-orange-700
+                                         text-white text-xs px-2 py-1 rounded`}>
                                         {cell.costUpdateHistory.length}
                                     </span>
                                 </div>
@@ -143,12 +150,20 @@ export default function GridCell({pos}: CellProps) {
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">Delta:</span>
                                         <span
-                                            className="bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-sm">
-                                        {(cell.costUpdateHistory[0].gCost - cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost).toFixed(2)}
-                                    </span>
+                                            className={`bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 
+                                            text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-sm`}>
+                                        {(cell.costUpdateHistory[0].gCost - cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost).toFixed(2)}</span>
+                                    </div>
+
+                                )}
+                                {cell.costUpdateHistory.length > 2 && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Avg:</span>
+                                        <span
+                                            className={`bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 
+                                            text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-sm`}>{avgDiff(cell.costUpdateHistory.map((foo) => foo.gCost)).toFixed(2)}</span>
                                     </div>
                                 )}
-
                             </div>
                         )}
                     </div>
@@ -169,6 +184,23 @@ export default function GridCell({pos}: CellProps) {
             )}
         </div>
     )
+}
+//[12,8,4]
+//[]
+function avgDiff(nums: number[]): number {
+    if (isNullOrUndefined(nums)) {
+        throw new Error("lets be civilized please")
+    }
+    if (nums.length === 1) {
+        throw new Error('need at least two numbers')
+    }
+    let totalDiff = 0
+    for (let i = 1; i < nums.length; i++) {
+        const curr = nums[i - 1]
+        const next = nums[i]
+        totalDiff += next - curr
+    }
+    return totalDiff / (nums.length - 1)
 }
 
 

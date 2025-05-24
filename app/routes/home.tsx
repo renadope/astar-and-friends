@@ -21,7 +21,7 @@ export function Main() {
 
                 <div className="w-full min-w-0 sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200/50 shadow-sm">
                     <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                        <div className="flex flex-col xs:flex-row xs:justify-between xs:items-start gap-2 xs:gap-3 mb-3 sm:mb-4">
+                        <div className="flex flex-col xs:flex-row xs:justify-between md:justify-start md:gap-8 xs:items-start gap-2 xs:gap-3 mb-3 sm:mb-4">
                             <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
                                 📹 Playback Controls
                             </h4>
