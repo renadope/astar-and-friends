@@ -2,6 +2,7 @@ import {useGridContext} from "~/state/context";
 import {stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
+import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip";
 
 //consider adding this to the state
 const gridCellSize = 7
@@ -65,7 +66,7 @@ export default function GridCell({pos}: CellProps) {
         rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm hover:scale-105
         ${cellBgColor[cell.state] ?? 'bg-sky-500'}
         ${bestFrontier ? 'z-10 2xs:translate-x-8 2xs:translate-y-4 2xs:scale-125 sm:translate-x-10 sm:translate-y-5 sm:scale-140 lg:translate-x-12 lg:translate-y-6 lg:scale-150' : ''}
-        ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50' : ''}
+        ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50 after:pointer-events-none' : ''}
         ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-105 sm:scale-110' : 'scale-100'} 
         ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-105 sm:scale-110 animate-bounce" : ""}
         ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-105 sm:scale-110 z-10" : ""}
@@ -76,71 +77,90 @@ export default function GridCell({pos}: CellProps) {
                     payload: [r, c]
                 })
             }}
-            onMouseEnter={(e) => {
-                if (cell.costUpdateHistory && cell.costUpdateHistory.length > 0) {
-                    e.currentTarget.setAttribute('title', `Cost updates: ${cell.costUpdateHistory.map((c) => c.gCost.toFixed(2)).join(' → ')}`);
-                }else {
-                    e.currentTarget.removeAttribute('title')
-                }
-            }}
         >
             {isCurrentStep && isLastStep && (
                 <div className="absolute top-0 left-0 text-lg">🏁</div>
             )}
+            <Tooltip>
+                <TooltipTrigger disabled={state.cellSelectionState === 'inactive'} asChild>
+                    <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
+                        <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
+                            {cell.cost}
+                        </p>
+                        {cell.f !== undefined && (
+                            <p className="md:hidden text-xs font-light sm:font-bold text-white">
+                                f:{cell.f.toFixed(1)}
+                            </p>
+                        )}
+                    </div>
+                </TooltipTrigger>
 
-            <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
+                <TooltipContent className="w-48 p-5 ">
+                    <div className="space-y-3">
+                        <div className="font-semibold">Cell Details</div>
 
-                {/*<p className={`hidden lg:block text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
-                {/*    {cell.pos.join(',')}*/}
-                {/*</p>*/}
+                        <div className="flex flex-col gap-2 text-sm">
+                            <div className="flex justify-between gap-3">
+                                <span className="text-muted-foreground">Position:</span>
+                                <span>{cell.pos.join(',')}</span>
+                            </div>
 
-                <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                    {cell.cost}
-                </p>
-                {cell.f !== undefined && (
-                    <p className="md:hidden text-xs font-light sm:font-bold text-white">
-                        f:{cell.f.toFixed(1)}
-                    </p>
-                )}
-                {/*    We'd put this stuff in a popover or hover card, we also may want a way to directly set weights on a cell, so wed see*/}
-                {/*    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
-                {/*        {!isNullOrUndefined(cell.h) ? `h:${cell.h.toFixed(2)}` : ''}*/}
-                {/*    </p>*/}
-                {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
-                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
-                {/*            cost:{cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost.toFixed(2)}*/}
-                {/*        </p>*/}
-                {/*    )}{cell.costUpdateHistory && cell.costUpdateHistory.length > 1 && (*/}
-                {/*    <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
-                {/*        dlta:{Math.abs(cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost - cell.costUpdateHistory[0].gCost).toFixed(2)}*/}
-                {/*    </p>*/}
-                {/*)}*/}
-                {/*    {costUpdateOnThisStep && (*/}
-                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
-                {/*            foo:{costUpdateOnThisStep.gCost}*/}
-                {/*        </p>*/}
-                {/*    )}*/}
-                {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
-                {/*        <div*/}
-                {/*            className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-xs px-1 rounded-full shadow-sm transform transition-transform group-hover:scale-125">*/}
-                {/*            {cell.costUpdateHistory.length}*/}
-                {/*        </div>*/}
-                {/*    )}*/}
-                {/*    {cell.costUpdateHistory && cell.costUpdateHistory.length > 0 && (*/}
-                {/*        <p className={`text-xs ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>*/}
-                {/*            all:{cell.costUpdateHistory.map((foo) => foo.gCost.toFixed(1)).join(',')}*/}
-                {/*        </p>*/}
-                {/*    )}*/}
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Cost:</span>
+                                <span>{cell.cost}</span>
+                            </div>
+                            {!isNullOrUndefined(cell.h) && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">H-Score:</span>
+                                    <span>{cell.h.toFixed(2)}</span>
+                                </div>
+                            )}
+                            {!isNullOrUndefined(cell.f) && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">F-Score:</span>
+                                    <span>{cell.f.toFixed(2)}</span>
+                                </div>
+                            )}
 
-            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">State:</span>
+                                <span className={'text-white'}>
+                                        {cell.state}
+                                </span>
+                            </div>
+                        </div>
+
+                        {!isNullOrUndefined(cell.costUpdateHistory) && cell.costUpdateHistory.length > 0 && (
+                            <div className="border-t pt-2 space-y-1">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Updates:</span>
+                                    <span
+                                        className="bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded">
+                                        {cell.costUpdateHistory.length}
+                                    </span>
+                                </div>
+                                {cell.costUpdateHistory.length > 1 && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Delta:</span>
+                                        <span
+                                            className="bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-sm">
+                                        {(cell.costUpdateHistory[0].gCost - cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost).toFixed(2)}
+                                    </span>
+                                    </div>
+                                )}
+
+                            </div>
+                        )}
+                    </div>
+                </TooltipContent>
+            </Tooltip>
 
             {(cell.state === "path" || isCurrentStep) && (
                 <div
-                    className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none"></div>
             )}
 
 
-            {/* F-score corner badge on large screens */}
             {cell.f !== undefined && (
                 <div
                     className="hidden md:block absolute top-0 right-0 text-xs bg-slate-800 text-white px-1.5 py-0.5 rounded-bl-lg rounded-tr-lg font-bold shadow-lg">
