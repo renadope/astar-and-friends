@@ -4,6 +4,7 @@ import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
 import type {CellData} from "~/cell-data/types";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
+import {Input} from "~/components/ui/input";
 
 //consider adding this to the state
 const gridCellSize = 7
@@ -111,8 +112,40 @@ export default function GridCell({pos}: CellProps) {
                 <div className="absolute top-0 left-0 text-lg">🏁</div>
             )}
 
+            {isNullOrUndefined(aStarData) && (< Popover>
+                < PopoverTrigger asChild>
+                    <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
+                        <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
+                            {cell.cost}
+                        </p>
+                        {cell.f !== undefined && (
+                            <p className="md:hidden text-xs font-light sm:font-bold text-white">
+                                f:{cell.f.toFixed(1)}
+                            </p>
+                        )
+                        }
+                    </div>
+                </PopoverTrigger>
 
-            < Popover>
+                <PopoverContent className="w-48 p-5 ">
+                    <Input
+                        type="number"
+                        min={0}
+                        max={999}
+                        value={state.cellData[r][c].cost}
+                        onChange={(e) => {
+                            dispatch({
+                                type: "SET_CELL_WEIGHT",
+                                payload: {
+                                    pos: [r, c],
+                                    newWeight: Number(e.target.value)
+                                }
+                            })
+                        }}
+                    />
+                </PopoverContent>
+            </Popover>)}
+            {!isNullOrUndefined(aStarData) && (< Popover>
                 < PopoverTrigger asChild>
                     <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
                         <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
@@ -212,7 +245,7 @@ export default function GridCell({pos}: CellProps) {
                         )}
                     </div>
                 </PopoverContent>
-            </Popover>
+            </Popover>)}
 
             {(cell.state === "path" || isCurrentStep) && (
                 <div

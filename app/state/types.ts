@@ -53,3 +53,4 @@ export type Action =
     | { type: "SET_PLAYING_STATUS", payload: boolean }
     | { type: "SET_PLAYBACK_SPEED_FACTOR", payload: { factor: number } }
     | { type: "SET_GOAL_GHOST_PATH", payload: Pos }
+    | { type: "SET_CELL_WEIGHT", payload: { pos: Pos, newWeight: number } }

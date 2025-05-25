@@ -483,8 +483,7 @@ export function reducer(state: AppState, action: Action): AppState {
                 playbackSpeedFactor: Math.max(0.25, Math.min(factor, LARGEST_PLAYBACK_FACTOR))
             }
         case "SET_GOAL_GHOST_PATH":
-            if (isNullOrUndefined(state.aStarData)) {
-                console.log("hitting this ")
+            if (isNullOrUndefined(state.aStarData) || (state.isPlaying) || state.currentTimelineIndex < getActiveTimelineLength(state) - 1) {
                 return state
             }
             const startPos = state.startPos
@@ -511,7 +510,25 @@ export function reducer(state: AppState, action: Action): AppState {
                 ...state,
                 cellData
             }
-
+        case "SET_CELL_WEIGHT":
+            const {pos: newCellWeightPos, newWeight: newCellWeight} = action.payload
+            const [rNew, cNew] = newCellWeightPos
+            if (state.cellData[rNew][cNew].cost === newCellWeight) {
+                return state
+            }
+            const updatedGrid = state.weightGrid.map((row, r) => (
+                row.map((weight, c) => {
+                    if (r === rNew && c === cNew) {
+                        return newCellWeight
+                    }
+                    return weight
+                })
+            ))
+            return {
+                ...state,
+                weightGrid: updatedGrid,
+                cellData: initCellData(updatedGrid, state.startPos, state.goalPos)
+            }
 
         default:
             return state
