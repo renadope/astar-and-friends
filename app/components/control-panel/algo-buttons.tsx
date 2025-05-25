@@ -1,9 +1,11 @@
-import type {ComponentPropsWithoutRef} from "react";
+import {type ComponentPropsWithoutRef, useId} from "react";
 import {useGridContext} from "~/state/context";
 import {cn} from "~/lib/utils";
 import {RefreshCcw} from "lucide-react";
 import {gridSize} from "~/components/control-panel/control-panel";
 import {toast} from "sonner";
+import {Switch} from "~/components/ui/switch";
+import {Label} from "~/components/ui/label";
 
 export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()

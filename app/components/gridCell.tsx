@@ -2,8 +2,8 @@ import {useGridContext} from "~/state/context";
 import {stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
-import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip";
 import type {CellData} from "~/cell-data/types";
+import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 
 //consider adding this to the state
 const gridCellSize = 7
@@ -16,7 +16,7 @@ export const cellBgColor: Record<CellData['state'], string> = {
     path: "bg-emerald-400",       // emerald-400 – balanced, modern trail
     start: "bg-sky-500",      // sky-500 – distinct blue entry point
     goal: "bg-pink-500",        // rose-500 – emotional, urgent destination
-    ghost: "bg-teal-500"
+    ghost: "bg-cyan-500"
 
 };
 const textColors: Record<CellData['state'], string> = {
@@ -27,7 +27,7 @@ const textColors: Record<CellData['state'], string> = {
     goal: "text-white",
     empty: "text-slate-800",
     frontier: "text-slate-950",
-    ghost: "text-slate-950"
+    ghost: "text-white"
 };
 
 type CellProps = {
@@ -53,6 +53,7 @@ export default function GridCell({pos}: CellProps) {
 
     const next = timeline[currentTimelineIndex + 1]
     const posUpNext = !isNullOrUndefined(next) && next.type === 'visited' ? next.node.pos : undefined
+    const activeTimeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
 
     const bestFrontier = cell.state === 'frontier' && !isNullOrUndefined(posUpNext) && r === posUpNext[0] && c === posUpNext[1]
     return (
@@ -83,8 +84,8 @@ export default function GridCell({pos}: CellProps) {
                 })
             }}
             onMouseEnter={() => {
-                console.log("hi-" + Date.now())
-                if (cell.state !== 'visited') {
+                // console.log("hi-" + Date.now())
+                if (cell.state !== 'visited' || state.isPlaying) {
                     return
                 }
                 dispatch({
@@ -93,17 +94,23 @@ export default function GridCell({pos}: CellProps) {
                 })
             }}
             onMouseLeave={() => {
-                console.log("bye-" + Date.now())
+                // console.log("bye-" + Date.now())
+                if (state.isPlaying) {
+                    return
+                }
+
                 dispatch(({
-                    type:"JUMP_TO_END",
+                    type: "JUMP_TO_END",
                 }))
             }}
         >
             {isCurrentStep && isLastStep && (
                 <div className="absolute top-0 left-0 text-lg">🏁</div>
             )}
-            <Tooltip>
-                <TooltipTrigger disabled={state.cellSelectionState === 'inactive'} asChild>
+
+
+            < Popover >
+                < PopoverTrigger asChild>
                     <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
                         <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
                             {cell.cost}
@@ -112,11 +119,13 @@ export default function GridCell({pos}: CellProps) {
                             <p className="md:hidden text-xs font-light sm:font-bold text-white">
                                 f:{cell.f.toFixed(1)}
                             </p>
-                        )}
+                        )
+                        }
                     </div>
-                </TooltipTrigger>
+                </PopoverTrigger>
 
-                <TooltipContent className="w-48 p-5 ">
+
+                <PopoverContent className="w-48 p-5 ">
                     <div className="space-y-3">
                         <div className="font-semibold">Cell Details</div>
 
@@ -162,7 +171,7 @@ export default function GridCell({pos}: CellProps) {
 
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">State:</span>
-                                <span className={'text-white'}>
+                                <span className={'text-slate-900'}>
                                         {capitalize(cell.state)}
                                 </span>
                             </div>
@@ -199,21 +208,24 @@ export default function GridCell({pos}: CellProps) {
                             </div>
                         )}
                     </div>
-                </TooltipContent>
-            </Tooltip>
+                </PopoverContent>
+            </Popover>
 
             {(cell.state === "path" || isCurrentStep) && (
-                <div
-                    className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none"></div>
-            )}
+                    <div
+                        className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none"></div>
+                )
+            }
 
 
-            {cell.f !== undefined && (
-                <div
-                    className="hidden md:block absolute top-0 right-0 text-xs bg-slate-800 text-white px-1.5 py-0.5 rounded-bl-lg rounded-tr-lg font-bold shadow-lg">
-                    f:{cell.f.toFixed(1)}
-                </div>
-            )}
+            {
+                cell.f !== undefined && (
+                    <div
+                        className="hidden md:block absolute top-0 right-0 text-xs bg-slate-800 text-white px-1.5 py-0.5 rounded-bl-lg rounded-tr-lg font-bold shadow-lg">
+                        f:{cell.f.toFixed(1)}
+                    </div>
+                )
+            }
         </div>
     )
 }
