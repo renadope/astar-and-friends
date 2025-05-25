@@ -105,6 +105,17 @@ export default function GridCell({pos}: CellProps) {
                                 <span>{cell.pos.join(',')}</span>
                             </div>
 
+                            {cell.step && (<div className="flex justify-between gap-3">
+                                <span className="text-muted-foreground">Step:</span>
+                                <span>{cell.step + 1}</span>
+                            </div>)}
+                            {cell.snapShotStep && (<div className="flex justify-between gap-3">
+                                        <span className="text-muted-foreground">SnapshotStep:</span>
+                                        <span>{cell.snapShotStep}</span>
+                                    </div>
+                                )}
+
+
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Cost:</span>
                                 <span>{cell.cost}</span>
