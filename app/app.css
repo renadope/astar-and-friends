@@ -23,6 +23,11 @@
     --breakpoint-xs: 30rem;
     --breakpoint-3xl: 112rem;
     --breakpoint-4xl: 128rem;
+     @keyframes wiggle {
+        0%, 100% { transform: rotate(1deg); }
+        50% { transform: rotate(-1deg); }
+    }
+
 }
 :root {
     --radius: 0.625rem;

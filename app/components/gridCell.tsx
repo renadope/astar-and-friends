@@ -5,6 +5,8 @@ import type {Pos} from "~/types/pathfinding";
 import type {CellData} from "~/cell-data/types";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Input} from "~/components/ui/input";
+import {cellWeight} from "~/presets/cell-weight";
+import {useMemo, useState} from "react";
 
 //consider adding this to the state
 const gridCellSize = 7
@@ -37,6 +39,7 @@ type CellProps = {
 
 export default function GridCell({pos}: CellProps) {
     const {state, dispatch} = useGridContext()
+    const [openWeightPopover, setOpenWeightPopover] = useState<boolean>(false)
     const {aStarData, currentTimelineIndex, cellData} = state
     const [r, c] = pos
     const cell = cellData[r][c]
@@ -48,13 +51,18 @@ export default function GridCell({pos}: CellProps) {
     const history = aStarData ? aStarData.costUpdateHistory[key] ?? [] : []
     const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
     // const updatedOnThisStep = history.some((h) => h.step === snapShotStep + 1)
-    const costUpdateOnThisStep = history.find((h) => h.step === snapShotStep + 1)
+    // const costUpdateOnThisStep = history.find((h) => h.step === snapShotStep + 1)
     const isLastStep = timeline.length - 1 === currentTimelineIndex
     const isCurrentStep = cell.step === currentTimelineIndex;
 
     const next = timeline[currentTimelineIndex + 1]
     const posUpNext = !isNullOrUndefined(next) && next.type === 'visited' ? next.node.pos : undefined
-    const activeTimeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+
+    const weightEmoji = useMemo(() => {
+        const match = cellWeight.find((preset) => preset.weight === cell.cost)
+        return match?.icon
+    }, [cell.cost])
+    const borderThickness = Math.min(3, Math.max(1, Math.log2(cell.cost + 1)));
 
     const bestFrontier = cell.state === 'frontier' && !isNullOrUndefined(posUpNext) && r === posUpNext[0] && c === posUpNext[1]
     return (
@@ -62,7 +70,7 @@ export default function GridCell({pos}: CellProps) {
             key={key}
             style={{
                 transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                border: `${1 + Math.min(1, 5, Math.sqrt(cell.cost) * .7)}px solid ${costToColor(cell.cost)}`,
+                border: `${borderThickness}px solid ${costToColor(cell.cost)}`,
                 boxShadow: isCurrentStep ? "0 0 15px 5px rgba(59, 130, 246, 0.6)" :
                     cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.7)" :
                         "0 2px 4px rgba(0,0,0,0.1)"
@@ -76,7 +84,7 @@ export default function GridCell({pos}: CellProps) {
         ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-105 sm:scale-110' : 'scale-100'} 
         ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-105 sm:scale-110 animate-bounce" : ""}
         ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-105 sm:scale-110 z-10" : ""}
-        ${cell.state === 'ghost' ? "scale-105 rotate-2 z-10" : ""}
+        ${cell.state === 'ghost' ? "animate-[wiggle_1s_ease-in-out_infinite] z-10" : ""}
         `}
             onClick={() => {
                 dispatch({
@@ -112,12 +120,14 @@ export default function GridCell({pos}: CellProps) {
                 <div className="absolute top-0 left-0 text-lg">🏁</div>
             )}
 
-            {isNullOrUndefined(aStarData) && (< Popover>
+            {isNullOrUndefined(aStarData) && (< Popover open={openWeightPopover} onOpenChange={setOpenWeightPopover}>
                 < PopoverTrigger asChild>
                     <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
                         <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
+                            {weightEmoji && <span className="mr-1">{weightEmoji}</span>}
                             {cell.cost}
                         </p>
+
                         {cell.f !== undefined && (
                             <p className="md:hidden text-xs font-light sm:font-bold text-white">
                                 f:{cell.f.toFixed(1)}
@@ -127,22 +137,52 @@ export default function GridCell({pos}: CellProps) {
                     </div>
                 </PopoverTrigger>
 
-                <PopoverContent className="w-48 p-5 ">
+                <PopoverContent className="w-72 p-5 ">
                     <Input
                         type="number"
                         min={0}
-                        max={999}
+                        max={10000}
                         value={state.cellData[r][c].cost}
+                        //hmm look into if we can add a enter press here to close it automatically
                         onChange={(e) => {
+                            const num = Number(e.target.value)
                             dispatch({
                                 type: "SET_CELL_WEIGHT",
                                 payload: {
                                     pos: [r, c],
-                                    newWeight: Number(e.target.value)
+                                    newWeight: num >= 0 ? num : 0
                                 }
                             })
                         }}
                     />
+                    <div className="mt-3 group">
+                        <p className="text-sm text-slate-950 mb-2 font-medium">Quick Presets</p>
+                        <div className="grid grid-cols-3 gap-1.5 overflow-y-auto">
+                            {cellWeight.map(({name, weight}) => (
+                                <button
+                                    key={name}
+                                    onClick={() => {
+                                        dispatch({
+                                            type: "SET_CELL_WEIGHT",
+                                            payload: {
+                                                pos: [r, c],
+                                                newWeight: weight
+                                            }
+                                        })
+                                        setOpenWeightPopover(false)
+
+                                    }}
+                                    className="px-2 py-1.5 text-sm rounded-md border-2 border-transparent hover:border-black hover:bg-gray-100 transition-colors flex flex-col items-center gap-0.5"
+                                >
+                                    <span className="font-medium ">{name}</span>
+                                    <span
+                                        className={`text-gray-700 group-hover:text-gray-900 text-[14px]`}>
+                                        {weight}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </PopoverContent>
             </Popover>)}
             {!isNullOrUndefined(aStarData) && (< Popover>
@@ -285,13 +325,26 @@ function avgDiff(nums: number[]): number {
 
 
 //not gonna use this method, but wanted a quick and dirty way to just see the weights without inspecting
-function costToColor(cost: number): string {
-    if (cost === 0) return "#1e293b"; // slate-800 — walls/obstacles
-    if (cost < 2) return "#1bc2b3";   // blue green kinda
-    if (cost < 4) return "#84cc16";   // lime-500 — plains
-    if (cost < 7) return "#eab308";   // yellow-500 — desert/sand
-    if (cost < 11) return "#f97316";  // orange-500 — rocky/hills
-    if (cost < 16) return "#dc2626";  // red-600 — mountains
-    if (cost < 22) return "#7c3aed";  // violet-600 — extreme terrain
-    return "#be185d";                 // pink-700 — lava/impassable
+export function costToColor(cost: number): string {
+    const thresholds = [
+        { max: 0, color: "#1e293b" },   // Wall — slate-800
+        { max: 1, color: "#14b8a6" },   // Road — teal-500
+        { max: 2, color: "#65a30d" },   // Plains — lime-600
+        { max: 4, color: "#4d7c0f" },   // Forest — green-700
+        { max: 7, color: "#ca8a04" },   // Hills — yellow-600
+        { max: 12, color: "#854d0e" },  // Swamp — amber-800
+        { max: 18, color: "#0ea5e9" },  // River — sky-500
+        { max: 25, color: "#f59e0b" },  // Desert — amber-500
+        { max: 35, color: "#1e40af" },  // Deep Sea — blue-800
+        { max: 50, color: "#e11d48" },  // Lava — rose-600
+        { max: 80, color: "#7dd3fc" },  // Blizzard — blue-300
+        { max: Infinity, color: "#6b21a8" } // Mountain+ — purple-800
+    ];
+
+    for (const { max, color } of thresholds) {
+        if (cost <= max) return color;
+    }
+
+    return "#6b7280"; // Default: slate-500
 }
+
