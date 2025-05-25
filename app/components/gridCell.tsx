@@ -85,7 +85,7 @@ export default function GridCell({pos}: CellProps) {
             }}
             onMouseEnter={() => {
                 // console.log("hi-" + Date.now())
-                if (cell.state !== 'visited' || state.isPlaying) {
+                if (cell.state !== 'visited' || state.isPlaying || currentTimelineIndex < timeline.length - 1) {
                     return
                 }
                 dispatch({
@@ -96,6 +96,9 @@ export default function GridCell({pos}: CellProps) {
             onMouseLeave={() => {
                 // console.log("bye-" + Date.now())
                 if (state.isPlaying) {
+                    return
+                }
+                if (currentTimelineIndex < timeline.length - 1) {
                     return
                 }
 
@@ -109,7 +112,7 @@ export default function GridCell({pos}: CellProps) {
             )}
 
 
-            < Popover >
+            < Popover>
                 < PopoverTrigger asChild>
                     <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
                         <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
@@ -212,9 +215,9 @@ export default function GridCell({pos}: CellProps) {
             </Popover>
 
             {(cell.state === "path" || isCurrentStep) && (
-                    <div
-                        className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none"></div>
-                )
+                <div
+                    className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none"></div>
+            )
             }
 
 
