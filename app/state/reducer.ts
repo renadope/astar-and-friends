@@ -1,6 +1,6 @@
 import {isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
-import {aStar} from "~/services/aStar";
+import {aStar, reconstructPath} from "~/services/aStar";
 import {
     buildTimeline,
     type FlattenedStep,
@@ -147,8 +147,9 @@ export function reducer(state: AppState, action: Action): AppState {
             const granularTimeline = flattenedTimeline(snapshotTimeline)
             return {
                 ...state,
-                cellData: initCellData(state.weightGrid, state.startPos ?? [0, 0],
-                    state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]),
+                cellData: initCellData(state.weightGrid, start, goal),
+                startPos: start,
+                goalPos: goal,
                 currentTimelineIndex: NO_TIMELINE,
                 aStarData: aStarResult.value,
                 snapshotTimeline,
@@ -480,6 +481,35 @@ export function reducer(state: AppState, action: Action): AppState {
             return {
                 ...state,
                 playbackSpeedFactor: Math.max(0.25, Math.min(factor, LARGEST_PLAYBACK_FACTOR))
+            }
+        case "SET_GOAL_GHOST_PATH":
+            if (isNullOrUndefined(state.aStarData)) {
+                console.log("hitting this ")
+                return state
+            }
+            const startPos = state.startPos
+            if (isNullOrUndefined(startPos)) {
+                throw new Error("how did we end up here with no start position")
+            }
+
+            const newGoal = action.payload
+            const newPath = reconstructPath(
+                state.weightGrid,
+                state.aStarData.costs,
+                state.aStarData.prevMap,
+                (_: Pos) => 0,
+                {...state.gwWeights, name: "fookingannnoying"},
+                newGoal)
+            console.log(newPath)
+            const cellData = copyCellData(state.cellData)
+            for (let i = 0; i < newPath.length; i++) {
+                const [r, c] = newPath[i].pos
+                const cell = cellData[r][c]
+                cell.state = 'ghost'
+            }
+            return {
+                ...state,
+                cellData
             }
 
 

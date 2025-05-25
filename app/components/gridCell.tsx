@@ -3,27 +3,31 @@ import {stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
 import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip";
+import type {CellData} from "~/cell-data/types";
 
 //consider adding this to the state
 const gridCellSize = 7
 
-export const cellBgColor = {
-    "empty": "bg-slate-50",      // slate-50 – neutral background
-    "wall": "bg-slate-800",       // slate-800 – sturdy and dark
-    "visited": "bg-purple-400",    // purple-400 – brighter, playful violet
-    "frontier": "bg-yellow-300",   // yellow-300 – golden and cheerful
-    "path": "bg-emerald-400",       // emerald-400 – balanced, modern trail
-    "start": "bg-sky-500",      // sky-500 – distinct blue entry point
-    "goal": "bg-pink-500"        // rose-500 – emotional, urgent destination
+export const cellBgColor: Record<CellData['state'], string> = {
+    empty: "bg-slate-50",      // slate-50 – neutral background
+    wall: "bg-slate-800",       // slate-800 – sturdy and dark
+    visited: "bg-purple-400",    // purple-400 – brighter, playful violet
+    frontier: "bg-yellow-300",   // yellow-300 – golden and cheerful
+    path: "bg-emerald-400",       // emerald-400 – balanced, modern trail
+    start: "bg-sky-500",      // sky-500 – distinct blue entry point
+    goal: "bg-pink-500",        // rose-500 – emotional, urgent destination
+    ghost: "bg-teal-500"
+
 };
-const textColors: Record<keyof typeof cellBgColor, string> = {
+const textColors: Record<CellData['state'], string> = {
     wall: "text-white",
     path: "text-white",
     visited: "text-white",
     start: "text-white",
     goal: "text-white",
     empty: "text-slate-800",
-    frontier: "text-slate-950"
+    frontier: "text-slate-950",
+    ghost: "text-slate-950"
 };
 
 type CellProps = {
@@ -70,12 +74,29 @@ export default function GridCell({pos}: CellProps) {
         ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-105 sm:scale-110' : 'scale-100'} 
         ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-105 sm:scale-110 animate-bounce" : ""}
         ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-105 sm:scale-110 z-10" : ""}
+        ${cell.state === 'ghost' ? "scale-105 rotate-2 z-10" : ""}
         `}
             onClick={() => {
                 dispatch({
                     type: "UPDATE_CELL_STATUS",
                     payload: [r, c]
                 })
+            }}
+            onMouseEnter={() => {
+                console.log("hi-" + Date.now())
+                if (cell.state !== 'visited') {
+                    return
+                }
+                dispatch({
+                    type: "SET_GOAL_GHOST_PATH",
+                    payload: [r, c]
+                })
+            }}
+            onMouseLeave={() => {
+                console.log("bye-" + Date.now())
+                dispatch(({
+                    type:"JUMP_TO_END",
+                }))
             }}
         >
             {isCurrentStep && isLastStep && (
@@ -110,10 +131,10 @@ export default function GridCell({pos}: CellProps) {
                                 <span>{cell.step + 1}</span>
                             </div>)}
                             {cell.snapShotStep && (<div className="flex justify-between gap-3">
-                                        <span className="text-muted-foreground">SnapshotStep:</span>
-                                        <span>{cell.snapShotStep}</span>
-                                    </div>
-                                )}
+                                    <span className="text-muted-foreground">SnapshotStep:</span>
+                                    <span>{cell.snapShotStep}</span>
+                                </div>
+                            )}
 
 
                             <div className="flex justify-between">

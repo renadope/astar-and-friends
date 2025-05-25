@@ -52,3 +52,4 @@ export type Action =
     | { type: "JUMP_TO_PATH_START", }
     | { type: "SET_PLAYING_STATUS", payload: boolean }
     | { type: "SET_PLAYBACK_SPEED_FACTOR", payload: { factor: number } }
+    | { type: "SET_GOAL_GHOST_PATH", payload: Pos }

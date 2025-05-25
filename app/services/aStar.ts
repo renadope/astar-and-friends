@@ -75,6 +75,7 @@ export function aStar(
             totalCost: costs[startR][startC],
             steps: 0,
             fallBack: null,
+            prevMap: prev
         });
     }
 
@@ -236,6 +237,7 @@ export function aStar(
         fallBack: !goalFound ? goal : null,
         steps: allPathData.length - 1,
         totalCost: allPathData[allPathData.length - 1].gCost,
+        prevMap: prev
     };
     // console.log(JSON.stringify(data));
     return ResultOk<AStarData>(data);

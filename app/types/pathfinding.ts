@@ -17,7 +17,7 @@ export type DiagonalConfig =
     | {
     allowed: true;
     cornerCutting: "strict" | "lax";
-    diagonalMultiplier:number
+    diagonalMultiplier: number
 }
     | {
     allowed: false;
@@ -47,6 +47,7 @@ export type AStarData = {
     totalCost: number;
     steps: number;
     fallBack: Pos | null;
+    prevMap: Map<string, string>
 };
 
 export type CostHistory = {

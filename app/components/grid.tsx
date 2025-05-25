@@ -25,7 +25,7 @@ export default function Grid() {
 
             {hasCellData && (
                 <div className="mt-2 2xs:mt-3 sm:mt-4 flex flex-wrap gap-1 2xs:gap-1.5 sm:gap-2 justify-center">
-                    {["empty", "wall", "visited", "frontier", "path", "start", "goal"].map(state => (
+                    {["empty", "wall", "visited", "frontier", "path", "start", "goal", "ghost"].map(state => (
                         <div key={state}
                              className="flex items-center gap-1 px-1.5 2xs:px-2 py-0.5 2xs:py-1 bg-white rounded-full shadow-2xl">
                             <div

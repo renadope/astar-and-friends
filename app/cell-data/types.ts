@@ -3,7 +3,7 @@ import type {Weights} from "~/types/pathfinding";
 export type CellData = {
     pos: [number, number]
     cost: number,
-    state: "empty" | "start" | "goal" | "wall" | "visited" | "frontier" | "path"
+    state: "empty" | "start" | "goal" | "wall" | "visited" | "frontier" | "path" | "ghost"
     g?: number,
     h?: number,
     f?: number,
