@@ -1,5 +1,5 @@
 import {DEFAULT_PLAYBACK_SPEED_MS} from "~/state/constants";
-import {useEffect} from "react";
+import {useEffect, useId} from "react";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import {getAlgorithmName} from "~/services/aStar";
@@ -10,6 +10,8 @@ import {WeightPreset} from "~/components/control-panel/weight-preset";
 import {MultiVerse} from "~/components/control-panel/multi-verse";
 import {ToggleDiagonal} from "~/components/control-panel/toggle-diagonal";
 import {AlgoButtons} from "~/components/control-panel/algo-buttons";
+import {Switch} from "~/components/ui/switch";
+import {Label} from "~/components/ui/label";
 
 export const gridSize = 8//really need to remove this and add a selector/option for it
 
@@ -18,6 +20,7 @@ export default function ControlPanel() {
     const {currentTimelineIndex, aStarData, playbackSpeedFactor} = state
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+    const id = useId()
     useEffect(() => {
         dispatch({
             type: 'GENERATE_GRID', payload: gridSize
@@ -44,7 +47,8 @@ export default function ControlPanel() {
 
 
     return (
-        <div className={`flex flex-col gap-4 2xs:gap-6 p-3 2xs:p-4 sm:p-6 backdrop-blur-sm rounded-xl shadow-sm border-2`}>
+        <div
+            className={`flex flex-col gap-4 2xs:gap-6 p-3 2xs:p-4 sm:p-6 backdrop-blur-sm rounded-xl shadow-sm border-2`}>
 
             <div className={'flex flex-col gap-3'}>
                 {state.configChanged && (
@@ -58,7 +62,8 @@ export default function ControlPanel() {
                     </div>
                 )}
 
-                <div className="flex flex-col 4xl:flex-row 4xl:justify-between 4xl:items-start gap-3 border-b border-gray-200 pb-3">
+                <div
+                    className="flex flex-col 4xl:flex-row 4xl:justify-between 4xl:items-start gap-3 border-b border-gray-200 pb-3">
                     <div className="flex flex-col gap-1 4xl:flex-shrink-0">
                         <h3 className="text-xl 2xs:text-2xl sm:text-3xl font-bold">{algorithmName}</h3>
                         <p className="text-xs 2xs:text-sm text-gray-600">Configure and visualize pathfinding</p>
@@ -89,6 +94,11 @@ export default function ControlPanel() {
                         <WeightPreset/>
                     </div>
                     <MultiVerse/>
+                    {/*TODO:Add functinality that allows ghosts path to be toggled on or off, off, no ghost path on hover, on means ghost path on hover*/}
+                    {/*<div className={'flex gap-2 justify-start mt-2'}>*/}
+                    {/*    <Switch id={`${id}_airplane-mode`}/>*/}
+                    {/*    <Label htmlFor={`${id}_airplane-mode`}>Ghost 👻 Paths</Label>*/}
+                    {/*</div>*/}
                 </div>
             </div>
         </div>
