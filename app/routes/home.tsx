@@ -14,6 +14,10 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
+function cmdKey(event: KeyboardEvent, key: string) {
+    return (event.metaKey || event.ctrlKey) && event.key === key
+
+}
 
 export function Main() {
 
@@ -22,10 +26,11 @@ export function Main() {
     isPlayingRef.current = state.isPlaying
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
-            const cmdR = (event.metaKey || event.ctrlKey) && event.key === 'r'
-            const cmdP = (event.metaKey || event.ctrlKey) && event.key === 'p'
-            const cmdS = (event.metaKey || event.ctrlKey) && event.key === 's'
-            const cmdE = (event.metaKey || event.ctrlKey) && event.key === 'e'
+            const cmdR = cmdKey(event, 'r')
+            const cmdP = cmdKey(event, 'p')
+            const cmdS = cmdKey(event, 's')
+            const cmdE = cmdKey(event, 'e')
+            const cmdG = cmdKey(event, 'g')
             if (cmdR) {
                 event.preventDefault()
                 dispatch({
@@ -53,6 +58,12 @@ export function Main() {
                 event.preventDefault()
                 dispatch({
                     type: "JUMP_TO_END",
+                })
+            }
+            if (cmdG) {
+                event.preventDefault()
+                dispatch({
+                    type: "GENERATE_GRID",
                 })
             }
             if (event.key === ' ') {
