@@ -85,21 +85,22 @@ export function Main() {
                     type: "INCREMENT_INDEX"
                 })
             }
-            if (event.key >= '1' && event.key <= '5') {
-                event.preventDefault();
-                const speedIndex = parseInt(event.key) - 1;
-                dispatch({
-                    type: "SET_PLAYBACK_SPEED_FACTOR",
-                    payload: {factor: speedPresets[speedIndex]}
-                });
-            }
-            if (event.key === '0') {
-                event.preventDefault();
-                dispatch({
-                    type: "SET_PLAYBACK_SPEED_FACTOR",
-                    payload: {factor: 10}
-                });
-            }
+            //remove temporarily as its causing input issues
+            // if (event.key >= '1' && event.key <= '5') {
+            //     event.preventDefault();
+            //     const speedIndex = parseInt(event.key) - 1;
+            //     dispatch({
+            //         type: "SET_PLAYBACK_SPEED_FACTOR",
+            //         payload: {factor: speedPresets[speedIndex]}
+            //     });
+            // }
+            // if (event.key === '0') {
+            //     event.preventDefault();
+            //     dispatch({
+            //         type: "SET_PLAYBACK_SPEED_FACTOR",
+            //         payload: {factor: 10}
+            //     });
+            // }
         }
 
         window.addEventListener('keydown', handleKeyDown)
