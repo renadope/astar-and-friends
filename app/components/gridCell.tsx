@@ -6,7 +6,8 @@ import type {CellData} from "~/cell-data/types";
 import {Popover, PopoverContent, PopoverTrigger} from "~/components/ui/popover";
 import {Input} from "~/components/ui/input";
 import {cellWeight} from "~/presets/cell-weight";
-import {useMemo, useState} from "react";
+import {type ComponentPropsWithoutRef, useMemo, useState} from "react";
+import {cn} from "~/lib/utils";
 
 //consider adding this to the state
 const gridCellSize = 7
@@ -35,6 +36,28 @@ const textColors: Record<CellData['state'], string> = {
 
 type CellProps = {
     pos: Pos
+}
+
+function BasicCellInfo({cell, weightEmoji, className, ...props}: {
+    cell: CellData,
+    weightEmoji: string | undefined
+} & ComponentPropsWithoutRef<'div'>) {
+    return (
+        <div
+            className={cn("flex flex-col gap-0.5 items-center w-full h-full justify-center group", className)}{...props}>
+            <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
+                {weightEmoji && <span className="mr-1">{weightEmoji}</span>}
+                {cell.cost}
+            </p>
+
+            {cell.f !== undefined && (
+                <p className="md:hidden text-xs font-light sm:font-bold text-white">
+                    f:{cell.f.toFixed(1)}
+                </p>
+            )
+            }
+        </div>
+    )
 }
 
 export default function GridCell({pos}: CellProps) {
@@ -122,19 +145,7 @@ export default function GridCell({pos}: CellProps) {
 
             {isNullOrUndefined(aStarData) && (< Popover open={openWeightPopover} onOpenChange={setOpenWeightPopover}>
                 < PopoverTrigger asChild>
-                    <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
-                        <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                            {weightEmoji && <span className="mr-1">{weightEmoji}</span>}
-                            {cell.cost}
-                        </p>
-
-                        {cell.f !== undefined && (
-                            <p className="md:hidden text-xs font-light sm:font-bold text-white">
-                                f:{cell.f.toFixed(1)}
-                            </p>
-                        )
-                        }
-                    </div>
+                    <BasicCellInfo cell={cell} weightEmoji={weightEmoji}/>
                 </PopoverTrigger>
 
                 <PopoverContent className="w-72 p-5 ">
@@ -187,17 +198,7 @@ export default function GridCell({pos}: CellProps) {
             </Popover>)}
             {!isNullOrUndefined(aStarData) && (< Popover>
                 < PopoverTrigger asChild>
-                    <div className="flex flex-col gap-0.5 items-center w-full h-full justify-center group">
-                        <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
-                            {cell.cost}
-                        </p>
-                        {cell.f !== undefined && (
-                            <p className="md:hidden text-xs font-light sm:font-bold text-white">
-                                f:{cell.f.toFixed(1)}
-                            </p>
-                        )
-                        }
-                    </div>
+                    <BasicCellInfo cell={cell} weightEmoji={weightEmoji}/>
                 </PopoverTrigger>
 
 
@@ -327,21 +328,21 @@ function avgDiff(nums: number[]): number {
 //not gonna use this method, but wanted a quick and dirty way to just see the weights without inspecting
 export function costToColor(cost: number): string {
     const thresholds = [
-        { max: 0, color: "#1e293b" },   // Wall — slate-800
-        { max: 1, color: "#14b8a6" },   // Road — teal-500
-        { max: 2, color: "#65a30d" },   // Plains — lime-600
-        { max: 4, color: "#4d7c0f" },   // Forest — green-700
-        { max: 7, color: "#ca8a04" },   // Hills — yellow-600
-        { max: 12, color: "#854d0e" },  // Swamp — amber-800
-        { max: 18, color: "#0ea5e9" },  // River — sky-500
-        { max: 25, color: "#f59e0b" },  // Desert — amber-500
-        { max: 35, color: "#1e40af" },  // Deep Sea — blue-800
-        { max: 50, color: "#e11d48" },  // Lava — rose-600
-        { max: 80, color: "#7dd3fc" },  // Blizzard — blue-300
-        { max: Infinity, color: "#6b21a8" } // Mountain+ — purple-800
+        {max: 0, color: "#1e293b"},   // Wall — slate-800
+        {max: 1, color: "#14b8a6"},   // Road — teal-500
+        {max: 2, color: "#65a30d"},   // Plains — lime-600
+        {max: 4, color: "#4d7c0f"},   // Forest — green-700
+        {max: 7, color: "#ca8a04"},   // Hills — yellow-600
+        {max: 12, color: "#854d0e"},  // Swamp — amber-800
+        {max: 18, color: "#0ea5e9"},  // River — sky-500
+        {max: 25, color: "#f59e0b"},  // Desert — amber-500
+        {max: 35, color: "#1e40af"},  // Deep Sea — blue-800
+        {max: 50, color: "#e11d48"},  // Lava — rose-600
+        {max: 80, color: "#7dd3fc"},  // Blizzard — blue-300
+        {max: Infinity, color: "#6b21a8"} // Mountain+ — purple-800
     ];
 
-    for (const { max, color } of thresholds) {
+    for (const {max, color} of thresholds) {
         if (cost <= max) return color;
     }
 
