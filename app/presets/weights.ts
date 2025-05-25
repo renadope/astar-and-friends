@@ -70,5 +70,12 @@ export const weightPresets: WeightData[] = [
         description: "Generates a simple-grid with higher costs having a greater chace.",
         emoji: "💰",
         tag: "Recommended"
+    },
+    {
+        label: "0-10 Even",
+        value: "zeroToTenEven",
+        description: "Even distribution of zero to 10 weights.",
+        emoji: "2️⃣",
+        tag: "Simple"
     }
 ];

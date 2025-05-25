@@ -94,6 +94,14 @@ function fakeNoise(r: number, c: number, size: number): CostAndWeight {
     };
 }
 
+function zeroToTenEven(r: number, c: number, size: number): CostAndWeight {
+    const oneToTenEven: Map<number, number> = new Map<number, number>()
+    for (let i = 0; i <= 10; i++) {
+        oneToTenEven.set(i, 1)
+    }
+    return Object.fromEntries(oneToTenEven)
+}
+
 function uniform(r: number, c: number, size: number): CostAndWeight {
     return {
         1: 1
@@ -124,6 +132,7 @@ export type CostAndWeightKind =
     | "fake_noise"
     | "uniform"
     | "highCost"
+    | "zeroToTenEven"
 
 export const predefinedWeightFuncs: Record<CostAndWeightKind, CostAndWeightFunc> = {
     biome: biomeWeights,
@@ -134,5 +143,6 @@ export const predefinedWeightFuncs: Record<CostAndWeightKind, CostAndWeightFunc>
     centerRidge: centerRidge,
     fake_noise: fakeNoise,
     uniform: uniform,
-    highCost: highCost
+    highCost: highCost,
+    zeroToTenEven: zeroToTenEven
 }
