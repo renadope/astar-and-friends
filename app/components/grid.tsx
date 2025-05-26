@@ -2,7 +2,7 @@ import {isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import GridCell, {cellBgColor} from "~/components/gridCell";
 import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
-import {useDeferredValue, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import type {Nullish} from "~/types/helpers";
 import type {Pos} from "~/types/pathfinding";
 import {useDebounce} from "~/hooks/useDebounce";
@@ -20,20 +20,25 @@ export default function Grid() {
 
     const [hoveredCell, setHoveredCell] = useState<Nullish<Pos>>(null)
     // const deferredHoverCell = useDeferredValue(hoveredCell)
-    const deferredHoverCell = useDebounce(hoveredCell,120)
+    const deferredHoverCell = useDebounce(hoveredCell, 120)
     useEffect(() => {
         if (!canGhost) return;
-        if (isNullOrUndefined(deferredHoverCell) && isNullOrUndefined(state.currentGhostGoalTarget)) {
+
+
+        const validHoverCell = !isNullOrUndefined(deferredHoverCell)
+        const noHoverCell = !validHoverCell
+
+        const hasGhostTarget = !isNullOrUndefined(state.currentGhostGoalTarget)
+        const noGhostTarget = !hasGhostTarget
+
+
+        if (noHoverCell && noGhostTarget) {
             return
         }
 
-        const hoveringNewCell =
-            !isNullOrUndefined(deferredHoverCell) &&
+        const hoveringNewCell = validHoverCell &&
             !isSamePos(deferredHoverCell, state.currentGhostGoalTarget);
 
-        const clearingGhost =
-            isNullOrUndefined(deferredHoverCell) &&
-            !isNullOrUndefined(state.currentGhostGoalTarget);
 
         if (hoveringNewCell) {
             if (state.cellData[deferredHoverCell[0]][deferredHoverCell[1]].state !== 'visited') {
@@ -43,7 +48,7 @@ export default function Grid() {
                 type: "SET_GOAL_GHOST_PATH",
                 payload: [deferredHoverCell[0], deferredHoverCell[1]],
             });
-        } else if (clearingGhost) {
+        } else if (noHoverCell) {
             dispatch({type: "JUMP_TO_END"});
         }
     }, [deferredHoverCell, canGhost, state.currentGhostGoalTarget]);
