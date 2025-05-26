@@ -7,8 +7,8 @@ import {cn} from "~/lib/utils";
 import {FancyClickIcon} from "~/components/icons/icons";
 
 const selectionState: Record<CellToggle, string> = {
-    "set_goal": 'bg-emerald-100 text-emerald-700 border border-emerald-200 animate-pulse',
-    "set_start": "bg-blue-100 text-blue-700 border border-blue-200 animate-pulse'",
+    "set_goal": 'bg-pink-100 text-pink-700 border border-pink-200 animate-pulse',
+    "set_start": "bg-sky-100 text-sky-700 border border-sky-200 animate-pulse'",
     "toggle_wall": "bg-red-100 text-red-700 border border-red-200 animate-pulse",
     'inactive': ''
 }
@@ -64,15 +64,15 @@ export function ToggleCell({className, ...props}: ComponentPropsWithoutRef<'div'
                     value="set_goal"
                     aria-label="Set Goal Position"
                     className={`group data-[state=on]:bg-gradient-to-br
-                   data-[state=on]:from-emerald-500 data-[state=on]:to-green-600
-                   data-[state=on]:text-white data-[state=on]:border-emerald-400 
+                   data-[state=on]:from-pink-500 data-[state=on]:to-fuchsia-600
+                   data-[state=on]:text-white data-[state=on]:border-pink-400 
                      data-[state=on]:shadow-lg hover:scale-105 transition-all duration-200 py-4`}
                 >
                     <div className="flex items-center justify-center gap-2">
                         <div className="relative">
                             <span className="text-xl group-data-[state=on]:animate-bounce">🎯</span>
                             <div className={`absolute -inset-1
-                             bg-emerald-200 rounded-full opacity-0 group-data-[state=on]:opacity-30
+                             bg-pink-200 rounded-full opacity-0 group-data-[state=on]:opacity-30
                               group-data-[state=on]:animate-ping`}></div>
                         </div>
                         <span className="font-semibold text-sm whitespace-nowrap">Set Goal</span>
@@ -83,37 +83,30 @@ export function ToggleCell({className, ...props}: ComponentPropsWithoutRef<'div'
                     value="set_start"
                     aria-label="Set Start Position"
                     className={`group data-[state=on]:bg-gradient-to-br
-                   data-[state=on]:from-blue-500 data-[state=on]:to-indigo-600
-                   data-[state=on]:text-white data-[state=on]:border-blue-400 
+                   data-[state=on]:from-sky-500 data-[state=on]:to-teal-600
+                   data-[state=on]:text-white data-[state=on]:border-sky-400 
                      data-[state=on]:shadow-lg hover:scale-105 transition-all duration-200 py-4`}
                 >
                     <div className="flex items-center justify-center gap-2">
                         <div className="relative">
                             <span className="text-xl group-data-[state=on]:animate-bounce">🏁</span>
                             <div className={`absolute -inset-1
-                             bg-blue-200 rounded-full opacity-0 group-data-[state=on]:opacity-30
+                             bg-sky-200 rounded-full opacity-0 group-data-[state=on]:opacity-30
                               group-data-[state=on]:animate-ping`}></div>
                         </div>
                         <span className="font-semibold text-sm whitespace-nowrap">Set Start</span>
                     </div>
                 </ToggleGroupItem>
-
                 <ToggleGroupItem
-                    value="toggle_wall"
-                    aria-label="Toggle Wall"
+                    value="inactive"
+                    aria-label="Set Start Position"
                     className={`group data-[state=on]:bg-gradient-to-br
-                   data-[state=on]:from-red-500 data-[state=on]:to-rose-600
-                   data-[state=on]:text-white data-[state=on]:border-red-400 
-                     data-[state=on]:shadow-lg hover:scale-105 transition-all duration-200 py-4`}
+                   data-[state=on]:from-gray-300 data-[state=on]:to-slate-400
+                   data-[state=on]:text-white data-[state=on]:border-gray-400 
+                     data-[state=on]:shadow-lg `}
                 >
                     <div className="flex items-center justify-center gap-2">
-                        <div className="relative">
-                            <span className="text-xl group-data-[state=on]:animate-pulse">🚧</span>
-                            <div className={`absolute -inset-1
-                             bg-red-200 rounded-full opacity-0 group-data-[state=on]:opacity-30
-                              group-data-[state=on]:animate-ping`}></div>
-                        </div>
-                        <span className="font-semibold text-sm whitespace-nowrap">Toggle Wall</span>
+                        <span className="font-semibold text-sm whitespace-nowrap">Inactive</span>
                     </div>
                 </ToggleGroupItem>
             </ToggleGroup>
