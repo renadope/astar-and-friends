@@ -57,7 +57,7 @@ export function ToggleCell({className, ...props}: ComponentPropsWithoutRef<'div'
                 }}
                 variant="outline"
                 size="default"
-                className="w-full grid grid-cols-3 gap-2 bg-gray-50 p-2 rounded-lg"
+                className="w-full grid xs:grid-cols-1 md:grid-cols-2 gap-2 bg-gray-50 p-2 rounded-lg"
                 disabled={!hasNoAStarData}
             >
                 <ToggleGroupItem
@@ -97,18 +97,7 @@ export function ToggleCell({className, ...props}: ComponentPropsWithoutRef<'div'
                         <span className="font-semibold text-sm whitespace-nowrap">Set Start</span>
                     </div>
                 </ToggleGroupItem>
-                <ToggleGroupItem
-                    value="inactive"
-                    aria-label="Set Start Position"
-                    className={`group data-[state=on]:bg-gradient-to-br
-                   data-[state=on]:from-gray-300 data-[state=on]:to-slate-400
-                   data-[state=on]:text-white data-[state=on]:border-gray-400 
-                     data-[state=on]:shadow-lg `}
-                >
-                    <div className="flex items-center justify-center gap-2">
-                        <span className="font-semibold text-sm whitespace-nowrap">Inactive</span>
-                    </div>
-                </ToggleGroupItem>
+
             </ToggleGroup>
 
         </div>
