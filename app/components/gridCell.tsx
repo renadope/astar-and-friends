@@ -97,7 +97,7 @@ export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) 
         <div
             key={key}
             style={{
-                // transition: "all .3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                transition: "all .3s cubic-bezier(0.34, 1.56, 0.64, 1)",
                 border: `${borderThickness}px solid ${costToColor(cell.cost)}`,
                 boxShadow: isCurrentStep ? "0 0 15px 5px rgba(59, 130, 246, 0.6)" :
                     cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.7)" :
