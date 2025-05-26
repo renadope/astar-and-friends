@@ -10,13 +10,10 @@ import {useDebounce} from "~/hooks/useDebounce";
 
 export default function Grid() {
     const {state, dispatch} = useGridContext()
-    const {cellData} = state
+    const {cellData, currentTimelineIndex, currentGhostGoalTarget, isPlaying} = state
     const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0
-
-
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
-
-    const canGhost = !state.isPlaying && state.currentTimelineIndex >= timeline.length - 1
+    const canGhost = !isPlaying && currentTimelineIndex >= timeline.length - 1
 
     const [hoveredCell, setHoveredCell] = useState<Nullish<Pos>>(null)
     // const deferredHoverCell = useDeferredValue(hoveredCell)
@@ -28,18 +25,18 @@ export default function Grid() {
         const validHoverCell = !isNullOrUndefined(deferredHoverCell)
         const noHoverCell = !validHoverCell
 
-        const hasGhostTarget = !isNullOrUndefined(state.currentGhostGoalTarget)
+        const hasGhostTarget = !isNullOrUndefined(currentGhostGoalTarget)
         const noGhostTarget = !hasGhostTarget
 
         if (noHoverCell && noGhostTarget) {
             return
         }
-        if (validHoverCell && state.cellData[deferredHoverCell[0]][deferredHoverCell[1]].state !== 'visited') {
+        if (validHoverCell && cellData[deferredHoverCell[0]][deferredHoverCell[1]].state !== 'visited') {
             return
         }
 
         const hoveringNewCell = validHoverCell &&
-            !isSamePos(deferredHoverCell, state.currentGhostGoalTarget);
+            !isSamePos(deferredHoverCell, currentGhostGoalTarget);
 
 
         if (hoveringNewCell) {
@@ -50,7 +47,7 @@ export default function Grid() {
         } else if (noHoverCell) {
             dispatch({type: "JUMP_TO_END"});
         }
-    }, [deferredHoverCell, canGhost, state.currentGhostGoalTarget]);
+    }, [deferredHoverCell, canGhost, currentGhostGoalTarget]);
 
     return (
         <div className="p-2 2xs:p-1 sm:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl">
