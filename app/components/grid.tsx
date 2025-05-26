@@ -5,6 +5,7 @@ import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
 import {useDeferredValue, useEffect, useState} from "react";
 import type {Nullish} from "~/types/helpers";
 import type {Pos} from "~/types/pathfinding";
+import {useDebounce} from "~/hooks/useDebounce";
 
 
 export default function Grid() {
@@ -18,7 +19,8 @@ export default function Grid() {
     const canGhost = !state.isPlaying && state.currentTimelineIndex >= timeline.length - 1
 
     const [hoveredCell, setHoveredCell] = useState<Nullish<Pos>>(null)
-    const deferredHoverCell = useDeferredValue(hoveredCell)
+    // const deferredHoverCell = useDeferredValue(hoveredCell)
+    const deferredHoverCell = useDebounce(hoveredCell,120)
     useEffect(() => {
         if (!canGhost) return;
         if (isNullOrUndefined(deferredHoverCell) && isNullOrUndefined(state.currentGhostGoalTarget)) {
