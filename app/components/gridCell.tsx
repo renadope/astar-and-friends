@@ -97,7 +97,7 @@ export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) 
         <div
             key={key}
             style={{
-                transition: "all .3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                // transition: "all .3s cubic-bezier(0.34, 1.56, 0.64, 1)",
                 border: `${borderThickness}px solid ${costToColor(cell.cost)}`,
                 boxShadow: isCurrentStep ? "0 0 15px 5px rgba(59, 130, 246, 0.6)" :
                     cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.7)" :
@@ -122,15 +122,19 @@ export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) 
             }}
             onMouseEnter={() => {
                 if (isSamePos(hoveredCell, [r, c])) {
+                    // console.log("SAME POS")
                     return
                 }
-                if (cellData[r][c].state!=='visited'){
+                const isGhostable = cellData[r][c].state === 'visited' || cellData[r][c].state === 'ghost'
+                if (!isGhostable) {
+                    // console.log([r, c], "is ", cellData[r][c].state)
                     return
                 }
                 setHoveredCell([r, c])
 
             }}
             onMouseLeave={() => {
+                // console.log([r, c], "mouse leave setting to null")
                 setHoveredCell(null)
             }}
         >
@@ -179,7 +183,7 @@ export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) 
                                             setOpenWeightPopover(false)
 
                                         }}
-                                        className="px-2 py-1.5 text-sm rounded-md border-2 border-transparent hover:border-black hover:bg-gray-100 transition-colors flex flex-col items-center gap-0.5"
+                                        className="px-2 py-1.5 text-sm rounded-md border-2 border-transparent hover:border-black hover:bg-gray-100  flex flex-col items-center gap-0.5"
                                     >
                                         <span className="font-medium ">{name}</span>
                                         <span
@@ -287,7 +291,7 @@ export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) 
 
             {(cell.state === "path" || isCurrentStep) && (
                 <div
-                    className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none"></div>
+                    className="absolute inset-0 rounded-md bg-white opacity-0 group-hover:opacity-20  pointer-events-none"></div>
             )
             }
 

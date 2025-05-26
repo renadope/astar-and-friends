@@ -18,6 +18,7 @@ export default function Grid() {
     const [hoveredCell, setHoveredCell] = useState<Nullish<Pos>>(null)
     // const deferredHoverCell = useDeferredValue(hoveredCell)
     const deferredHoverCell = useDebounce(hoveredCell, 120)
+    // console.log('hovering:', deferredHoverCell?.join(','))
     useEffect(() => {
         if (!canGhost) return;
 
@@ -31,7 +32,8 @@ export default function Grid() {
         if (noHoverCell && noGhostTarget) {
             return
         }
-        if (validHoverCell && cellData[deferredHoverCell[0]][deferredHoverCell[1]].state !== 'visited') {
+
+        if (validHoverCell && !['visited', 'ghost'].includes(cellData[deferredHoverCell[0]][deferredHoverCell[1]].state)) {
             return
         }
 
@@ -57,8 +59,8 @@ export default function Grid() {
                     {cellData.map((row, r) => (
                         <div key={`col-${r}`} className="flex gap-0.5 2xs:gap-1 sm:gap-1.5">
                             {row.map((_, c) => (
-                                <GridCell key={stringifyPos(r, c)} pos={[r, c]} hoveredCell={hoveredCell}
-                                          setHoveredCell={setHoveredCell}/>
+                                    <GridCell key={stringifyPos(r, c)} pos={[r, c]} hoveredCell={hoveredCell}
+                                              setHoveredCell={setHoveredCell}/>
                             ))}
                         </div>
                     ))}
