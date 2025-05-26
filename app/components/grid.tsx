@@ -45,7 +45,7 @@ export default function Grid() {
         if (hoveringNewCell) {
             dispatch({
                 type: "SET_GOAL_GHOST_PATH",
-                payload: [deferredHoverCell[0], deferredHoverCell[1]],
+                payload: deferredHoverCell,
             });
         } else if (noHoverCell) {
             dispatch({type: "JUMP_TO_END"});
