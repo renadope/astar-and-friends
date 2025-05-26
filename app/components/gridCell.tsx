@@ -124,6 +124,9 @@ export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) 
                 if (isSamePos(hoveredCell, [r, c])) {
                     return
                 }
+                if (cellData[r][c].state!=='visited'){
+                    return
+                }
                 setHoveredCell([r, c])
 
             }}

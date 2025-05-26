@@ -31,6 +31,9 @@ export default function Grid() {
             !isNullOrUndefined(state.currentGhostGoalTarget);
 
         if (hoveringNewCell) {
+            if (state.cellData[deferredHoverCell[0]][deferredHoverCell[1]].state!=='visited'){
+                return
+            }
             dispatch({
                 type: "SET_GOAL_GHOST_PATH",
                 payload: [deferredHoverCell[0], deferredHoverCell[1]],
