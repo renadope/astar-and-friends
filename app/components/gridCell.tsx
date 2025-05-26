@@ -1,5 +1,5 @@
 import {useGridContext} from "~/state/context";
-import {stringifyPos} from "~/utils/grid-helpers";
+import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
 import type {CellData} from "~/cell-data/types";
@@ -8,6 +8,7 @@ import {Input} from "~/components/ui/input";
 import {cellWeight} from "~/presets/cell-weight";
 import {type ComponentPropsWithoutRef, useMemo, useState} from "react";
 import {cn} from "~/lib/utils";
+import type {Nullish} from "~/types/helpers";
 
 //consider adding this to the state
 const gridCellSize = 7
@@ -36,6 +37,8 @@ const textColors: Record<CellData['state'], string> = {
 
 type CellProps = {
     pos: Pos
+    hoveredCell: Nullish<Pos>
+    setHoveredCell: (foo: Nullish<Pos>) => void
 }
 
 function BasicCellInfo({cell, weightEmoji, className, ...props}: {
@@ -60,7 +63,7 @@ function BasicCellInfo({cell, weightEmoji, className, ...props}: {
     )
 }
 
-export default function GridCell({pos}: CellProps) {
+export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) {
     const {state, dispatch} = useGridContext()
     const [openWeightPopover, setOpenWeightPopover] = useState<boolean>(false)
     const {aStarData, currentTimelineIndex, cellData} = state
@@ -88,12 +91,13 @@ export default function GridCell({pos}: CellProps) {
     }, [cell.cost])
     const borderThickness = Math.min(3, Math.max(1, Math.log2(cell.cost + 1)));
 
+
     const bestFrontier = cell.state === 'frontier' && !isNullOrUndefined(posUpNext) && r === posUpNext[0] && c === posUpNext[1]
     return (
         <div
             key={key}
             style={{
-                transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                transition: "all .3s cubic-bezier(0.34, 1.56, 0.64, 1)",
                 border: `${borderThickness}px solid ${costToColor(cell.cost)}`,
                 boxShadow: isCurrentStep ? "0 0 15px 5px rgba(59, 130, 246, 0.6)" :
                     cell.state === "path" ? "0 0 8px rgba(16, 185, 129, 0.7)" :
@@ -101,14 +105,14 @@ export default function GridCell({pos}: CellProps) {
             }}
             className={`
         size-9 2xs:size-10 xs:size-13 sm:size-14 md:size-16 lg:size-18 xl:size-20 2xl:size-22 3xl:size-24 
-        rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm hover:scale-105
+        rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm hover:scale-95
         ${cellBgColor[cell.state] ?? 'bg-sky-500'}
         ${bestFrontier ? 'z-10 2xs:translate-x-8 2xs:translate-y-4 2xs:scale-125 sm:translate-x-10 sm:translate-y-5 sm:scale-140 lg:translate-x-12 lg:translate-y-6 lg:scale-150' : ''}
         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50 after:pointer-events-none' : ''}
         ${isCurrentStep && !isLastStep && cell.state !== 'path' ? 'scale-105 sm:scale-110' : 'scale-100'} 
         ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-105 sm:scale-110 animate-bounce" : ""}
         ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-105 sm:scale-110 z-10" : ""}
-        ${cell.state === 'ghost' ? "animate-[wiggle_1s_ease-in-out_infinite] z-10" : ""}
+        ${cell.state === 'ghost' ? "pointer-events-auto animate-[wiggle_1s_ease-in-out_infinite] z-10" : ""}
         `}
             onClick={() => {
                 dispatch({
@@ -117,27 +121,14 @@ export default function GridCell({pos}: CellProps) {
                 })
             }}
             onMouseEnter={() => {
-                // console.log("hi-" + Date.now())
-                if (cell.state !== 'visited' || state.isPlaying || currentTimelineIndex < timeline.length - 1) {
+                if (isSamePos(hoveredCell, [r, c])) {
                     return
                 }
-                dispatch({
-                    type: "SET_GOAL_GHOST_PATH",
-                    payload: [r, c]
-                })
+                setHoveredCell([r, c])
+
             }}
             onMouseLeave={() => {
-                // console.log("bye-" + Date.now())
-                if (state.isPlaying) {
-                    return
-                }
-                if (currentTimelineIndex < timeline.length - 1) {
-                    return
-                }
-
-                dispatch(({
-                    type: "JUMP_TO_END",
-                }))
+                setHoveredCell(null)
             }}
         >
             {isCurrentStep && isLastStep && (

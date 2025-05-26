@@ -1,13 +1,45 @@
 import {isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import GridCell, {cellBgColor} from "~/components/gridCell";
-import {stringifyPos} from "~/utils/grid-helpers";
+import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
+import {useDeferredValue, useEffect, useState} from "react";
+import type {Nullish} from "~/types/helpers";
+import type {Pos} from "~/types/pathfinding";
 
 
 export default function Grid() {
-    const {state} = useGridContext()
+    const {state, dispatch} = useGridContext()
     const {cellData} = state
     const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0
+
+
+    const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+
+    const canGhost = !state.isPlaying && state.currentTimelineIndex >= timeline.length - 1
+
+    const [hoveredCell, setHoveredCell] = useState<Nullish<Pos>>(null)
+    const deferredHoverCell = useDeferredValue(hoveredCell)
+    useEffect(() => {
+        if (!canGhost) return;
+
+        const hoveringNewCell =
+            !isNullOrUndefined(deferredHoverCell) &&
+            !isSamePos(deferredHoverCell, state.currentGhostGoalTarget);
+
+        const clearingGhost =
+            isNullOrUndefined(deferredHoverCell) &&
+            !isNullOrUndefined(state.currentGhostGoalTarget);
+
+        if (hoveringNewCell) {
+            dispatch({
+                type: "SET_GOAL_GHOST_PATH",
+                payload: [deferredHoverCell[0], deferredHoverCell[1]],
+            });
+        } else if (clearingGhost) {
+            dispatch({ type: "JUMP_TO_END" });
+        }
+    }, [deferredHoverCell, canGhost, state.currentGhostGoalTarget]);
+
     return (
         <div className="p-2 2xs:p-1 sm:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl">
             {hasCellData && (
@@ -16,7 +48,8 @@ export default function Grid() {
                     {cellData.map((row, r) => (
                         <div key={`col-${r}`} className="flex gap-0.5 2xs:gap-1 sm:gap-1.5">
                             {row.map((_, c) => (
-                                <GridCell key={stringifyPos(r, c)} pos={[r, c]}/>
+                                <GridCell key={stringifyPos(r, c)} pos={[r, c]} hoveredCell={hoveredCell}
+                                          setHoveredCell={setHoveredCell}/>
                             ))}
                         </div>
                     ))}

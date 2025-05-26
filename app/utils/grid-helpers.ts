@@ -1,4 +1,5 @@
 import type {Pos} from "~/types/pathfinding";
+import {isNullOrUndefined} from "~/utils/helpers";
 
 export function isValidGridIndex(
     grid: unknown[][],
@@ -16,6 +17,7 @@ export function isValidGridIndex(
 export function stringifyPos(...pos: number[]): string {
     return pos.join(",");
 }
+
 export function parsePos(key: string): number[] {
     return key.split(",").map(Number);
 }
@@ -30,4 +32,11 @@ export function isNodePassable(val: number): boolean {
 
 export function isValidNode(grid: number[][], row: number, col: number) {
     return isValidGridIndex(grid, row, col) && isNodePassable(grid[row][col]);
+}
+
+export function isSamePos(a?: Pos | null, b?: Pos | null): boolean {
+    if (isNullOrUndefined(a) || isNullOrUndefined(b)) {
+        return false
+    }
+    return a[0] === b[0] && a[1] === b[1];
 }

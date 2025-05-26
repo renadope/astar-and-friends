@@ -43,6 +43,7 @@ export const initialState: AppState = {
     isPlaying: false,
     playbackSpeedFactor: 1,
     configChanged: false,
+    currentGhostGoalTarget: undefined
 }
 
 function addCostHistoryToCells(state: AppState) {
@@ -91,7 +92,7 @@ function getActiveTimelineLength(state: AppState): number {
 }
 
 
-function generateGrid(state: AppState, size: number) {
+function generateGrid(state: AppState, size: number): AppState {
     const weightGrid: number[][] = generateRandomCostGrid(size, state.weightPreset.func)
     const cellData = initCellData(weightGrid, state.startPos ?? [0, 0],
         state.goalPos ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1])
@@ -106,6 +107,7 @@ function generateGrid(state: AppState, size: number) {
         isPlaying: false,
         configChanged: true,
         gridSize: size,
+        currentGhostGoalTarget: undefined
     }
 }
 
@@ -157,6 +159,7 @@ export function reducer(state: AppState, action: Action): AppState {
                 cellSelectionState: "inactive",
                 isPlaying: autoRun,
                 configChanged: false,
+                currentGhostGoalTarget: undefined
             }
         case "SET_CELL_DATA_COST_HISTORY":
             return addCostHistoryToCells(state)
@@ -205,7 +208,8 @@ export function reducer(state: AppState, action: Action): AppState {
             }
             return updateCellDataUsingTimelineData({
                 ...state,
-                currentTimelineIndex: setIndexIdx
+                currentTimelineIndex: setIndexIdx,
+                currentGhostGoalTarget: undefined
             })
         case "SET_G_WEIGHT":
             const gWeight = Math.abs(action.payload)
@@ -352,6 +356,7 @@ export function reducer(state: AppState, action: Action): AppState {
                 snapshotTimeline: [],
                 isPlaying: false,
                 configChanged: false,
+                currentGhostGoalTarget: undefined
 
             }
         case "SET_HEURISTIC_FUNC":
@@ -406,13 +411,17 @@ export function reducer(state: AppState, action: Action): AppState {
             if (state.timeline === 'snapshot') {
                 return addCostHistoryToCells(updateCellDataUsingTimelineData({
                         ...state,
-                        currentTimelineIndex: state.snapshotTimeline.length - 1
+                        currentTimelineIndex: state.snapshotTimeline.length - 1,
+                        currentGhostGoalTarget: undefined
+
                     }
                 ))
             }
             return addCostHistoryToCells(updateCellDataUsingTimelineData({
                     ...state,
-                    currentTimelineIndex: state.granularTimeline.length - 1
+                    currentTimelineIndex: state.granularTimeline.length - 1,
+                    currentGhostGoalTarget: undefined
+
                 }
             ))
         case "JUMP_TO_START":
@@ -423,7 +432,8 @@ export function reducer(state: AppState, action: Action): AppState {
                 ...state,
                 currentTimelineIndex: NO_TIMELINE,
                 cellData: initCellData(state.weightGrid,
-                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
+                    state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]),
+
             }
         case "JUMP_TO_PATH_START":
             if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
@@ -456,12 +466,15 @@ export function reducer(state: AppState, action: Action): AppState {
                         currentTimelineIndex: NO_TIMELINE,
                         isPlaying: true,
                         cellData: initCellData(state.weightGrid,
-                            state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1])
+                            state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]),
+                        currentGhostGoalTarget: undefined
+
                     }
                 }
                 return {
                     ...state,
-                    isPlaying: true
+                    isPlaying: true,
+                    currentGhostGoalTarget: undefined
                 }
 
             }
@@ -499,7 +512,13 @@ export function reducer(state: AppState, action: Action): AppState {
                 (_: Pos) => 0,
                 {...state.gwWeights, name: "fookingannnoying"},
                 newGoal)
-            const cellData = copyCellData(state.cellData)
+            const cellData = updateCellDataUsingTimelineData({
+                    ...state,
+                    currentTimelineIndex: state.timeline === 'granular' ? state.granularTimeline.length - 1 : state.snapshotTimeline.length - 1,
+                    currentGhostGoalTarget: undefined
+                }
+            ).cellData
+
             for (let i = 0; i < newPath.length; i++) {
                 const [r, c] = newPath[i].pos
                 const cell = cellData[r][c]
@@ -507,9 +526,12 @@ export function reducer(state: AppState, action: Action): AppState {
             }
             return {
                 ...state,
-                cellData
+                cellData,
+                currentGhostGoalTarget: newGoal,
             }
-        case "SET_CELL_WEIGHT":
+        case
+        "SET_CELL_WEIGHT"
+        :
             const {pos: newCellWeightPos, newWeight: newCellWeight} = action.payload
             const [rNew, cNew] = newCellWeightPos
             if (state.cellData[rNew][cNew].cost === newCellWeight) {

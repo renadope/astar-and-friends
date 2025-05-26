@@ -3,6 +3,7 @@ import type {AStarData, DiagonalConfig, Pos, Weights} from "~/types/pathfinding"
 import type {HeuristicFunc, HeuristicName} from "~/utils/heuristics";
 import type {CostAndWeightFunc, CostAndWeightKind} from "~/utils/grid-weights";
 import type {CellData, CellToggle} from "~/cell-data/types";
+import type {Nullish} from "~/types/helpers";
 
 export type gwWeights = Omit<Weights, 'name'>
 export type TimelineOptions = 'snapshot' | 'granular'
@@ -25,7 +26,8 @@ export type AppState = {
     weightPreset: { func: CostAndWeightFunc, name: CostAndWeightKind }
     isPlaying: boolean
     playbackSpeedFactor: number
-    configChanged: boolean
+    configChanged: boolean,
+    currentGhostGoalTarget: Nullish<Pos>
 }
 export type Action =
     | { type: "GENERATE_GRID", payload?: number, }
