@@ -1,5 +1,5 @@
 import {useGridContext} from "~/state/context";
-import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
+import {stringifyPos} from "~/utils/grid-helpers";
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
 import type {CellData} from "~/cell-data/types";
@@ -8,7 +8,6 @@ import {Input} from "~/components/ui/input";
 import {cellWeight} from "~/presets/cell-weight";
 import {type ComponentPropsWithoutRef, useMemo, useState} from "react";
 import {cn} from "~/lib/utils";
-import type {Nullish} from "~/types/helpers";
 
 //consider adding this to the state
 const gridCellSize = 7
@@ -37,8 +36,6 @@ const textColors: Record<CellData['state'], string> = {
 
 type CellProps = {
     pos: Pos
-    hoveredCell: Nullish<Pos>
-    setHoveredCell: (foo: Nullish<Pos>) => void
 }
 
 function BasicCellInfo({cell, weightEmoji, className, ...props}: {
@@ -63,10 +60,10 @@ function BasicCellInfo({cell, weightEmoji, className, ...props}: {
     )
 }
 
-export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) {
+export default function GridCell({pos}: CellProps) {
     const {state, dispatch} = useGridContext()
     const [openWeightPopover, setOpenWeightPopover] = useState<boolean>(false)
-    const {aStarData, currentTimelineIndex, cellData} = state
+    const {aStarData, currentTimelineIndex, cellData, isPlaying, allReconstructedPathsCache} = state
     const [r, c] = pos
     const cell = cellData[r][c]
     const key = stringifyPos(...cell.pos)
@@ -91,8 +88,11 @@ export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) 
     }, [cell.cost])
     const borderThickness = Math.min(3, Math.max(1, Math.log2(cell.cost + 1)));
 
-
     const bestFrontier = cell.state === 'frontier' && !isNullOrUndefined(posUpNext) && r === posUpNext[0] && c === posUpNext[1]
+
+    const hasVisitedReconstructedPath = !isNullOrUndefined(allReconstructedPathsCache) ? allReconstructedPathsCache.has(stringifyPos(r, c)) : false
+    const canGhost = !isPlaying && currentTimelineIndex >= timeline.length - 1 && hasVisitedReconstructedPath
+
     return (
         <div
             key={key}
@@ -121,21 +121,20 @@ export default function GridCell({pos, hoveredCell, setHoveredCell}: CellProps) 
                 })
             }}
             onMouseEnter={() => {
-                if (isSamePos(hoveredCell, [r, c])) {
-                    // console.log("SAME POS")
-                    return
+                if (canGhost) {
+                    dispatch({
+                        type: "SET_GOAL_GHOST_PATH",
+                        payload: [r, c]
+                    })
                 }
-                const isGhostable = cellData[r][c].state === 'visited' || cellData[r][c].state === 'ghost'
-                if (!isGhostable) {
-                    // console.log([r, c], "is ", cellData[r][c].state)
-                    return
-                }
-                setHoveredCell([r, c])
-
             }}
             onMouseLeave={() => {
-                // console.log([r, c], "mouse leave setting to null")
-                setHoveredCell(null)
+                if (canGhost) {
+                    dispatch({
+                        type: "JUMP_TO_END"
+                    })
+
+                }
             }}
         >
             {isCurrentStep && isLastStep && (

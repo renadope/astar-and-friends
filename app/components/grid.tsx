@@ -1,55 +1,13 @@
 import {isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import GridCell, {cellBgColor} from "~/components/gridCell";
-import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
-import {useEffect, useState} from "react";
-import type {Nullish} from "~/types/helpers";
-import type {Pos} from "~/types/pathfinding";
-import {useDebounce} from "~/hooks/useDebounce";
+import {stringifyPos} from "~/utils/grid-helpers";
 
 
 export default function Grid() {
-    const {state, dispatch} = useGridContext()
-    const {cellData, currentTimelineIndex, currentGhostGoalTarget, isPlaying} = state
+    const {state} = useGridContext()
+    const {cellData} = state
     const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0
-    const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
-    const canGhost = !isPlaying && currentTimelineIndex >= timeline.length - 1
-
-    const [hoveredCell, setHoveredCell] = useState<Nullish<Pos>>(null)
-    // const deferredHoverCell = useDeferredValue(hoveredCell)
-    const deferredHoverCell = useDebounce(hoveredCell, 120)
-    // console.log('hovering:', deferredHoverCell?.join(','))
-    useEffect(() => {
-        if (!canGhost) return;
-
-
-        const validHoverCell = !isNullOrUndefined(deferredHoverCell)
-        const noHoverCell = !validHoverCell
-
-        const hasGhostTarget = !isNullOrUndefined(currentGhostGoalTarget)
-        const noGhostTarget = !hasGhostTarget
-
-        if (noHoverCell && noGhostTarget) {
-            return
-        }
-
-        if (validHoverCell && !['visited', 'ghost'].includes(cellData[deferredHoverCell[0]][deferredHoverCell[1]].state)) {
-            return
-        }
-
-        const hoveringNewCell = validHoverCell &&
-            !isSamePos(deferredHoverCell, currentGhostGoalTarget);
-
-
-        if (hoveringNewCell) {
-            dispatch({
-                type: "SET_GOAL_GHOST_PATH",
-                payload: deferredHoverCell,
-            });
-        } else if (noHoverCell) {
-            dispatch({type: "JUMP_TO_END"});
-        }
-    }, [deferredHoverCell, canGhost, currentGhostGoalTarget]);
 
     return (
         <div className="p-2 2xs:p-1 sm:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl">
@@ -59,8 +17,7 @@ export default function Grid() {
                     {cellData.map((row, r) => (
                         <div key={`col-${r}`} className="flex gap-0.5 2xs:gap-1 sm:gap-1.5">
                             {row.map((_, c) => (
-                                    <GridCell key={stringifyPos(r, c)} pos={[r, c]} hoveredCell={hoveredCell}
-                                              setHoveredCell={setHoveredCell}/>
+                                    <GridCell key={stringifyPos(r, c)} pos={[r, c]}/>
                             ))}
                         </div>
                     ))}

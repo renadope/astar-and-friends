@@ -18,7 +18,7 @@ import {
     updateCellDataFlattenedStep,
     updateCellDataSnapshotStep
 } from "~/cell-data/cell-data";
-import {parsePos} from "~/utils/grid-helpers";
+import {parsePos, stringifyPos} from "~/utils/grid-helpers";
 import {LARGEST_PLAYBACK_FACTOR, NO_TIMELINE, SMALLEST_PLAYBACK_FACTOR} from "~/state/constants";
 
 export const initialState: AppState = {
@@ -43,7 +43,7 @@ export const initialState: AppState = {
     isPlaying: false,
     playbackSpeedFactor: 1,
     configChanged: false,
-    currentGhostGoalTarget: undefined
+    allReconstructedPathsCache: undefined,
 }
 
 function addCostHistoryToCells(state: AppState) {
@@ -107,7 +107,6 @@ function generateGrid(state: AppState, size: number): AppState {
         isPlaying: false,
         configChanged: true,
         gridSize: size,
-        currentGhostGoalTarget: undefined
     }
 }
 
@@ -147,6 +146,20 @@ export function reducer(state: AppState, action: Action): AppState {
             }
             const snapshotTimeline = buildTimeline(aStarResult.value.visitedOrder, aStarResult.value.frontier, aStarResult.value.path)
             const granularTimeline = flattenedTimeline(snapshotTimeline)
+
+            const allGhostPathCache = new Map<string, Pos[]>
+            const pathAsSet = new Set<string>(aStarResult.value.path.map((p) => stringifyPos(...p.pos)))
+            const visitedNotInPath = aStarResult.value.visitedOrder.filter((p) => !pathAsSet.has(stringifyPos(...p.pos))).map((visited) => visited.pos)
+            for (let i = 0; i < visitedNotInPath.length; i++) {
+                const newPath = reconstructPath(
+                    state.weightGrid,
+                    aStarResult.value.costs,
+                    aStarResult.value.prevMap,
+                    (_: Pos) => 0,
+                    {...state.gwWeights, name: "fookingannnoying"},
+                    visitedNotInPath[i])
+                allGhostPathCache.set(stringifyPos(...visitedNotInPath[i]), newPath.map((data) => data.pos))
+            }
             return {
                 ...state,
                 cellData: initCellData(state.weightGrid, start, goal),
@@ -159,7 +172,7 @@ export function reducer(state: AppState, action: Action): AppState {
                 cellSelectionState: "inactive",
                 isPlaying: autoRun,
                 configChanged: false,
-                currentGhostGoalTarget: undefined
+                allReconstructedPathsCache: visitedNotInPath.length !== 0 ? allGhostPathCache : undefined
             }
         case "SET_CELL_DATA_COST_HISTORY":
             return addCostHistoryToCells(state)
@@ -209,7 +222,6 @@ export function reducer(state: AppState, action: Action): AppState {
             return updateCellDataUsingTimelineData({
                 ...state,
                 currentTimelineIndex: setIndexIdx,
-                currentGhostGoalTarget: undefined
             })
         case "SET_G_WEIGHT":
             const gWeight = Math.abs(action.payload)
@@ -356,7 +368,8 @@ export function reducer(state: AppState, action: Action): AppState {
                 snapshotTimeline: [],
                 isPlaying: false,
                 configChanged: false,
-                currentGhostGoalTarget: undefined
+
+                allReconstructedPathsCache: undefined,
 
             }
         case "SET_HEURISTIC_FUNC":
@@ -412,16 +425,12 @@ export function reducer(state: AppState, action: Action): AppState {
                 return addCostHistoryToCells(updateCellDataUsingTimelineData({
                         ...state,
                         currentTimelineIndex: state.snapshotTimeline.length - 1,
-                        currentGhostGoalTarget: undefined
-
                     }
                 ))
             }
             return addCostHistoryToCells(updateCellDataUsingTimelineData({
                     ...state,
                     currentTimelineIndex: state.granularTimeline.length - 1,
-                    currentGhostGoalTarget: undefined
-
                 }
             ))
         case "JUMP_TO_START":
@@ -467,14 +476,12 @@ export function reducer(state: AppState, action: Action): AppState {
                         isPlaying: true,
                         cellData: initCellData(state.weightGrid,
                             state.startPos ?? [0, 0], state.goalPos ?? [state.weightGrid.length - 1, state.weightGrid[state.weightGrid.length - 1].length - 1]),
-                        currentGhostGoalTarget: undefined
 
                     }
                 }
                 return {
                     ...state,
                     isPlaying: true,
-                    currentGhostGoalTarget: undefined
                 }
 
             }
@@ -496,7 +503,11 @@ export function reducer(state: AppState, action: Action): AppState {
                 playbackSpeedFactor: Math.max(0.25, Math.min(factor, LARGEST_PLAYBACK_FACTOR))
             }
         case "SET_GOAL_GHOST_PATH":
-            if (isNullOrUndefined(state.aStarData) || (state.isPlaying) || state.currentTimelineIndex < getActiveTimelineLength(state) - 1) {
+            const canGhost = !isNullOrUndefined(state.aStarData) && !state.isPlaying && state.currentTimelineIndex >= getActiveTimelineLength(state) - 1
+            if (!canGhost) {
+                return state
+            }
+            if (isNullOrUndefined(state.allReconstructedPathsCache)) {
                 return state
             }
             const startPos = state.startPos
@@ -505,33 +516,22 @@ export function reducer(state: AppState, action: Action): AppState {
             }
 
             const newGoal = action.payload
-            const newPath = reconstructPath(
-                state.weightGrid,
-                state.aStarData.costs,
-                state.aStarData.prevMap,
-                (_: Pos) => 0,
-                {...state.gwWeights, name: "fookingannnoying"},
-                newGoal)
-            const cellData = updateCellDataUsingTimelineData({
-                    ...state,
-                    currentTimelineIndex: state.timeline === 'granular' ? state.granularTimeline.length - 1 : state.snapshotTimeline.length - 1,
-                    currentGhostGoalTarget: undefined
-                }
-            ).cellData
+            const path = state.allReconstructedPathsCache.get(stringifyPos(...newGoal))
+            if (isNullOrUndefined(path)) {
+                return state
+            }
 
-            for (let i = 0; i < newPath.length; i++) {
-                const [r, c] = newPath[i].pos
+            const cellData = copyCellData(state.cellData)
+            for (let i = 0; i < path.length; i++) {
+                const [r, c] = path[i]
                 const cell = cellData[r][c]
                 cell.state = 'ghost'
             }
             return {
                 ...state,
                 cellData,
-                currentGhostGoalTarget: newGoal,
             }
-        case
-        "SET_CELL_WEIGHT"
-        :
+        case"SET_CELL_WEIGHT":
             const {pos: newCellWeightPos, newWeight: newCellWeight} = action.payload
             const [rNew, cNew] = newCellWeightPos
             if (state.cellData[rNew][cNew].cost === newCellWeight) {
