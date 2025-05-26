@@ -141,7 +141,7 @@ export default function GridCell({pos}: CellProps) {
             }}
         >
             {isCurrentStep && isLastStep && (
-                <div className="absolute top-0 left-0 text-lg">🏁</div>
+                <div className="animate-[wiggle_1s_ease-in-out_infinite] absolute top-0 left-0 text-lg">🏁</div>
             )}
 
             {!hasAStarData && (
