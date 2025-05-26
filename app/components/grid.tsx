@@ -21,6 +21,9 @@ export default function Grid() {
     const deferredHoverCell = useDeferredValue(hoveredCell)
     useEffect(() => {
         if (!canGhost) return;
+        if (isNullOrUndefined(deferredHoverCell) && isNullOrUndefined(state.currentGhostGoalTarget)) {
+            return
+        }
 
         const hoveringNewCell =
             !isNullOrUndefined(deferredHoverCell) &&
@@ -31,7 +34,7 @@ export default function Grid() {
             !isNullOrUndefined(state.currentGhostGoalTarget);
 
         if (hoveringNewCell) {
-            if (state.cellData[deferredHoverCell[0]][deferredHoverCell[1]].state!=='visited'){
+            if (state.cellData[deferredHoverCell[0]][deferredHoverCell[1]].state !== 'visited') {
                 return
             }
             dispatch({
@@ -39,7 +42,7 @@ export default function Grid() {
                 payload: [deferredHoverCell[0], deferredHoverCell[1]],
             });
         } else if (clearingGhost) {
-            dispatch({ type: "JUMP_TO_END" });
+            dispatch({type: "JUMP_TO_END"});
         }
     }, [deferredHoverCell, canGhost, state.currentGhostGoalTarget]);
 
