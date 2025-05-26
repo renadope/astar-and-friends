@@ -499,7 +499,6 @@ export function reducer(state: AppState, action: Action): AppState {
                 (_: Pos) => 0,
                 {...state.gwWeights, name: "fookingannnoying"},
                 newGoal)
-            console.log(newPath)
             const cellData = copyCellData(state.cellData)
             for (let i = 0; i < newPath.length; i++) {
                 const [r, c] = newPath[i].pos
