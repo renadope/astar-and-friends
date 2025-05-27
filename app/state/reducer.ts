@@ -8,7 +8,7 @@ import {
     isPathStep,
     type SnapshotStep
 } from "~/utils/timeline-generation";
-import {generateRandomCostGrid, getTerrainWeight} from "~/utils/grid-generation";
+import {generateRandomCostGrid} from "~/utils/grid-generation";
 import {heuristics} from "~/utils/heuristics";
 import {predefinedWeightFuncs} from "~/utils/grid-weights";
 import type {Action, AppState} from "~/state/types";
@@ -316,54 +316,52 @@ export function reducer(state: AppState, action: Action): AppState {
                 // return state
                 throw new Error("this should not happen, must have a start &  goal")
             }
+
+
             const [startRow, startCol] = st.pos
             const [goalRow, goalCol] = go.pos
-            const targetWeight = state.weightGrid[targetRow][targetCol]
+
+        function updateCellWeightIfWall(weightGrid: number[][], targetRow: number, targetCol: number, newWeight: number = 1) {
+            const currentWeight = weightGrid[targetRow][targetCol]
+
+            if (currentWeight !== 0) {
+                return weightGrid
+            }
+
+            return weightGrid.map((row, r) =>
+                row.map((weight, c) =>
+                    r === targetRow && c === targetCol ? newWeight : weight
+                )
+            )
+        }
+
+
             if (state.cellSelectionState === 'set_goal') {
-                if ((startRow === targetRow && startCol === targetCol) || targetWeight === 0) {
+                if ((startRow === targetRow && startCol === targetCol)) {
                     return state
                 }
+                const updatedWeightGrid = updateCellWeightIfWall(state.weightGrid, targetRow, targetCol)
                 return {
                     ...state,
-                    cellData: initCellData(state.weightGrid, [startRow, startCol], [targetRow, targetCol]),
+                    weightGrid: updatedWeightGrid,
+                    cellData: initCellData(updatedWeightGrid, [startRow, startCol], [targetRow, targetCol]),
                     goalPos: [targetRow, targetCol],
                     startPos: [startRow, startCol]
                 }
             } else if (state.cellSelectionState === 'set_start') {
-                if ((goalRow === targetRow && goalCol === targetCol) || targetWeight === 0) {
+                if ((goalRow === targetRow && goalCol === targetCol)) {
                     return state
                 }
+                const updatedWeightGrid = updateCellWeightIfWall(state.weightGrid, targetRow, targetCol)
+
                 return {
                     ...state,
-                    cellData: initCellData(state.weightGrid, [targetRow, targetCol], [goalRow, goalCol]),
+                    weightGrid: updatedWeightGrid,
+                    cellData: initCellData(updatedWeightGrid, [startRow, startCol], [targetRow, targetCol]),
                     startPos: [targetRow, targetCol],
                     goalPos: [goalRow, goalCol]
                 }
             }
-        // else if (state.cellSelectionState === 'toggle_wall') {
-        //     if ((targetRow === startRow && targetCol === startCol) || (targetRow === goalRow && targetCol === goalCol)) {
-        //         return state
-        //     }
-        //     const newWeightGrid = state.weightGrid.map((row, rowIndex) => {
-        //         return row.map((weight, colIndex) => {
-        //             if (rowIndex === targetRow && colIndex === targetCol && weight === 0) {
-        //                 return getTerrainWeight(state.weightPreset.func, rowIndex, colIndex,
-        //                     Math.min(state.weightGrid.length, state.weightGrid[state.weightGrid.length - 1].length)
-        //                 )
-        //             }
-        //             return rowIndex === targetRow && colIndex === targetCol ? 0 : weight
-        //         })
-        //     })
-        //     return {
-        //         ...state,
-        //         weightGrid: newWeightGrid,
-        //         cellData: initCellData(newWeightGrid, state.startPos ?? [0, 0],
-        //             state.goalPos ?? [newWeightGrid.length - 1, newWeightGrid[newWeightGrid.length - 1].length - 1]),
-        //         startPos: [startRow, startCol],
-        //         goalPos: [goalRow, goalCol]
-        //     }
-
-            // }
             return state
 
         case "RESET_ASTAR_DATA":
