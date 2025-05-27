@@ -2,7 +2,7 @@ import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import GridCell, {cellBgColor} from "~/components/gridCell";
 import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "~/components/ui/dialog"
 import type {Nullish} from "~/types/helpers";
 import type {Pos} from "~/types/pathfinding";
@@ -19,18 +19,36 @@ export default function Grid() {
     const isValidClickedCell = !isNullOrUndefined(clickedCell)
     const cell = isValidClickedCell && hasCellData ? cellData[clickedCell[0]][clickedCell[1]] : undefined
     const isClickedStartOrGoal = isSamePos(clickedCell, startPos) || isSamePos(clickedCell, goalPos)
+    const [isPainting, setIsPainting] = useState<boolean>(false)
+
+    useEffect(() => {
+        function up() {
+            return setIsPainting(false);
+        }
+
+        window.addEventListener("mouseup", up)
+        return () => window.removeEventListener("mouseup", up)
+    })
 
 
     return (
-        <div className="p-2 2xs:p-1 sm:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl">
-            {/*<p>{clickedCell}</p>*/}
+        <div className="p-2 2xs:p-1 sm:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl"
+             onMouseDown={() => {
+                 setIsPainting(true)
+             }}
+             onMouseUp={() => {
+                 setIsPainting(false)
+             }}
+        >
+            <p>{isPainting ? 'van gogh' : 'van no'}</p>
             {hasCellData && (
                 <div
                     className="flex flex-col gap-1 2xs:gap-1.5 xs:gap-2 sm:gap-3   items-center justify-center">
                     {cellData.map((row, r) => (
                         <div key={`col-${r}`} className="flex gap-0.5 2xs:gap-1 sm:gap-1.5">
                             {row.map((_, c) => (
-                                <GridCell key={stringifyPos(r, c)} pos={[r, c]} setClickedCell={setClickedCell}/>
+                                <GridCell key={stringifyPos(r, c)} pos={[r, c]} setClickedCell={setClickedCell}
+                                          isPainting={isPainting} setIsPainting={setIsPainting}/>
                             ))}
                         </div>
                     ))}

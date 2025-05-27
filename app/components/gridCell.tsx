@@ -1,10 +1,10 @@
 import {useGridContext} from "~/state/context";
-import {stringifyPos} from "~/utils/grid-helpers";
+import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 import type {Pos} from "~/types/pathfinding";
 import type {CellData} from "~/cell-data/types";
 import {cellWeight} from "~/presets/cell-weight";
-import {type ComponentPropsWithoutRef, useMemo, useState} from "react";
+import {type ComponentPropsWithoutRef, useMemo} from "react";
 import {cn} from "~/lib/utils";
 
 //consider adding this to the state
@@ -32,10 +32,6 @@ const textColors: Record<CellData['state'], string> = {
     ghost: "text-white"
 };
 
-type CellProps = {
-    pos: Pos
-    setClickedCell: (foo: Pos|undefined) => void
-}
 
 function BasicCellInfo({cell, weightEmoji, className, ...props}: {
     cell: CellData,
@@ -44,7 +40,8 @@ function BasicCellInfo({cell, weightEmoji, className, ...props}: {
     return (
         <div
             className={cn("flex flex-col gap-0.5 items-center w-full h-full justify-center group", className)}{...props}>
-            <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"} opacity-80 group-hover:opacity-100`}>
+            <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"}
+             opacity-80 group-hover:opacity-100 select-none}`}>
                 {weightEmoji && <span className="mr-1">{weightEmoji}</span>}
                 {cell.cost}
             </p>
@@ -59,7 +56,14 @@ function BasicCellInfo({cell, weightEmoji, className, ...props}: {
     )
 }
 
-export default function GridCell({pos, setClickedCell}: CellProps) {
+type CellProps = {
+    pos: Pos
+    setClickedCell: (foo: Pos | undefined) => void
+    isPainting: boolean
+    setIsPainting: (foo: boolean) => void
+}
+
+export default function GridCell({pos, setClickedCell, isPainting, setIsPainting}: CellProps) {
     const {state, dispatch} = useGridContext()
     const {aStarData, currentTimelineIndex, cellData, isPlaying, allReconstructedPathsCache, cellSelectionState} = state
     const [r, c] = pos
@@ -110,6 +114,8 @@ export default function GridCell({pos, setClickedCell}: CellProps) {
         ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-105 sm:scale-110 animate-bounce" : ""}
         ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-105 sm:scale-110 z-10" : ""}
         ${cell.state === 'ghost' ? "pointer-events-auto animate-[wiggle_1s_ease-in-out_infinite] z-10" : ""}
+        ${cellSelectionState === 'set_goal' && !isSamePos([r, c], state.goalPos) ? "pointer-events-auto hover:animate-[wiggle_1s_ease-in-out_infinite] hover:bg-pink-300" : ""}
+        ${cellSelectionState === 'set_start' && !isSamePos([r, c], state.startPos) ? "pointer-events-auto hover:animate-[wiggle_1s_ease-in-out_infinite] hover:bg-sky-300" : ""}
         `}
             onClick={() => {
                 if (cellSelectionState !== 'inactive') {
@@ -128,6 +134,10 @@ export default function GridCell({pos, setClickedCell}: CellProps) {
                         type: "SET_GOAL_GHOST_PATH",
                         payload: [r, c]
                     })
+                    return
+                }
+                if (isPainting) {
+                    console.log(cell.cost)
                 }
             }}
             onMouseLeave={() => {
@@ -139,7 +149,7 @@ export default function GridCell({pos, setClickedCell}: CellProps) {
                 }
             }}
         >
-            <BasicCellInfo cell={cell} weightEmoji={weightEmoji}/>
+            <BasicCellInfo cell={cell} weightEmoji={weightEmoji} className={'select-none'}/>
 
             {isCurrentStep && isLastStep && (
                 <div className="animate-[wiggle_1s_ease-in-out_infinite] absolute top-0 left-0 text-lg">🏁</div>
