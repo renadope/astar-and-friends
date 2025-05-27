@@ -72,7 +72,7 @@ export default function Grid() {
                         onChange={(e) => {
                             const num = Number(e.target.value)
                             if (!isNullOrUndefined(clickedCell)) {
-                                if (isClickedStartOrGoal && weight === 0){
+                                if (isClickedStartOrGoal && num === 0) {
                                     return
                                 }
                                 dispatch({
@@ -94,7 +94,7 @@ export default function Grid() {
                                     disabled={isClickedStartOrGoal && weight === 0}
                                     onClick={() => {
                                         if (!isNullOrUndefined(clickedCell)) {
-                                            if (isClickedStartOrGoal && weight === 0){
+                                            if (isClickedStartOrGoal && weight === 0) {
                                                 return
                                             }
                                             dispatch({
