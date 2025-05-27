@@ -537,6 +537,9 @@ export function reducer(state: AppState, action: Action): AppState {
                 cellData,
             }
         case"SET_CELL_WEIGHT":
+            if (!isNullOrUndefined(state.aStarData)) {
+                return state
+            }
             const {pos: newCellWeightPos, newWeight: newCellWeight} = action.payload
             const isStartOrGoal = isSamePos(newCellWeightPos, state.startPos) || isSamePos(newCellWeightPos, state.goalPos)
             if (isStartOrGoal && newCellWeight === 0) {

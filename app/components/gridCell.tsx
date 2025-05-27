@@ -101,8 +101,11 @@ export default function GridCell({
 
     const bestFrontier = cell.state === 'frontier' && !isNullOrUndefined(posUpNext) && r === posUpNext[0] && c === posUpNext[1]
 
+    const hasAStarData = !isNullOrUndefined(aStarData)
+
     const hasVisitedReconstructedPath = !isNullOrUndefined(allReconstructedPathsCache) ? allReconstructedPathsCache.has(stringifyPos(r, c)) : false
     const canGhost = !isPlaying && currentTimelineIndex >= timeline.length - 1 && hasVisitedReconstructedPath
+    const canPaintCell = isPainting && !isNullOrUndefined(paintingWeight) && !hasAStarData && cellSelectionState === 'inactive'
 
     return (
         <div
@@ -139,7 +142,7 @@ export default function GridCell({
                 setClickedCell([r, c])
             }}
             onMouseDown={() => {
-                if (canGhost || cellSelectionState !== 'inactive') {
+                if (hasAStarData) {
                     return
                 }
                 setIsPainting(true)
@@ -153,7 +156,12 @@ export default function GridCell({
                     })
                     return
                 }
-                if (isPainting && !isNullOrUndefined(paintingWeight) && isNullOrUndefined(aStarData) && cellSelectionState === 'inactive') {
+                if (canPaintCell) {
+                    if (paintingWeight === cell.cost) {
+                        console.log('is same, exiting')
+                        return;
+                    }
+                    console.log('setting new weight')
                     dispatch({
                         type: "SET_CELL_WEIGHT",
                         payload: {pos: [r, c], newWeight: paintingWeight}
