@@ -6,6 +6,7 @@ import type {CellData} from "~/cell-data/types";
 import {cellWeight} from "~/presets/cell-weight";
 import {type ComponentPropsWithoutRef, useMemo} from "react";
 import {cn} from "~/lib/utils";
+import type {Nullish} from "~/types/helpers";
 
 //consider adding this to the state
 const gridCellSize = 7
@@ -61,9 +62,18 @@ type CellProps = {
     setClickedCell: (foo: Pos | undefined) => void
     isPainting: boolean
     setIsPainting: (foo: boolean) => void
+    paintingWeight: Nullish<number>
+    setPaintingWeight: (foo: Nullish<number>) => void
 }
 
-export default function GridCell({pos, setClickedCell, isPainting, setIsPainting}: CellProps) {
+export default function GridCell({
+                                     pos,
+                                     setClickedCell,
+                                     isPainting,
+                                     setIsPainting,
+                                     paintingWeight,
+                                     setPaintingWeight
+                                 }: CellProps) {
     const {state, dispatch} = useGridContext()
     const {aStarData, currentTimelineIndex, cellData, isPlaying, allReconstructedPathsCache, cellSelectionState} = state
     const [r, c] = pos
@@ -128,6 +138,13 @@ export default function GridCell({pos, setClickedCell, isPainting, setIsPainting
                 }
                 setClickedCell([r, c])
             }}
+            onMouseDown={() => {
+                if (canGhost || cellSelectionState !== 'inactive') {
+                    return
+                }
+                setIsPainting(true)
+                setPaintingWeight(cell.cost)
+            }}
             onMouseEnter={() => {
                 if (canGhost) {
                     dispatch({
@@ -136,8 +153,11 @@ export default function GridCell({pos, setClickedCell, isPainting, setIsPainting
                     })
                     return
                 }
-                if (isPainting) {
-                    console.log(cell.cost)
+                if (isPainting && !isNullOrUndefined(paintingWeight) && isNullOrUndefined(aStarData) && cellSelectionState === 'inactive') {
+                    dispatch({
+                        type: "SET_CELL_WEIGHT",
+                        payload: {pos: [r, c], newWeight: paintingWeight}
+                    })
                 }
             }}
             onMouseLeave={() => {

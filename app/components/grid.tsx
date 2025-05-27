@@ -20,15 +20,21 @@ export default function Grid() {
     const cell = isValidClickedCell && hasCellData ? cellData[clickedCell[0]][clickedCell[1]] : undefined
     const isClickedStartOrGoal = isSamePos(clickedCell, startPos) || isSamePos(clickedCell, goalPos)
     const [isPainting, setIsPainting] = useState<boolean>(false)
+    const [paintingWeight, setPaintingWeight] = useState<Nullish<number>>(undefined)
 
     useEffect(() => {
+        if (!isPainting) {
+            return
+        }
+
         function up() {
-            return setIsPainting(false);
+            setIsPainting(false);
+            setPaintingWeight(undefined);
         }
 
         window.addEventListener("mouseup", up)
         return () => window.removeEventListener("mouseup", up)
-    })
+    }, [isPainting])
 
 
     return (
@@ -36,11 +42,9 @@ export default function Grid() {
              onMouseDown={() => {
                  setIsPainting(true)
              }}
-             onMouseUp={() => {
-                 setIsPainting(false)
-             }}
         >
             <p>{isPainting ? 'van gogh' : 'van no'}</p>
+            <p>{!isNullOrUndefined(paintingWeight) ? paintingWeight : 'none for me yet thanks'}</p>
             {hasCellData && (
                 <div
                     className="flex flex-col gap-1 2xs:gap-1.5 xs:gap-2 sm:gap-3   items-center justify-center">
@@ -48,7 +52,8 @@ export default function Grid() {
                         <div key={`col-${r}`} className="flex gap-0.5 2xs:gap-1 sm:gap-1.5">
                             {row.map((_, c) => (
                                 <GridCell key={stringifyPos(r, c)} pos={[r, c]} setClickedCell={setClickedCell}
-                                          isPainting={isPainting} setIsPainting={setIsPainting}/>
+                                          isPainting={isPainting} setIsPainting={setIsPainting}
+                                          paintingWeight={paintingWeight} setPaintingWeight={setPaintingWeight}/>
                             ))}
                         </div>
                     ))}
