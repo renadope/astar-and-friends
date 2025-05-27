@@ -43,8 +43,6 @@ export default function Grid() {
                  setIsPainting(true)
              }}
         >
-            <p>{isPainting ? 'van gogh' : 'van no'}</p>
-            <p>{!isNullOrUndefined(paintingWeight) ? paintingWeight : 'none for me yet thanks'}</p>
             {hasCellData && (
                 <div
                     className="flex flex-col gap-1 2xs:gap-1.5 xs:gap-2 sm:gap-3   items-center justify-center">

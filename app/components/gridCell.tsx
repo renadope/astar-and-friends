@@ -158,10 +158,8 @@ export default function GridCell({
                 }
                 if (canPaintCell) {
                     if (paintingWeight === cell.cost) {
-                        console.log('is same, exiting')
                         return;
                     }
-                    console.log('setting new weight')
                     dispatch({
                         type: "SET_CELL_WEIGHT",
                         payload: {pos: [r, c], newWeight: paintingWeight}
