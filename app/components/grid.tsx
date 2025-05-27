@@ -1,23 +1,34 @@
-import {isNullOrUndefined} from "~/utils/helpers";
+import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import GridCell, {cellBgColor} from "~/components/gridCell";
 import {stringifyPos} from "~/utils/grid-helpers";
+import {useState} from "react";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "~/components/ui/dialog"
+import type {Nullish} from "~/types/helpers";
+import type {Pos} from "~/types/pathfinding";
+import {Input} from "./ui/input";
+import {cellWeight} from "~/presets/cell-weight";
 
 
 export default function Grid() {
-    const {state} = useGridContext()
-    const {cellData} = state
+    const {state, dispatch} = useGridContext()
+    const {cellData, aStarData, cellSelectionState} = state
+    const hasAStarData = !isNullOrUndefined(aStarData)
     const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0
+    const [clickedCell, setClickedCell] = useState<Nullish<Pos>>(undefined)
+    const isValidClickedCell = !isNullOrUndefined(clickedCell)
+    const cell = isValidClickedCell && hasCellData ? cellData[clickedCell[0]][clickedCell[1]] : undefined
 
     return (
         <div className="p-2 2xs:p-1 sm:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl">
+            {/*<p>{clickedCell}</p>*/}
             {hasCellData && (
                 <div
                     className="flex flex-col gap-1 2xs:gap-1.5 xs:gap-2 sm:gap-3   items-center justify-center">
                     {cellData.map((row, r) => (
                         <div key={`col-${r}`} className="flex gap-0.5 2xs:gap-1 sm:gap-1.5">
                             {row.map((_, c) => (
-                                    <GridCell key={stringifyPos(r, c)} pos={[r, c]}/>
+                                <GridCell key={stringifyPos(r, c)} pos={[r, c]} setClickedCell={setClickedCell}/>
                             ))}
                         </div>
                     ))}
@@ -37,9 +48,185 @@ export default function Grid() {
                     ))}
                 </div>
             )}
-        </div>
 
+            <Dialog open={isValidClickedCell && !hasAStarData && cellSelectionState === 'inactive'}
+                    onOpenChange={() => setClickedCell(null)}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            Edit Cell: {!isNullOrUndefined(clickedCell) ? `(${clickedCell[0]},${clickedCell[1]})` : ''}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Configure the weight of this cell.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <Input
+                        type="number"
+                        min={0}
+                        max={10000}
+                        value={!isNullOrUndefined(clickedCell) ? state.cellData[clickedCell[0]][clickedCell[1]].cost : 0}
+                        //hmm look into if we can add a enter press here to close it automatically
+                        onChange={(e) => {
+                            const num = Number(e.target.value)
+                            if (!isNullOrUndefined(clickedCell)) {
+                                dispatch({
+                                    type: "SET_CELL_WEIGHT",
+                                    payload: {
+                                        pos: clickedCell,
+                                        newWeight: num >= 0 ? num : 0
+                                    }
+                                })
+                            }
+                        }}
+                    />
+                    <div className="mt-3 group">
+                        <p className="text-sm text-slate-950 mb-2 font-medium">Quick Presets</p>
+                        <div className="grid grid-cols-3 gap-1.5 overflow-y-auto">
+                            {cellWeight.map(({name, weight}) => (
+                                <button
+                                    key={name}
+                                    onClick={() => {
+                                        if (!isNullOrUndefined(clickedCell)) {
+                                            dispatch({
+                                                type: "SET_CELL_WEIGHT",
+                                                payload: {
+                                                    pos: clickedCell,
+                                                    newWeight: weight
+                                                }
+                                            })
+                                            setClickedCell(undefined)
+                                        }
+                                    }}
+                                    className="px-2 py-1.5 text-sm rounded-md border-2 border-transparent hover:border-black hover:bg-gray-100  flex flex-col items-center gap-0.5"
+                                >
+                                    <span className="font-medium ">{name}</span>
+                                    <span
+                                        className={`text-gray-700 group-hover:text-gray-900 text-[14px]`}>
+                                                {weight}
+                                            </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isValidClickedCell && hasAStarData && cellSelectionState === 'inactive'}
+                    onOpenChange={() => setClickedCell(null)}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Cell Analysis</DialogTitle>
+                        <DialogDescription>
+                            View pathfinding costs, scores, and algorithm history for this cell
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {cell && (<div className="space-y-3">
+                        <div className="font-semibold">Cell Details</div>
+
+                        <div className="flex flex-col gap-2 text-sm">
+                            <div className="flex justify-between gap-3">
+                                <span className="text-muted-foreground">Position:</span>
+                                <span>{cell.pos.join(',')}</span>
+                            </div>
+
+                            {cell.step && (<div className="flex justify-between gap-3">
+                                <span className="text-muted-foreground">Step:</span>
+                                <span>{cell.step + 1}</span>
+                            </div>)}
+                            {cell.snapShotStep && (<div className="flex justify-between gap-3">
+                                    <span className="text-muted-foreground">SnapshotStep:</span>
+                                    <span>{cell.snapShotStep}</span>
+                                </div>
+                            )}
+
+
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Cost:</span>
+                                <span>{cell.cost}</span>
+                            </div>
+                            {!isNullOrUndefined(cell.g) && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">G-Score:</span>
+                                    <span>{(cell.g).toFixed(2)}</span>
+                                </div>
+                            )}
+                            {!isNullOrUndefined(cell.h) && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">H-Score:</span>
+                                    <span>{(cell.h * state.gwWeights.hWeight).toFixed(2)}</span>
+                                </div>
+                            )}
+                            {!isNullOrUndefined(cell.f) && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">F-Score:</span>
+                                    <span>{cell.f.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">State:</span>
+                                <span className={'text-slate-900'}>
+                                                {capitalize(cell.state)}
+                                        </span>
+                            </div>
+                        </div>
+
+                        {!isNullOrUndefined(cell.costUpdateHistory) && cell.costUpdateHistory.length > 0 && (
+                            <div className="border-t pt-2 space-y-1">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Updates:</span>
+                                    <span
+                                        className={`bg-gradient-to-l from-amber-700 via-yellow-700 to-orange-700
+                                                 text-white text-xs px-2 py-1 rounded`}>
+                                                {cell.costUpdateHistory.length}
+                                            </span>
+                                </div>
+                                {cell.costUpdateHistory.length > 1 && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Delta:</span>
+                                        <span
+                                            className={`bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 
+                                                    text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-sm`}>
+                                                {(cell.costUpdateHistory[0].gCost - cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost).toFixed(2)}</span>
+                                    </div>
+
+                                )}
+                                {cell.costUpdateHistory.length > 2 && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Avg:</span>
+                                        <span
+                                            className={`bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 
+                                                    text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-sm`}>{avgDiff(cell.costUpdateHistory.map((foo) => foo.gCost)).toFixed(2)}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>)}
+                </DialogContent>
+            </Dialog>
+        </div>
     )
 }
+//[12,8,4]
+//[]
+function avgDiff(nums: number[]): number {
+    if (isNullOrUndefined(nums)) {
+        throw new Error("lets be civilized please")
+    }
+    if (nums.length === 1) {
+        throw new Error('need at least two numbers')
+    }
+    let totalDiff = 0
+    for (let i = 1; i < nums.length; i++) {
+        const curr = nums[i - 1]
+        const next = nums[i]
+        totalDiff += next - curr
+    }
+    return totalDiff / (nums.length - 1)
+}
+
 
 
