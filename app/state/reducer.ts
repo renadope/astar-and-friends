@@ -318,8 +318,9 @@ export function reducer(state: AppState, action: Action): AppState {
             }
             const [startRow, startCol] = st.pos
             const [goalRow, goalCol] = go.pos
+            const targetWeight = state.weightGrid[targetRow][targetCol]
             if (state.cellSelectionState === 'set_goal') {
-                if (startRow === targetRow && startCol === targetCol) {
+                if ((startRow === targetRow && startCol === targetCol) || targetWeight === 0) {
                     return state
                 }
                 return {
@@ -329,7 +330,7 @@ export function reducer(state: AppState, action: Action): AppState {
                     startPos: [startRow, startCol]
                 }
             } else if (state.cellSelectionState === 'set_start') {
-                if (goalRow === targetRow && goalCol === targetCol) {
+                if ((goalRow === targetRow && goalCol === targetCol) || targetWeight === 0) {
                     return state
                 }
                 return {
@@ -338,30 +339,31 @@ export function reducer(state: AppState, action: Action): AppState {
                     startPos: [targetRow, targetCol],
                     goalPos: [goalRow, goalCol]
                 }
-            } else if (state.cellSelectionState === 'toggle_wall') {
-                if ((targetRow === startRow && targetCol === startCol) || (targetRow === goalRow && targetCol === goalCol)) {
-                    return state
-                }
-                const newWeightGrid = state.weightGrid.map((row, rowIndex) => {
-                    return row.map((weight, colIndex) => {
-                        if (rowIndex === targetRow && colIndex === targetCol && weight === 0) {
-                            return getTerrainWeight(state.weightPreset.func, rowIndex, colIndex,
-                                Math.min(state.weightGrid.length, state.weightGrid[state.weightGrid.length - 1].length)
-                            )
-                        }
-                        return rowIndex === targetRow && colIndex === targetCol ? 0 : weight
-                    })
-                })
-                return {
-                    ...state,
-                    weightGrid: newWeightGrid,
-                    cellData: initCellData(newWeightGrid, state.startPos ?? [0, 0],
-                        state.goalPos ?? [newWeightGrid.length - 1, newWeightGrid[newWeightGrid.length - 1].length - 1]),
-                    startPos: [startRow, startCol],
-                    goalPos: [goalRow, goalCol]
-                }
-
             }
+        // else if (state.cellSelectionState === 'toggle_wall') {
+        //     if ((targetRow === startRow && targetCol === startCol) || (targetRow === goalRow && targetCol === goalCol)) {
+        //         return state
+        //     }
+        //     const newWeightGrid = state.weightGrid.map((row, rowIndex) => {
+        //         return row.map((weight, colIndex) => {
+        //             if (rowIndex === targetRow && colIndex === targetCol && weight === 0) {
+        //                 return getTerrainWeight(state.weightPreset.func, rowIndex, colIndex,
+        //                     Math.min(state.weightGrid.length, state.weightGrid[state.weightGrid.length - 1].length)
+        //                 )
+        //             }
+        //             return rowIndex === targetRow && colIndex === targetCol ? 0 : weight
+        //         })
+        //     })
+        //     return {
+        //         ...state,
+        //         weightGrid: newWeightGrid,
+        //         cellData: initCellData(newWeightGrid, state.startPos ?? [0, 0],
+        //             state.goalPos ?? [newWeightGrid.length - 1, newWeightGrid[newWeightGrid.length - 1].length - 1]),
+        //         startPos: [startRow, startCol],
+        //         goalPos: [goalRow, goalCol]
+        //     }
+
+            // }
             return state
 
         case "RESET_ASTAR_DATA":
@@ -375,7 +377,6 @@ export function reducer(state: AppState, action: Action): AppState {
                 snapshotTimeline: [],
                 isPlaying: false,
                 configChanged: false,
-
                 allReconstructedPathsCache: undefined,
 
             }
