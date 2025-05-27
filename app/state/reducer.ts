@@ -357,7 +357,7 @@ export function reducer(state: AppState, action: Action): AppState {
                 return {
                     ...state,
                     weightGrid: updatedWeightGrid,
-                    cellData: initCellData(updatedWeightGrid, [startRow, startCol], [targetRow, targetCol]),
+                    cellData: initCellData(updatedWeightGrid, [targetRow, targetCol], [goalRow, goalCol]),
                     startPos: [targetRow, targetCol],
                     goalPos: [goalRow, goalCol]
                 }
