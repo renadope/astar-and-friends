@@ -23,7 +23,7 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
                 </div>
                 <div>
                     <h3 className="text-lg font-semibold text-gray-800">A* Weight Control</h3>
-                    <p className="text-sm text-gray-500">Balance exploration vs exploitation</p>
+                    <p className="2xs:hidden xs:block text-sm text-gray-500">Balance exploration vs exploitation</p>
                 </div>
             </div>
 
@@ -41,7 +41,8 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
                         {state.gwWeights.gWeight}
                     </span>
                         {state.gwWeights.gWeight === 1 && (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+                            <span
+                                className="2xs:hidden sm:block px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
                             Standard
                         </span>
                         )}
@@ -69,13 +70,13 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
                     />
                 </div>
 
-                <div className="flex justify-between text-xs text-blue-600">
+                <div className="2xs:hidden sm:flex justify-between text-xs text-blue-600">
                     <span>0 (Ignore cost)</span>
                     <span>5 (Balanced)</span>
                     <span>10 (Cost priority)</span>
                 </div>
 
-                <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded-md">
+                <p className="2xs:hidden sm:block text-xs text-blue-600 bg-blue-50 p-2 rounded-md">
                     Higher values prioritize shorter paths, lower values explore more freely.
                 </p>
             </div>
@@ -94,7 +95,8 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
                         {state.gwWeights.hWeight}
                     </span>
                         {state.gwWeights.hWeight === 1 && (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+                            <span
+                                className="2xs:hidden sm:block px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
                             Standard
                         </span>
                         )}
@@ -122,13 +124,13 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
                     />
                 </div>
 
-                <div className="flex justify-between text-xs text-pink-600">
+                <div className="2xs:hidden sm:flex justify-between text-xs text-pink-600">
                     <span>0 (No guidance)</span>
                     <span>5 (Balanced)</span>
                     <span>10 (Goal focused)</span>
                 </div>
 
-                <p className="text-xs text-pink-600 bg-pink-50 p-2 rounded-md">
+                <p className="2xs:hidden sm:block text-xs text-pink-600 bg-pink-50 p-2 rounded-md">
                     Higher values focus more on reaching the goal, lower values explore uniformly.
                 </p>
             </div>

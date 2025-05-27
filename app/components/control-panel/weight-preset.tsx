@@ -28,7 +28,7 @@ export function WeightPreset({className, ...props}: ComponentPropsWithoutRef<'di
                         <ChevronsUpDown className="opacity-50"/>
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-f">
+                <PopoverContent className="w-full">
                     <Command>
                         <CommandInput placeholder="Search Preset..."/>
                         <CommandList>

@@ -110,7 +110,7 @@ export function Main() {
     // }, [])
 
     return (
-        <div className="w-full max-w-[90%] mx-auto p-2">
+        <div className="w-full max-w-[90%] mx-auto 2xs:p-0.5 sm:p-2">
             <div className="flex flex-col gap-4">
 
                 <div

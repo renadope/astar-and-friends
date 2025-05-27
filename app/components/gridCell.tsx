@@ -46,13 +46,6 @@ function BasicCellInfo({cell, weightEmoji, className, ...props}: {
                 {weightEmoji && <span className="mr-1">{weightEmoji}</span>}
                 {cell.cost}
             </p>
-
-            {cell.f !== undefined && (
-                <p className="md:hidden text-xs font-light sm:font-bold text-white">
-                    f:{cell.f.toFixed(1)}
-                </p>
-            )
-            }
         </div>
     )
 }
@@ -129,6 +122,7 @@ export default function GridCell({
         ${cell.state === 'ghost' ? "pointer-events-auto animate-[wiggle_1s_ease-in-out_infinite] z-10" : ""}
         ${cellSelectionState === 'set_goal' && !isSamePos([r, c], state.goalPos) ? "pointer-events-auto hover:animate-[wiggle_1s_ease-in-out_infinite] hover:bg-pink-300" : ""}
         ${cellSelectionState === 'set_start' && !isSamePos([r, c], state.startPos) ? "pointer-events-auto hover:animate-[wiggle_1s_ease-in-out_infinite] hover:bg-sky-300" : ""}
+        ${isPainting ? "scale-105" : ""}
         `}
             onClick={() => {
                 if (cellSelectionState !== 'inactive') {
@@ -192,7 +186,7 @@ export default function GridCell({
             {
                 cell.f !== undefined && (
                     <div
-                        className="hidden md:block absolute top-0 right-0 text-xs bg-slate-800 text-white px-1.5 py-0.5 rounded-bl-lg rounded-tr-lg font-bold shadow-lg">
+                        className="hidden lg:block absolute top-0 right-0 text-xs bg-slate-800 text-white px-1.5 py-0.5 rounded-bl-lg rounded-tr-lg font-bold shadow-lg">
                         f:{cell.f.toFixed(1)}
                     </div>
                 )

@@ -15,7 +15,7 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
             <h3 className="text-sm font-semibold text-gray-800">Diagonal Movement</h3>
 
             <div className="space-y-2">
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <p className="2xs:hidden xs:block text-xs text-gray-600 leading-relaxed">
                     Configure how the pathfinding algorithm handles diagonal movement between grid cells.
                 </p>
 
@@ -37,14 +37,14 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                     }}
                     variant="outline"
                     size="default"
-                    className="w-full grid grid-cols-3 gap-1 bg-gray-50 p-1 rounded-lg"
+                    className="w-full grid 2xs:grid-cols-1 sm:grid-cols-3 gap-1 bg-gray-50 p-1 rounded-lg"
                 >
                     <ToggleGroupItem
                         value="none"
                         aria-label="No Diagonal Movement"
                         className="data-[state=on]:bg-white data-[state=on]:shadow-sm data-[state=on]:border-gray-300 transition-all duration-200"
                     >
-                        <div className="flex flex-col items-center gap-1 py-1">
+                        <div className="flex  2xs:flex-row md:flex-col 2xs:items-start md:items-center gap-1 py-1">
                             <div className="size-4 border-2 border-current rounded-sm"></div>
                             <span className="text-xs font-medium">None</span>
                         </div>
@@ -55,11 +55,11 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                         aria-label="Strict Diagonal Movement"
                         className="data-[state=on]:bg-white data-[state=on]:shadow-sm data-[state=on]:border-gray-300 transition-all duration-200"
                     >
-                        <div className="flex flex-col items-center gap-1 py-1">
+                        <div className="flex 2xs:flex-row md:flex-col items-center gap-1 py-1">
                             <div className="relative size-4">
                                 <div className="size-4 border-2 border-current rounded-sm"></div>
                                 <div
-                                    className="absolute -top-0.5 -right-0.5 w-2 h-0.5 bg-current transform rotate-45"></div>
+                                    className="lg:block absolute -top-0.5 -right-0.5 w-2 h-0.5 bg-current transform rotate-45"></div>
                             </div>
                             <span className="text-xs font-medium">Strict</span>
                         </div>
@@ -70,7 +70,7 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                         aria-label="Lax Diagonal Movement"
                         className="data-[state=on]:bg-white data-[state=on]:shadow-sm data-[state=on]:border-gray-300 transition-all duration-200"
                     >
-                        <div className="flex flex-col items-center gap-1 py-1">
+                        <div className="flex  2xs:flex-row md:flex-col items-center gap-1 py-1">
                             <div className="relative size-4">
                                 <div className="size-4 border-2 border-current rounded-sm"></div>
                                 <div
@@ -83,7 +83,7 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                     </ToggleGroupItem>
                 </ToggleGroup>
 
-                <div className="grid grid-cols-3 gap-2 text-xs text-gray-500">
+                <div className="2xs:hidden sm:grid  grid grid-cols-3 gap-2 text-xs text-gray-500">
                     <div className="text-center">
                         <p>4-directional movement only</p>
                     </div>
@@ -98,10 +98,10 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
 
             {diagonalSettings.allowed && (
                 <div
-                    className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-3 animate-in slide-in-from-top-2 duration-300">
+                    className="bg-purple-50 border border-purple-200 rounded-lg 2xs:p-2 sm:p-4 space-y-3 animate-in slide-in-from-top-2 duration-300">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <div className="2xs:hidden xs:block xs:size-2 bg-purple-500 rounded-full"></div>
                             <label
                                 className="text-sm font-medium text-purple-900"
                                 htmlFor={`${id}_toggle_diagonal_multiplier`}
@@ -110,13 +110,13 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                             </label>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="sm:flex items-center gap-2">
                         <span
                             className="px-2 py-1 bg-purple-100 border border-purple-300 rounded text-sm font-semibold text-purple-800">
                             {diagonalSettings.diagonalMultiplier.toFixed(2)}×
                         </span>
                             {Math.abs(diagonalSettings.diagonalMultiplier - Math.sqrt(2)) <= 0.01 && (
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+                                <span className="2xs:hidden  sm:block px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
                                 √2 (Euclidean)
                             </span>
                             )}
@@ -127,7 +127,7 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                         <input
                             id={`${id}_toggle_diagonal_multiplier`}
                             type="range"
-                            min={1.0}
+                            min={0.1}
                             max={3.0}
                             step={0.01}
                             value={diagonalSettings.diagonalMultiplier}
@@ -165,7 +165,7 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                         </div>
                     </div>
 
-                    <p className="text-xs text-purple-700 leading-relaxed">
+                    <p className={"2xs:hidden sm:block text-xs text-purple-700 leading-relaxed"}>
                         Higher values make diagonal movement more expensive, encouraging more orthogonal paths.
                     </p>
                 </div>

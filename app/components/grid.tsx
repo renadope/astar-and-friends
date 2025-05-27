@@ -40,6 +40,10 @@ export default function Grid() {
     return (
         <div className="p-2 2xs:p-1 sm:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl"
              onMouseDown={() => {
+                 if (hasAStarData){
+                     setIsPainting(false)
+                     return 
+                 }
                  setIsPainting(true)
              }}
         >
