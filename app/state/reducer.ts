@@ -18,7 +18,7 @@ import {
     updateCellDataFlattenedStep,
     updateCellDataSnapshotStep
 } from "~/cell-data/cell-data";
-import {parsePos, stringifyPos} from "~/utils/grid-helpers";
+import {isSamePos, parsePos, stringifyPos} from "~/utils/grid-helpers";
 import {LARGEST_PLAYBACK_FACTOR, NO_TIMELINE, SMALLEST_PLAYBACK_FACTOR} from "~/state/constants";
 
 export const initialState: AppState = {
@@ -129,7 +129,12 @@ export function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
-            return generateGrid(state, size)
+            const newGenState = generateGrid(state, size)
+            return {
+                ...newGenState,
+                startPos: newGenState.startPos ?? [0, 0],
+                goalPos: newGenState.goalPos ?? [size - 1, size - 1]
+            }
         case "RUN_ASTAR":
             const autoRun = action.payload ? action.payload.options.autoRun : false
             if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
@@ -308,6 +313,7 @@ export function reducer(state: AppState, action: Action): AppState {
 
 
             if (isNullOrUndefined(go) || isNullOrUndefined(st)) {
+                // return state
                 throw new Error("this should not happen, must have a start &  goal")
             }
             const [startRow, startCol] = st.pos
@@ -534,6 +540,10 @@ export function reducer(state: AppState, action: Action): AppState {
             }
         case"SET_CELL_WEIGHT":
             const {pos: newCellWeightPos, newWeight: newCellWeight} = action.payload
+            const isStartOrGoal = isSamePos(newCellWeightPos, state.startPos) || isSamePos(newCellWeightPos, state.goalPos)
+            if (isStartOrGoal && newCellWeight === 0) {
+                return state
+            }
             const [rNew, cNew] = newCellWeightPos
             if (state.cellData[rNew][cNew].cost === newCellWeight) {
                 return state

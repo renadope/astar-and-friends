@@ -1,7 +1,7 @@
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
 import GridCell, {cellBgColor} from "~/components/gridCell";
-import {stringifyPos} from "~/utils/grid-helpers";
+import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
 import {useState} from "react";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "~/components/ui/dialog"
 import type {Nullish} from "~/types/helpers";
@@ -12,12 +12,14 @@ import {cellWeight} from "~/presets/cell-weight";
 
 export default function Grid() {
     const {state, dispatch} = useGridContext()
-    const {cellData, aStarData, cellSelectionState} = state
+    const {cellData, aStarData, cellSelectionState, startPos, goalPos} = state
     const hasAStarData = !isNullOrUndefined(aStarData)
     const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0
     const [clickedCell, setClickedCell] = useState<Nullish<Pos>>(undefined)
     const isValidClickedCell = !isNullOrUndefined(clickedCell)
     const cell = isValidClickedCell && hasCellData ? cellData[clickedCell[0]][clickedCell[1]] : undefined
+    const isClickedStartOrGoal = isSamePos(clickedCell, startPos) || isSamePos(clickedCell, goalPos)
+
 
     return (
         <div className="p-2 2xs:p-1 sm:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl">
@@ -63,13 +65,16 @@ export default function Grid() {
                     </DialogHeader>
                     <Input
                         type="number"
-                        min={0}
+                        min={isClickedStartOrGoal ? 1 : 0}
                         max={10000}
                         value={!isNullOrUndefined(clickedCell) ? state.cellData[clickedCell[0]][clickedCell[1]].cost : 0}
                         //hmm look into if we can add a enter press here to close it automatically
                         onChange={(e) => {
                             const num = Number(e.target.value)
                             if (!isNullOrUndefined(clickedCell)) {
+                                if (isClickedStartOrGoal && weight === 0){
+                                    return
+                                }
                                 dispatch({
                                     type: "SET_CELL_WEIGHT",
                                     payload: {
@@ -86,8 +91,12 @@ export default function Grid() {
                             {cellWeight.map(({name, weight}) => (
                                 <button
                                     key={name}
+                                    disabled={isClickedStartOrGoal && weight === 0}
                                     onClick={() => {
                                         if (!isNullOrUndefined(clickedCell)) {
+                                            if (isClickedStartOrGoal && weight === 0){
+                                                return
+                                            }
                                             dispatch({
                                                 type: "SET_CELL_WEIGHT",
                                                 payload: {
@@ -98,7 +107,13 @@ export default function Grid() {
                                             setClickedCell(undefined)
                                         }
                                     }}
-                                    className="px-2 py-1.5 text-sm rounded-md border-2 border-transparent hover:border-black hover:bg-gray-100  flex flex-col items-center gap-0.5"
+                                    className={`
+                                      px-2 py-1.5 text-sm rounded-md border-2  flex flex-col items-center gap-0.5
+                                      border-transparent hover:border-black hover:bg-gray-100
+                                      disabled:opacity-50 disabled:cursor-not-allowed 
+                                      disabled:hover:border-transparent disabled:hover:bg-transparent
+                                      transition-all duration-150
+                                    `}
                                 >
                                     <span className="font-medium ">{name}</span>
                                     <span
