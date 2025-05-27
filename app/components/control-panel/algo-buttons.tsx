@@ -1,11 +1,9 @@
-import {type ComponentPropsWithoutRef, useId} from "react";
+import {type ComponentPropsWithoutRef} from "react";
 import {useGridContext} from "~/state/context";
 import {cn} from "~/lib/utils";
 import {RefreshCcw} from "lucide-react";
 import {gridSize} from "~/components/control-panel/control-panel";
 import {toast} from "sonner";
-import {Switch} from "~/components/ui/switch";
-import {Label} from "~/components/ui/label";
 
 export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
@@ -50,10 +48,7 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                             )}
                         </div>
                         <span className="relative hidden sm:inline truncate">
-                            <span className="ml-1 text-sm opacity-60">
-                                {navigator.userAgent.includes('Mac') ? '⌘R' : 'Ctrl+R'}
-                            </span>
-                            {' '}Run Algorithm
+                            Run Algorithm
                         </span>
                         <span className="relative sm:hidden truncate">Run</span>
                     </div>

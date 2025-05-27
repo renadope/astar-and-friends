@@ -107,6 +107,7 @@ function generateGrid(state: AppState, size: number): AppState {
         isPlaying: false,
         configChanged: true,
         gridSize: size,
+        allReconstructedPathsCache: undefined,
     }
 }
 
