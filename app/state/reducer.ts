@@ -93,9 +93,10 @@ function getActiveTimelineLength(state: AppState): number {
 
 
 function generateGrid(state: AppState, size: number): AppState {
-    const weightGrid: number[][] = generateRandomCostGrid(size, state.weightPreset.func)
-    const cellData = initCellData(weightGrid, state.startPos ?? [0, 0],
-        state.goalPos ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1])
+    const startPos = state.startPos ?? [0, 0]
+    const goalPos = state.goalPos ?? [size - 1, size - 1]
+    const weightGrid: number[][] = generateRandomCostGrid(size, state.weightPreset.func, startPos, goalPos)
+    const cellData = initCellData(weightGrid, startPos, goalPos)
     return {
         ...state,
         currentTimelineIndex: NO_TIMELINE,
