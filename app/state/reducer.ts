@@ -99,6 +99,8 @@ function generateGrid(state: AppState, size: number): AppState {
     const cellData = initCellData(weightGrid, startPos, goalPos)
     return {
         ...state,
+        startPos: startPos,
+        goalPos: goalPos,
         currentTimelineIndex: NO_TIMELINE,
         weightGrid: weightGrid,
         cellData: cellData,
@@ -130,12 +132,8 @@ export function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case "GENERATE_GRID":
             const size = action.payload ?? state.gridSize ?? 5
-            const newGenState = generateGrid(state, size)
-            return {
-                ...newGenState,
-                startPos: newGenState.startPos ?? [0, 0],
-                goalPos: newGenState.goalPos ?? [size - 1, size - 1]
-            }
+            return generateGrid(state, size)
+
         case "RUN_ASTAR":
             const autoRun = action.payload ? action.payload.options.autoRun : false
             if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
