@@ -12,6 +12,24 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
         <div className={cn("bg-white rounded-xl p-2 2xs:p-3 w-full min-w-0 overflow-hidden", className)} {...props}>
             <div className="flex flex-wrap gap-2 2xs:gap-3 justify-start 2xl:justify-start min-w-0">
                 <button
+                    disabled={isNullOrUndefined(state.aStarData)}
+                    className={`group px-2 2xs:px-3 sm:px-4 py-2 2xs:py-3 bg-gradient-to-br
+                    from-pink-500 via-fuchsia-500 to-pink-600 hover:from-pink-600 hover:via-fuchsia-600 hover:to-pink-700
+                    text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300
+                     font-semibold xs:text-xs 2xs:text-sm transform 
+                     hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center flex-shrink-0
+                     disabled:hover:scale-100 disabled:translate-y-0 
+                     disabled:opacity-50 disabled:cursor-not-allowed 
+                     disabled:hover:border-transparent disabled:hover:bg-transparent
+          `}
+                    onClick={() => {
+                        dispatch({type: "RESET_ASTAR_DATA"})
+                    }}
+                >
+                    <Edit3
+                        className="w-4 2xs:w-5 h-4 2xs:h-5 group-hover:scale-110 transition-transform duration-300"/>
+                </button>
+                <button
                     className="group px-2 2xs:px-3 sm:px-4 lg:px-6 py-2 2xs:py-3 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-1 2xs:gap-1.5 font-semibold text-xs 2xs:text-sm transform hover:scale-105 hover:-translate-y-0.5 min-w-0 flex-shrink"
                     onClick={() => {
                         dispatch({type: "GENERATE_GRID", payload: gridSize})
@@ -73,25 +91,6 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                             <span className="lg:hidden">Calculate</span>
                         </div>
                     </div>
-                </button>
-
-                <button
-                    disabled={isNullOrUndefined(state.aStarData)}
-                    className={`group px-2 2xs:px-3 sm:px-4 py-2 2xs:py-3 bg-gradient-to-br
-                    from-pink-500 via-fuchsia-500 to-pink-600 hover:from-pink-600 hover:via-fuchsia-600 hover:to-pink-700
-                    text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300
-                     font-semibold xs:text-xs 2xs:text-sm transform 
-                     hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center flex-shrink-0
-                     disabled:hover:scale-100 disabled:translate-y-0 
-                     disabled:opacity-50 disabled:cursor-not-allowed 
-                     disabled:hover:border-transparent disabled:hover:bg-transparent
-          `}
-                    onClick={() => {
-                        dispatch({type: "RESET_ASTAR_DATA"})
-                    }}
-                >
-                    <Edit3
-                        className="w-4 2xs:w-5 h-4 2xs:h-5 group-hover:scale-110 transition-transform duration-300"/>
                 </button>
             </div>
         </div>
