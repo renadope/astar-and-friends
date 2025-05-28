@@ -1,4 +1,4 @@
-import {type ComponentPropsWithoutRef, useId} from "react";
+import {type ComponentPropsWithoutRef, useEffect, useId} from "react";
 import {useGridContext} from "~/state/context";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {cn} from "~/lib/utils";
@@ -12,6 +12,14 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
     const hasNoAStarData = isNullOrUndefined(aStarData)
     const id = useId()
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+    useEffect(() => {
+        if (state.configChanged) {
+            toast("⚡️ Config Change Detected!", {
+                description: "A new config has been detected",
+                position: "top-center",
+            });
+        }
+    }, [state.configChanged]);
     return (
         <div className={cn("w-full bg-white border-b border-gray-200 shadow-sm", className)}{...props}>
             <div className="flex flex-col gap-3 px-2 2xs:px-3 sm:px-4 py-3">
@@ -95,7 +103,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                                 }
                                 }
                                 className={`p-2.5 2xs:p-3 sm:p-3.5
-                                  ${state.configChanged ? ' bg-amber-500' : ' bg-sky-500'}
+                                  ${state.configChanged ? ' animate-bounce bg-amber-500' : ' bg-sky-500'}
                                   text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
                                 title={state.isPlaying ? "Pause" : "Play"}
                             >
