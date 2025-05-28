@@ -2,7 +2,7 @@ import {type ComponentPropsWithoutRef, useId} from "react";
 import {useGridContext} from "~/state/context";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {cn} from "~/lib/utils";
-import {FastForwardIcon, Map as MapIcon, QuoteIcon, RewindIcon} from "lucide-react";
+import {FastForwardIcon, Map as MapIcon, RewindIcon} from "lucide-react";
 import {ForwardIcon, PauseIcon, PlayIcon, PreviousIcon} from "~/components/icons/icons";
 
 export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef<'div'>) {
@@ -44,14 +44,15 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                         />
                     </div>
                     <div className="2xs:ml-2 flex-shrink-0">
-                        <PlaybackStatusIndicator />
+                        <PlaybackStatusIndicator/>
                     </div>
                 </div>
 
                 <div className="flex flex-col xs:flex-row xs:items-center gap-3 xs:justify-between md:justify-center">
 
                     <div className="flex justify-center xs:justify-start">
-                        <div className="inline-flex items-center gap-1 2xs:gap-1.5 sm:gap-2 bg-gray-50 px-1.5 2xs:px-2 py-1 rounded-full">
+                        <div
+                            className="inline-flex items-center gap-1 2xs:gap-1.5 sm:gap-2 bg-gray-50 px-1.5 2xs:px-2 py-1 rounded-full">
                             <button
                                 disabled={hasNoAStarData}
                                 onClick={() => dispatch({type: "JUMP_TO_START"})}
@@ -71,12 +72,19 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             </button>
 
                             <button
-                                disabled={hasNoAStarData}
-                                onClick={() =>
+                                onClick={() => {
+                                    if (hasNoAStarData) {
+                                        dispatch({
+                                            type: "RUN_ASTAR",
+                                            payload: {options: {autoRun: true}}
+                                        })
+                                        return
+                                    }
                                     dispatch({
                                         type: "SET_PLAYING_STATUS",
                                         payload: !state.isPlaying,
                                     })
+                                }
                                 }
                                 className="p-2.5 2xs:p-3 sm:p-3.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title={state.isPlaying ? "Pause" : "Play"}
