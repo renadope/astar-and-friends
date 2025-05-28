@@ -2,8 +2,9 @@ import {type ComponentPropsWithoutRef, useId} from "react";
 import {useGridContext} from "~/state/context";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {cn} from "~/lib/utils";
-import {FastForwardIcon, Map as MapIcon, RewindIcon} from "lucide-react";
+import {FastForwardIcon, Map as MapIcon, RefreshCcw, RewindIcon} from "lucide-react";
 import {ForwardIcon, PauseIcon, PlayIcon, PreviousIcon} from "~/components/icons/icons";
+import {toast} from "sonner";
 
 export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
@@ -30,7 +31,8 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                                     payload: parseInt(e.target.value, 10),
                                 })
                             }
-                            className="w-full h-2 bg-gray-200 accent-blue-500 rounded-full appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                            className={`w-full h-2 bg-gray-200 accent-sky-500                        
+                             rounded-full appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed`}
                             style={{
                                 background:
                                     timeline.length > 0 && currentTimelineIndex >= 0
@@ -73,11 +75,17 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
 
                             <button
                                 onClick={() => {
-                                    if (hasNoAStarData) {
+                                    if (hasNoAStarData || state.configChanged) {
                                         dispatch({
                                             type: "RUN_ASTAR",
                                             payload: {options: {autoRun: true}}
                                         })
+                                        if (state.configChanged) {
+                                            toast("⚡️ Config Updated!", {
+                                                description: "We’re off again with your latest tweaks — A* is on the move.",
+                                                position: "top-center",
+                                            });
+                                        }
                                         return
                                     }
                                     dispatch({
@@ -86,14 +94,20 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                                     })
                                 }
                                 }
-                                className="p-2.5 2xs:p-3 sm:p-3.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className={`p-2.5 2xs:p-3 sm:p-3.5
+                                  ${state.configChanged ? ' bg-amber-500' : ' bg-sky-500'}
+                                  text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
                                 title={state.isPlaying ? "Pause" : "Play"}
                             >
-                                {state.isPlaying ? (
+                                {state.isPlaying && state.configChanged ? (
+                                    <RewindIcon className="size-3 2xs:size-3.5 sm:size-4"/>
+                                ) : state.isPlaying && !state.configChanged ? (
                                     <PauseIcon className="size-3 2xs:size-3.5 sm:size-4"/>
-                                ) : (
-                                    <PlayIcon className="size-3 2xs:size-3.5 sm:size-4"/>
-                                )}
+                                ) : !state.isPlaying && state.configChanged ? (
+                                        <RefreshCcw className="size-3 2xs:size-3.5 sm:size-4"/>)
+                                    : (
+                                        <PlayIcon className="size-3 2xs:size-3.5 sm:size-4"/>
+                                    )}
                             </button>
 
                             <button
@@ -142,7 +156,7 @@ function PlaybackStatusIndicator({className, ...props}: ComponentPropsWithoutRef
             className={cn(`flex items-center justify-center gap-3 pt-2`, className)}{...props}>
             <div className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 ${
                 !hasNoAStarData && currentTimelineIndex >= 0
-                    ? 'bg-blue-50 border border-blue-200'
+                    ? 'bg-sky-50 border border-sky-200'
                     : hasNoAStarData && currentTimelineIndex < 0 ? 'bg-gray-50 border border-gray-200' : 'bg-green-100 border-gray-100'
             }`}>
                 <div className={`size-2 rounded-full transition-all duration-300 ${
@@ -152,7 +166,7 @@ function PlaybackStatusIndicator({className, ...props}: ComponentPropsWithoutRef
                 }`}></div>
                 <div className="text-sm font-medium">
                     {currentTimelineIndex >= 0 ? (
-                        <span className="text-blue-700">
+                        <span className="text-sky-700">
                             Step {currentTimelineIndex + 1} of {timeline.length}
                         </span>
                     ) : (
