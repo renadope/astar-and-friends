@@ -107,6 +107,9 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                                   text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
                                 title={state.isPlaying ? "Pause" : "Play"}
                             >
+                                {state.configChanged && (
+                                    <div className="absolute -inset-1 bg-white/30 rounded-full animate-ping"></div>
+                                )}
                                 {state.isPlaying && state.configChanged ? (
                                     <RewindIcon className="size-3 2xs:size-3.5 sm:size-4"/>
                                 ) : state.isPlaying && !state.configChanged ? (

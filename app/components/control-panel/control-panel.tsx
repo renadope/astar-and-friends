@@ -61,15 +61,13 @@ export default function ControlPanel() {
                 {/*        </div>*/}
                 {/*    </div>*/}
                 {/*)}*/}
-
-                <div
-                    className="flex flex-col 4xl:flex-row 4xl:justify-between 4xl:items-start gap-3 border-b border-gray-200 pb-3">
-                    <div className="flex flex-col gap-1 4xl:flex-shrink-0">
+                <div className="flex 2xs:flex-col lg:flex-row lg:justify-between gap-3 border-b-4 border-gray-200 pb-3">
+                    <div className="flex flex-col gap-1">
                         <h3 className="text-xl 2xs:text-2xl sm:text-3xl font-bold">{algorithmName}</h3>
                         <p className="text-xs 2xs:text-sm text-gray-600">Configure and visualize pathfinding</p>
                     </div>
 
-                    <div className="w-full 4xl:w-auto 4xl:flex-shrink-0 4xl:min-w-0">
+                    <div className="lg:ml-auto">
                         <AlgoButtons/>
                     </div>
                 </div>

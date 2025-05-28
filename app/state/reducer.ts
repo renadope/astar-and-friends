@@ -345,7 +345,7 @@ export function reducer(state: AppState, action: Action): AppState {
                     weightGrid: updatedWeightGrid,
                     cellData: initCellData(updatedWeightGrid, [startRow, startCol], [targetRow, targetCol]),
                     goalPos: [targetRow, targetCol],
-                    startPos: [startRow, startCol]
+                    startPos: [startRow, startCol],
                 }
             } else if (state.cellSelectionState === 'set_start') {
                 if ((goalRow === targetRow && goalCol === targetCol)) {
@@ -373,7 +373,6 @@ export function reducer(state: AppState, action: Action): AppState {
                 granularTimeline: [],
                 snapshotTimeline: [],
                 isPlaying: false,
-                configChanged: false,
                 allReconstructedPathsCache: undefined,
 
             }

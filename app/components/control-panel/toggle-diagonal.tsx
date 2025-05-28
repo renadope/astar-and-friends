@@ -140,7 +140,7 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                             className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
                         />
 
-                        <div className="flex gap-1 justify-between">
+                        <div className="2xs:hidden xs:flex gap-1 justify-between">
                             {[
                                 {value: 1.0, label: "1.0", desc: "Same as orthogonal"},
                                 {value: Math.sqrt(2), label: "√2", desc: "Euclidean distance"},
