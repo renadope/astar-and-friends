@@ -6,6 +6,27 @@ import {FastForwardIcon, Map as MapIcon, RefreshCcw, RewindIcon} from "lucide-re
 import {ForwardIcon, PauseIcon, PlayIcon, PreviousIcon} from "~/components/icons/icons";
 import {toast} from "sonner";
 
+
+function PlayButton() {
+    const {state,} = useGridContext()
+    if (isNullOrUndefined(state.aStarData)) {
+        return <PlayIcon className="size-3 2xs:size-3.5 sm:size-4"/>
+    }
+    if (state.isPlaying && state.configChanged) {
+        return <RewindIcon className="size-3 2xs:size-3.5 sm:size-4"/>;
+    }
+
+    if (state.isPlaying && !state.configChanged) {
+        return <PauseIcon className="size-3 2xs:size-3.5 sm:size-4"/>;
+    }
+
+    if (!state.isPlaying && state.configChanged) {
+        return <RefreshCcw className="size-3 2xs:size-3.5 sm:size-4"/>;
+    }
+
+    return <PlayIcon className="size-3 2xs:size-3.5 sm:size-4"/>;
+}
+
 export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
     const {aStarData, currentTimelineIndex} = state
@@ -103,22 +124,11 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                                 }
                                 }
                                 className={`p-2.5 2xs:p-3 sm:p-3.5
-                                  ${state.configChanged ? ' animate-bounce bg-amber-500' : ' bg-sky-500'}
+                                  ${state.configChanged && !hasNoAStarData ? ' animate-bounce bg-amber-500' : ' bg-sky-500'}
                                   text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
                                 title={state.isPlaying ? "Pause" : "Play"}
                             >
-                                {state.configChanged && (
-                                    <div className="absolute -inset-1 bg-white/30 rounded-full animate-ping"></div>
-                                )}
-                                {state.isPlaying && state.configChanged ? (
-                                    <RewindIcon className="size-3 2xs:size-3.5 sm:size-4"/>
-                                ) : state.isPlaying && !state.configChanged ? (
-                                    <PauseIcon className="size-3 2xs:size-3.5 sm:size-4"/>
-                                ) : !state.isPlaying && state.configChanged ? (
-                                        <RefreshCcw className="size-3 2xs:size-3.5 sm:size-4"/>)
-                                    : (
-                                        <PlayIcon className="size-3 2xs:size-3.5 sm:size-4"/>
-                                    )}
+                                <PlayButton/>
                             </button>
 
                             <button
