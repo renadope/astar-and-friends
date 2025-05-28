@@ -41,7 +41,7 @@ function BasicCellInfo({cell, weightEmoji, className, ...props}: {
     return (
         <div
             className={cn("flex flex-col gap-0.5 items-center w-full h-full justify-center group", className)}{...props}>
-            <p className={`block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"}
+            <p className={`2xs:hidden sm:block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"}
              opacity-80 group-hover:opacity-100 select-none}`}>
                 {weightEmoji && <span className="mr-1">{weightEmoji}</span>}
                 {cell.cost}
@@ -111,8 +111,14 @@ export default function GridCell({
                         "0 2px 4px rgba(0,0,0,0.1)"
             }}
             className={`
-        size-9 2xs:size-10 xs:size-13 sm:size-14 md:size-16 lg:size-18 xl:size-20 2xl:size-22 3xl:size-24 
-        rounded-lg flex flex-col items-center justify-center relative backdrop-blur-sm hover:scale-95
+        2xs:size-8
+        xs:size-10
+        sm:size-12
+        md:size-16
+        lg:size-22
+        xl:size-24
+        2xl:size-26
+        rounded-lg items-center justify-center relative backdrop-blur-sm hover:scale-95
         ${cellBgColor[cell.state] ?? 'bg-sky-500'}
         ${bestFrontier ? 'z-10 2xs:translate-x-8 2xs:translate-y-4 2xs:scale-125 sm:translate-x-10 sm:translate-y-5 sm:scale-140 lg:translate-x-12 lg:translate-y-6 lg:scale-150' : ''}
         ${updatedOnThisStep ? 'relative after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-sky-400/50 after:pointer-events-none' : ''}

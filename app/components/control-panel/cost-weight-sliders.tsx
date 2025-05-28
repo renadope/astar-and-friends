@@ -22,7 +22,7 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
                     </svg>
                 </div>
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-800">A* Weight Control</h3>
+                    <h3 className="2xs:text-sm md:text-lg font-semibold text-gray-800">A* Weight Control</h3>
                     <p className="2xs:hidden xs:block text-sm text-gray-500">Balance exploration vs exploitation</p>
                 </div>
             </div>
@@ -30,9 +30,12 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <div className="flex justify-start bg-blue-500 rounded-full"></div>
                         <label htmlFor={`${id}_gWeight`} className="text-sm font-semibold text-blue-700">
-                            G-Weight (Path Cost)
+                            <span>G-Weight</span>
+                            <span className={'2xs:hidden sm:inline'}>
+                                {' '}(Path Cost)
+                            </span>
                         </label>
                     </div>
                     <div className="flex items-center gap-2">
@@ -135,7 +138,7 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
                 </p>
             </div>
 
-            <AlgorithmSelector onAlgorithmChange={(algorithm: Algorithm) => {
+            <AlgorithmSelector className={'2xs:hidden sm:block'} onAlgorithmChange={(algorithm: Algorithm) => {
                 dispatch({
                     type: "SET_BOTH_WEIGHTS",
                     payload: algorithm.weights,
@@ -143,7 +146,7 @@ export function CostWeightSliders({className, ...props}: ComponentPropsWithoutRe
             }}>
             </AlgorithmSelector>
         </div>
-    )
+)
 
 }
 

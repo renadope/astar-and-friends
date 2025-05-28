@@ -51,16 +51,16 @@ export default function ControlPanel() {
             className={`flex flex-col gap-4 2xs:gap-6 p-3 2xs:p-4 sm:p-6 backdrop-blur-sm rounded-xl shadow-sm border-2`}>
 
             <div className={'flex flex-col gap-3'}>
-                {state.configChanged && (
-                    <div className="flex items-center justify-start gap-2 text-sm">
-                        <div className="flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-                            <span className="text-amber-700 font-medium text-xs 2xs:text-sm">
-                            Configuration updated - ready to run!
-                        </span>
-                        </div>
-                    </div>
-                )}
+                {/*{state.configChanged && (*/}
+                {/*    <div className="flex items-center justify-start gap-2 text-sm">*/}
+                {/*        <div className="flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">*/}
+                {/*            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>*/}
+                {/*            <span className="text-amber-700 font-medium text-xs 2xs:text-sm">*/}
+                {/*            Configuration updated - ready to run!*/}
+                {/*        </span>*/}
+                {/*        </div>*/}
+                {/*    </div>*/}
+                {/*)}*/}
 
                 <div
                     className="flex flex-col 4xl:flex-row 4xl:justify-between 4xl:items-start gap-3 border-b border-gray-200 pb-3">

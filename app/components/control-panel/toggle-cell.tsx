@@ -30,7 +30,7 @@ export function ToggleCell({className, ...props}: ComponentPropsWithoutRef<'div'
                     <FancyClickIcon className={'size-5 text-sky-500'}/>
                     <div>
                         <h3 className="text-sm font-semibold text-gray-800">Cell Editing Mode</h3>
-                        <p className="2xs:hidden xs:block text-xs text-gray-500">Click on grid cells to modify</p>
+                        <p className="2xs:hidden xs:block text-xs xs:text-gray-600 sm:text-gray-500">Click on grid cells to modify</p>
                     </div>
                 </div>
 
