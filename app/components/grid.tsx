@@ -176,7 +176,7 @@ export default function Grid() {
                                 <span className="text-muted-foreground">Step:</span>
                                 <span>{cell.step + 1}</span>
                             </div>)}
-                            {cell.snapShotStep && (<div className="flex justify-between gap-3">
+                            {!isNullOrUndefined(cell.snapShotStep )&& (<div className="flex justify-between gap-3">
                                     <span className="text-muted-foreground">SnapshotStep:</span>
                                     <span>{cell.snapShotStep}</span>
                                 </div>
@@ -231,7 +231,7 @@ export default function Grid() {
                                         <span
                                             className={`bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 
                                                     text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-sm`}>
-                                                {(cell.costUpdateHistory[0].gCost - cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost).toFixed(2)}</span>
+                                                {(cell.costUpdateHistory[0].gCost - cell.costUpdateHistory[cell.costUpdateHistory.length - 1].gCost).toFixed(3)}</span>
                                     </div>
 
                                 )}

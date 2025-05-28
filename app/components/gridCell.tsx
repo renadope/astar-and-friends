@@ -111,6 +111,7 @@ export default function GridCell({
                         "0 2px 4px rgba(0,0,0,0.1)"
             }}
             className={`
+        size-6
         2xs:size-8
         xs:size-10
         sm:size-12
