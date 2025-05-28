@@ -1,4 +1,4 @@
-import {type ComponentPropsWithoutRef, useEffect, useId} from "react";
+import {type ChangeEvent, type ComponentPropsWithoutRef, useCallback, useEffect, useId} from "react";
 import {useGridContext} from "~/state/context";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {cn} from "~/lib/utils";
@@ -33,6 +33,14 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
     const hasNoAStarData = isNullOrUndefined(aStarData)
     const id = useId()
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+
+    const handleSetIndex = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        dispatch({
+            type: "SET_INDEX",
+            payload: parseInt(e.target.value, 10),
+        })
+    }, [dispatch])
+
     useEffect(() => {
         if (state.configChanged) {
             toast("⚡️ Config Change Detected!", {
@@ -54,12 +62,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             max={timeline.length - 1}
                             disabled={timeline.length === 0}
                             value={currentTimelineIndex}
-                            onChange={(e) =>
-                                dispatch({
-                                    type: "SET_INDEX",
-                                    payload: parseInt(e.target.value, 10),
-                                })
-                            }
+                            onChange={handleSetIndex}
                             className={`w-full h-2 bg-gray-200 accent-sky-500                        
                              rounded-full appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed`}
                             style={{
