@@ -1,4 +1,4 @@
-import {type ChangeEvent, type ComponentPropsWithoutRef, useCallback, useEffect, useId} from "react";
+import {type ChangeEvent, type ComponentPropsWithoutRef, useCallback, useEffect, useId, useRef} from "react";
 import {useGridContext} from "~/state/context";
 import {isNullOrUndefined} from "~/utils/helpers";
 import {cn} from "~/lib/utils";
@@ -34,6 +34,41 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
     const id = useId()
     const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
 
+    const stateRef = useRef({
+        hasNoAStarData: false,
+        configChanged: false,
+        isPlaying: false,
+    });
+
+    stateRef.current = {
+        hasNoAStarData,
+        configChanged: state.configChanged,
+        isPlaying: state.isPlaying,
+    };
+    const handlePlay = useCallback(() => {
+        const {hasNoAStarData, configChanged, isPlaying} = stateRef.current;
+
+        if (hasNoAStarData || configChanged) {
+            dispatch({
+                type: "RUN_ASTAR",
+                payload: {options: {autoRun: true}}
+            });
+
+            if (configChanged) {
+                toast("⚡️ Config Updated!", {
+                    description: "We're off again with your latest tweaks — A* is on the move.",
+                    position: "top-center",
+                });
+            }
+            return;
+        }
+
+        dispatch({
+            type: "SET_PLAYING_STATUS",
+            payload: !isPlaying,
+        });
+    }, [dispatch]);
+
     const handleSetIndex = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         dispatch({
             type: "SET_INDEX",
@@ -49,6 +84,13 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
             });
         }
     }, [state.configChanged]);
+
+    const handleJumpToStart = useCallback(() => dispatch({type: "JUMP_TO_START"}), [dispatch]);
+    const handleIncrement = useCallback(() => dispatch({type: "INCREMENT_INDEX"}), [dispatch]);
+    const handleDecrement = useCallback(() => dispatch({type: "DECREMENT_INDEX"}), [dispatch]);
+    const handleJumpToEnd = useCallback(() => dispatch({type: "JUMP_TO_END"}), [dispatch]);
+    const handleJumpToPathStart = useCallback(() => dispatch({type: "JUMP_TO_PATH_START"}), [dispatch]);
+
     return (
         <div className={cn("w-full bg-white border-b border-gray-200 shadow-sm", className)}{...props}>
             <div className="flex flex-col gap-3 px-2 2xs:px-3 sm:px-4 py-3">
@@ -89,7 +131,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             className="inline-flex items-center gap-1 2xs:gap-1.5 sm:gap-2 bg-gray-50 px-1.5 2xs:px-2 py-1 rounded-full">
                             <button
                                 disabled={hasNoAStarData}
-                                onClick={() => dispatch({type: "JUMP_TO_START"})}
+                                onClick={handleJumpToStart}
                                 className="p-2 2xs:p-2.5 sm:p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title="Jump to Start"
                             >
@@ -98,7 +140,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
 
                             <button
                                 disabled={hasNoAStarData}
-                                onClick={() => dispatch({type: "DECREMENT_INDEX"})}
+                                onClick={handleDecrement}
                                 className="p-2 2xs:p-2.5 sm:p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title="Previous Step"
                             >
@@ -106,26 +148,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             </button>
 
                             <button
-                                onClick={() => {
-                                    if (hasNoAStarData || state.configChanged) {
-                                        dispatch({
-                                            type: "RUN_ASTAR",
-                                            payload: {options: {autoRun: true}}
-                                        })
-                                        if (state.configChanged) {
-                                            toast("⚡️ Config Updated!", {
-                                                description: "We’re off again with your latest tweaks — A* is on the move.",
-                                                position: "top-center",
-                                            });
-                                        }
-                                        return
-                                    }
-                                    dispatch({
-                                        type: "SET_PLAYING_STATUS",
-                                        payload: !state.isPlaying,
-                                    })
-                                }
-                                }
+                                onClick={handlePlay}
                                 className={`p-2.5 2xs:p-3 sm:p-3.5
                                   ${state.configChanged && !hasNoAStarData ? ' animate-bounce bg-amber-500' : ' bg-sky-500'}
                                   text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
@@ -136,7 +159,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
 
                             <button
                                 disabled={hasNoAStarData}
-                                onClick={() => dispatch({type: "INCREMENT_INDEX"})}
+                                onClick={handleIncrement}
                                 className="p-2 2xs:p-2.5 sm:p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title="Next Step"
                             >
@@ -145,7 +168,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
 
                             <button
                                 disabled={hasNoAStarData}
-                                onClick={() => dispatch({type: "JUMP_TO_END"})}
+                                onClick={handleJumpToEnd}
                                 className="p-2 2xs:p-2.5 sm:p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title="Jump to End"
                             >
@@ -153,7 +176,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             </button>
                             <button
                                 disabled={hasNoAStarData}
-                                onClick={() => dispatch({type: "JUMP_TO_PATH_START"})}
+                                onClick={handleJumpToPathStart}
                                 className="inline-flex items-center gap-2 2xs:gap-2.5 sm:gap-3 px-2 2xs:px-2.5 sm:px-3 py-1 2xs:py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs 2xs:text-sm font-medium rounded border border-emerald-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title="Jump to Path Start"
                             >
