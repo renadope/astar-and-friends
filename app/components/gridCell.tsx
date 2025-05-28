@@ -68,14 +68,29 @@ export default function GridCell({
                                      setPaintingWeight
                                  }: CellProps) {
     const {state, dispatch} = useGridContext()
-    const {aStarData, currentTimelineIndex, cellData, isPlaying, allReconstructedPathsCache, cellSelectionState} = state
+    const {
+        aStarData,
+        currentTimelineIndex,
+        cellData,
+        isPlaying,
+        allReconstructedPathsCache,
+        cellSelectionState,
+        startPos,
+        goalPos,
+        timeline: stateTimeline,
+        snapshotTimeline,
+        granularTimeline
+    } = state
+
+    const hasAStarData = !isNullOrUndefined(aStarData)
+
     const [r, c] = pos
     const cell = cellData[r][c]
     const key = stringifyPos(...cell.pos)
 
     const snapShotStep = cell.snapShotStep ?? Number.MAX_SAFE_INTEGER
 
-    const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
+    const timeline = stateTimeline === 'snapshot' ? snapshotTimeline : granularTimeline
     const history = aStarData ? aStarData.costUpdateHistory[key] ?? [] : []
     const updatedOnThisStep = history.some((h) => h.step - 1 === snapShotStep)
     // const updatedOnThisStep = history.some((h) => h.step === snapShotStep + 1)
@@ -94,7 +109,6 @@ export default function GridCell({
 
     const bestFrontier = cell.state === 'frontier' && !isNullOrUndefined(posUpNext) && r === posUpNext[0] && c === posUpNext[1]
 
-    const hasAStarData = !isNullOrUndefined(aStarData)
 
     const hasVisitedReconstructedPath = !isNullOrUndefined(allReconstructedPathsCache) ? allReconstructedPathsCache.has(stringifyPos(r, c)) : false
     const canGhost = !isPlaying && currentTimelineIndex >= timeline.length - 1 && hasVisitedReconstructedPath
@@ -127,8 +141,8 @@ export default function GridCell({
         ${cell.state === "path" && isCurrentStep && !isLastStep ? "z-10 scale-105 sm:scale-110 animate-bounce" : ""}
         ${cell.state === 'path' && isCurrentStep && isLastStep ? "scale-105 sm:scale-110 z-10" : ""}
         ${cell.state === 'ghost' ? "pointer-events-auto animate-[wiggle_1s_ease-in-out_infinite] z-10" : ""}
-        ${cellSelectionState === 'set_goal' && !isSamePos([r, c], state.goalPos) ? "pointer-events-auto hover:animate-[wiggle_1s_ease-in-out_infinite] hover:bg-pink-300" : ""}
-        ${cellSelectionState === 'set_start' && !isSamePos([r, c], state.startPos) ? "pointer-events-auto hover:animate-[wiggle_1s_ease-in-out_infinite] hover:bg-sky-300" : ""}
+        ${cellSelectionState === 'set_goal' && !isSamePos([r, c], goalPos) ? "pointer-events-auto hover:animate-[wiggle_1s_ease-in-out_infinite] hover:bg-pink-300" : ""}
+        ${cellSelectionState === 'set_start' && !isSamePos([r, c], startPos) ? "pointer-events-auto hover:animate-[wiggle_1s_ease-in-out_infinite] hover:bg-sky-300" : ""}
         ${isPainting ? "scale-105" : ""}
         `}
             onClick={() => {
