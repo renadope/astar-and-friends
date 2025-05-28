@@ -22,7 +22,7 @@ export const cellBgColor: Record<CellData['state'], string> = {
     ghost: "bg-cyan-500"
 
 };
-const textColors: Record<CellData['state'], string> = {
+export const textColors: Record<CellData['state'], string> = {
     wall: "text-white",
     path: "text-white",
     visited: "text-white",

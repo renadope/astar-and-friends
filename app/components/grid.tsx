@@ -1,6 +1,6 @@
 import {capitalize, isNullOrUndefined} from "~/utils/helpers";
 import {useGridContext} from "~/state/context";
-import GridCell, {cellBgColor} from "~/components/gridCell";
+import GridCell, {cellBgColor, textColors} from "~/components/gridCell";
 import {isSamePos, stringifyPos} from "~/utils/grid-helpers";
 import {useEffect, useState} from "react";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "~/components/ui/dialog"
@@ -40,7 +40,7 @@ export default function Grid() {
     return (
         <div className="2xs:p-2 lg:p-4 flex flex-col gap-y-1 2xs:gap-y-2 sm:gap-y-3 rounded-2xl"
              onMouseDown={() => {
-                 if (hasAStarData){
+                 if (hasAStarData) {
                      setIsPainting(false)
                      return
                  }
@@ -166,7 +166,7 @@ export default function Grid() {
                     {cell && (<div className="space-y-3">
                         <div className="font-semibold">Cell Details</div>
 
-                        <div className="flex flex-col gap-2 text-sm">
+                        <div className="flex flex-col gap-3.5 text-sm">
                             <div className="flex justify-between gap-3">
                                 <span className="text-muted-foreground">Position:</span>
                                 <span>{cell.pos.join(',')}</span>
@@ -206,9 +206,10 @@ export default function Grid() {
                                 </div>
                             )}
 
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">State:</span>
-                                <span className={'text-slate-900'}>
+                            <div className={'flex '}>
+                                <span
+                                    className={`ml-auto 
+                                    ${cellBgColor[cell.state]} ${textColors[cell.state]} hover:scale-105 py-1 px-2 rounded-lg`}>
                                                 {capitalize(cell.state)}
                                         </span>
                             </div>
@@ -219,8 +220,8 @@ export default function Grid() {
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Updates:</span>
                                     <span
-                                        className={`bg-gradient-to-l from-amber-700 via-yellow-700 to-orange-700
-                                                 text-white text-xs px-2 py-1 rounded`}>
+                                        className={`bg-gradient-to-l from-orange-400  to-orange-700
+                                                 text-white text-xs px-2 py-1 rounded-sm`}>
                                                 {cell.costUpdateHistory.length}
                                             </span>
                                 </div>
