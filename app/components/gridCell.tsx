@@ -7,19 +7,20 @@ import {cellWeight} from "~/presets/cell-weight";
 import {type ComponentPropsWithoutRef, useMemo} from "react";
 import {cn} from "~/lib/utils";
 import type {Nullish} from "~/types/helpers";
+import {InfinityIcon} from "lucide-react";
 
 //consider adding this to the state
 const gridCellSize = 7
 
 export const cellBgColor: Record<CellData['state'], string> = {
-    empty: "bg-slate-50",      // slate-50 – neutral background
-    wall: "bg-slate-800",       // slate-800 – sturdy and dark
-    visited: "bg-purple-400",    // purple-400 – brighter, playful violet
-    frontier: "bg-yellow-300",   // yellow-300 – golden and cheerful
-    path: "bg-emerald-400",       // emerald-400 – balanced, modern trail
-    start: "bg-sky-500",      // sky-500 – distinct blue entry point
-    goal: "bg-pink-500",        // rose-500 – emotional, urgent destination
-    ghost: "bg-cyan-500"
+    empty: "bg-slate-50",
+    wall: "bg-slate-900",
+    visited: "bg-purple-400",
+    frontier: "bg-yellow-300",
+    path: "bg-emerald-400",
+    start: "bg-sky-500",
+    goal: "bg-pink-500",
+    ghost: "bg-cyan-600/90"
 
 };
 export const textColors: Record<CellData['state'], string> = {
@@ -42,9 +43,16 @@ function BasicCellInfo({cell, weightEmoji, className, ...props}: {
         <div
             className={cn("flex flex-col gap-0.5 items-center w-full h-full justify-center group", className)}{...props}>
             <p className={`2xs:hidden sm:block text-xs md:text-sm lg:text-lg ${textColors[cell.state] || "text-slate-500"}
-             opacity-80 group-hover:opacity-100 select-none}`}>
-                {weightEmoji && <span className="mr-1">{weightEmoji}</span>}
-                {cell.cost}
+    opacity-80 group-hover:opacity-100 select-none}`}>
+                {cell.cost === 0 ? (
+                    <InfinityIcon
+                        className={`2xs:size-0 xs:size-3 sm:size-4 md:size-5 lg:size-6 xl:size-6 2xl:size-7 3xl:size-7 stroke-white `}/>
+                ) : (
+                    <>
+                        {weightEmoji && <span className="mr-1">{weightEmoji}</span>}
+                        {cell.cost}
+                    </>
+                )}
             </p>
         </div>
     )

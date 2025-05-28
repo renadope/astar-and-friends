@@ -153,10 +153,9 @@ export default function Grid() {
                                     `}
                                     >
                                         <span className="font-medium ">{name}</span>
-                                        <span
-                                            className={`text-gray-700 group-hover:text-gray-900 text-[14px]`}>
-                                                {weight}
-                                            </span>
+                                        <span className={`text-gray-700 group-hover:text-gray-900 text-[14px]`}>
+                                            {weight === 0 ? "∞" : weight}
+                                        </span>
                                     </button>
                                 ))}
                             </div>
@@ -187,7 +186,8 @@ export default function Grid() {
 
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Cost:</span>
-                                    <span>{cell.cost}</span>
+                                    <span
+                                        className={`${cell.cost === 0 ? 'text-lg' : 'text-sm'}`}>{cell.cost === 0 ? "∞" : cell.cost}</span>
                                 </div>
                                 {!isNullOrUndefined(cell.g) && (
                                     <div className="flex justify-between">
