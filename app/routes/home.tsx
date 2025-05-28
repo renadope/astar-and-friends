@@ -16,98 +16,10 @@ export function meta({}: Route.MetaArgs) {
 
 function cmdKey(event: KeyboardEvent, key: string) {
     return (event.metaKey || event.ctrlKey) && event.key === key
-
 }
 
 export function Main() {
 
-    const {state, dispatch} = useGridContext()
-    const isPlayingRef = useRef<boolean>(state.isPlaying)
-    isPlayingRef.current = state.isPlaying
-    // useEffect(() => {
-    //     function handleKeyDown(event: KeyboardEvent) {
-    //         const cmdP = cmdKey(event, 'p')
-    //         const cmdS = cmdKey(event, 's')
-    //         const cmdE = cmdKey(event, 'e')
-    //         const cmdG = cmdKey(event, 'g')
-    //         if (cmdR) {
-    //             event.preventDefault()
-    //             dispatch({
-    //                 type: "RUN_ASTAR",
-    //                 payload: {
-    //                     options: {
-    //                         autoRun: true
-    //                     }
-    //                 }
-    //             })
-    //         }
-    //         if (cmdP) {
-    //             event.preventDefault()
-    //             dispatch({
-    //                 type: "JUMP_TO_PATH_START",
-    //             })
-    //         }
-    //         if (cmdS) {
-    //             event.preventDefault()
-    //             dispatch({
-    //                 type: "JUMP_TO_START",
-    //             })
-    //         }
-    //         if (cmdE) {
-    //             event.preventDefault()
-    //             dispatch({
-    //                 type: "JUMP_TO_END",
-    //             })
-    //         }
-    //         if (cmdG) {
-    //             event.preventDefault()
-    //             dispatch({
-    //                 type: "GENERATE_GRID",
-    //             })
-    //         }
-    //         if (event.key === ' ') {
-    //             event.preventDefault();
-    //             dispatch({
-    //                 type: "SET_PLAYING_STATUS",
-    //                 payload: !isPlayingRef.current
-    //             });
-    //         }
-    //         if (event.key === 'ArrowLeft') {
-    //             event.preventDefault();
-    //             dispatch({
-    //                 type: "DECREMENT_INDEX"
-    //             })
-    //         }
-    //         if (event.key === 'ArrowRight') {
-    //             event.preventDefault();
-    //             dispatch({
-    //                 type: "INCREMENT_INDEX"
-    //             })
-    //         }
-    //         //remove temporarily as its causing input issues
-    //         // if (event.key >= '1' && event.key <= '5') {
-    //         //     event.preventDefault();
-    //         //     const speedIndex = parseInt(event.key) - 1;
-    //         //     dispatch({
-    //         //         type: "SET_PLAYBACK_SPEED_FACTOR",
-    //         //         payload: {factor: speedPresets[speedIndex]}
-    //         //     });
-    //         // }
-    //         // if (event.key === '0') {
-    //         //     event.preventDefault();
-    //         //     dispatch({
-    //         //         type: "SET_PLAYBACK_SPEED_FACTOR",
-    //         //         payload: {factor: 10}
-    //         //     });
-    //         // }
-    //     }
-    //
-    //     window.addEventListener('keydown', handleKeyDown)
-    //     return () => {
-    //         window.removeEventListener('keydown', handleKeyDown)
-    //     }
-    //
-    // }, [])
 
     return (
         <div className="w-full max-w-[90%] mx-auto 2xs:p-0.5 sm:p-2">
@@ -162,9 +74,6 @@ export default function Home() {
             <GridProvider>
                 <Main/>
             </GridProvider>
-            {/*<GridProvider>*/}
-            {/*    <Main/>*/}
-            {/*</GridProvider>*/}
         </div>
     )
 }

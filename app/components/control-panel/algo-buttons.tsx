@@ -9,7 +9,7 @@ import {isNullOrUndefined} from "~/utils/helpers";
 export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div'>) {
     const {state, dispatch} = useGridContext()
     return (
-        <div className={cn("bg-white rounded-xl p-2 2xs:p-3 w-full min-w-0 overflow-hidden", className)} {...props}>
+        <div className={cn("bg-white rounded-xl 2xs:p-1 w-full min-w-0 overflow-hidden", className)} {...props}>
             <div className="flex flex-wrap gap-2 2xs:gap-3 justify-start 2xl:justify-start min-w-0">
                 <button
                     disabled={isNullOrUndefined(state.aStarData)}
