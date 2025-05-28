@@ -1,7 +1,7 @@
 import {type ComponentPropsWithoutRef} from "react";
 import {useGridContext} from "~/state/context";
 import {cn} from "~/lib/utils";
-import {RefreshCcw} from "lucide-react";
+import {Edit3, RefreshCcw} from "lucide-react";
 import {gridSize} from "~/components/control-panel/control-panel";
 import {toast} from "sonner";
 import {isNullOrUndefined} from "~/utils/helpers";
@@ -51,7 +51,7 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
 
                 <button
                     className={`group relative px-2 2xs:px-3 sm:px-4 py-2 border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 rounded-xl shadow-sm transition-all duration-300 flex items-center justify-center gap-1.5 2xs:gap-2 font-medium hover:scale-105 hover:-translate-y-0.5 hover:shadow-md min-w-0 flex-shrink ${
-                        state.configChanged ? 'border-blue-400 bg-blue-50 text-blue-700 shadow-blue-100' : ''
+                        state.configChanged ? 'border-2 border-blue-400 bg-blue-50 text-blue-700 shadow-blue-100' : ''
                     }`}
                     onClick={() => {
                         dispatch({type: "RUN_ASTAR"})
@@ -78,20 +78,20 @@ export function AlgoButtons({className, ...props}: ComponentPropsWithoutRef<'div
                 <button
                     disabled={isNullOrUndefined(state.aStarData)}
                     className={`group px-2 2xs:px-3 sm:px-4 py-2 2xs:py-3 bg-gradient-to-br
-                         from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700
-                         text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300
-                          font-semibold xs:text-xs 2xs:text-sm transform 
-                          hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center flex-shrink-0
-                          disabled:hover:scale-100 disabled:translate-y-0 
-                          disabled:opacity-50 disabled:cursor-not-allowed 
-                          disabled:hover:border-transparent disabled:hover:bg-transparent
-                          `}
+                    from-pink-500 via-fuchsia-500 to-pink-600 hover:from-pink-600 hover:via-fuchsia-600 hover:to-pink-700
+                    text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300
+                     font-semibold xs:text-xs 2xs:text-sm transform 
+                     hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center flex-shrink-0
+                     disabled:hover:scale-100 disabled:translate-y-0 
+                     disabled:opacity-50 disabled:cursor-not-allowed 
+                     disabled:hover:border-transparent disabled:hover:bg-transparent
+          `}
                     onClick={() => {
                         dispatch({type: "RESET_ASTAR_DATA"})
                     }}
                 >
-                    <RefreshCcw
-                        className="w-4 2xs:w-5 h-4 2xs:h-5 group-hover:-rotate-180 transition-transform duration-500"/>
+                    <Edit3
+                        className="w-4 2xs:w-5 h-4 2xs:h-5 group-hover:scale-110 transition-transform duration-300"/>
                 </button>
             </div>
         </div>
