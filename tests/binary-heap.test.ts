@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect} from "vitest";
-import {makeNodeWithValueAsPriorityAutoID} from "~/queue/helpers";
 import {BinaryHeap} from "~/queue/binary-heap";
+import {makeNodeWithValueAsPriorityAutoID} from "~/queue/helpers";
 
 describe("binary heap", () => {
 
