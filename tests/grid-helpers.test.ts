@@ -22,6 +22,7 @@ describe("isValidPos - are we passing valid positions?", () => {
         {input: {}, type: 'object'},
         {input: [-1.4, 2], type: 'invalid Pos'},
         {input: [1.1, 4.876543], type: 'invalid Pos'},
+        {input: ['1', '1'], type: 'invalid Pos'},
     ]
 
     const validInputs: Pos[] = [
