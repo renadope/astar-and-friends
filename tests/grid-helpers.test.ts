@@ -20,10 +20,12 @@ describe("isValidPos - are we passing valid positions?", () => {
         {input: Infinity, type: 'Infinity'},
         {input: -Infinity, type: '-Infinity'},
         {input: {}, type: 'object'},
+        {input: [-1.4, 2], type: 'invalid Pos'},
+        {input: [1.1, 4.876543], type: 'invalid Pos'},
     ]
 
     const validInputs: Pos[] = [
-        [1, 1], [1, 3], [3, 1], [3, 3], [1, 2], [2, 1], [2, 2], [2, 3], [3, 2], [3, 3], [12, 134], [4, 5]
+        [1, 1], [1, 3], [3, 1], [3, 3], [1, 2], [2, 1], [2, 2], [2, 3], [3, 2], [3, 3], [12, 134], [4, 5], [1.0000, 2.00000]
     ]
 
     it.each(badInputs)('should return false for $type', ({input}) => {
