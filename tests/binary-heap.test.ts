@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect} from "vitest";
 import {BinaryHeap, type HeapNode} from "~/queue/binary-heap";
-import {makeNodeWithValueAsPriorityAutoID} from "~/queue/helpers";
+import {makeNode, makeNodeWithValueAsPriorityAutoID} from "~/queue/helpers";
 
 describe("binary heap", () => {
 
@@ -115,6 +115,17 @@ describe("binary heap", () => {
             expect(minHeap.contains(node.id)).toBe(true)
             minHeap.extractTop()
             expect(minHeap.contains(node.id)).toBe(false)
+        })
+
+        it('should update priority and maintain heap property', () => {
+            const newVal = orderedPositiveValues[orderedPositiveValues.length - 1].value * (Math.floor((Math.random() + 1) * 20))
+            const node = makeNodeWithValueAsPriorityAutoID(newVal)
+            minHeap.insertAll(positiveValues)
+            minHeap.insert(node)
+            expect(minHeap.peek()?.value).not.toBe(newVal)
+            minHeap.updatePriority(node, -10000)
+            expect(minHeap.peek()?.value).toBe(newVal)
+            expect(minHeap.extractTop()?.value).toBe(newVal)
         })
     })
 
