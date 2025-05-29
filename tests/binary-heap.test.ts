@@ -108,6 +108,14 @@ describe("binary heap", () => {
             }
 
         })
+
+        it('should correctly identify if a node exists by ID', () => {
+            const node = makeNodeWithValueAsPriorityAutoID(88)
+            minHeap.insert(node)
+            expect(minHeap.contains(node.id)).toBe(true)
+            minHeap.extractTop()
+            expect(minHeap.contains(node.id)).toBe(false)
+        })
     })
 
 
