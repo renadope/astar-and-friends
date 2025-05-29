@@ -4,7 +4,8 @@ import {makeNodeWithValueAsPriorityAutoID} from "~/queue/helpers";
 
 describe("binary heap", () => {
 
-    const orderedPositiveValues = Array.from({length: 100}).map((_, index) => makeNodeWithValueAsPriorityAutoID(index + 1))
+    const orderedPositiveValues = Array.from({length: 10000}).map((_, index) => makeNodeWithValueAsPriorityAutoID(index + 1))
+    const orderedNegativeValues = Array.from({length: 100}).map((_, index) => makeNodeWithValueAsPriorityAutoID(-index - 1))
 
     describe("constructor", () => {
         it("should create empty heap", () => {
@@ -15,9 +16,11 @@ describe("binary heap", () => {
     describe("minHeap", () => {
         let minHeap: BinaryHeap<number>
         let positiveValues: HeapNode<number>[]
+        let negativeValues: HeapNode<number>[]
         beforeEach(() => {
             minHeap = new BinaryHeap<number>((a, b) => a.priority - b.priority)
             positiveValues = fisherYates(orderedPositiveValues)
+            negativeValues = fisherYates(orderedNegativeValues)
 
         })
 
@@ -90,14 +93,21 @@ describe("binary heap", () => {
         });
 
         it('should handle negative numbers', () => {
-            minHeap.insertAll([-5, -1, -10, 0, 3].map(val => makeNodeWithValueAsPriorityAutoID(val)))
-
-            expect(minHeap.extractTop()?.value).toBe(-10)
-            expect(minHeap.extractTop()?.value).toBe(-5)
-            expect(minHeap.extractTop()?.value).toBe(-1)
+            minHeap.insertAll(negativeValues)
+            expect(minHeap.extractTop()?.value).toBe(-100)
+            expect(minHeap.extractTop()?.value).toBe(-99)
+            expect(minHeap.extractTop()?.value).toBe(-98)
         })
 
+        it('should have the sorted array with each subsequent number being larger than the previous one', () => {
+            minHeap.insertAll([...negativeValues, ...positiveValues])
+            expect(minHeap.size()).toBe(positiveValues.length + negativeValues.length)
+            const sortedArr = minHeap.toSorted()
+            for (let i = 1; i < sortedArr.length; i++) {
+                expect(sortedArr[i - 1].value).toBeLessThanOrEqual(sortedArr[i].value)
+            }
 
+        })
     })
 
 
