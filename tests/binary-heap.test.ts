@@ -37,6 +37,7 @@ describe("binary heap", () => {
             expect(minHeap.extractTop()?.value).toBe(7)
             expect(minHeap.extractTop()?.value).toBe(8)
             expect(minHeap.extractTop()?.value).toBe(9)
+            expect(minHeap.peek()?.value).toBe(10)
 
         })
 

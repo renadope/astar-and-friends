@@ -74,9 +74,9 @@ importers:
       tailwind-merge:
         specifier: ^3.3.0
         version: 3.3.0
-      zod:
-        specifier: ^3.24.4
-        version: 3.24.4
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
     devDependencies:
       '@react-router/dev':
         specifier: ^7.5.3
@@ -2193,6 +2193,10 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   valibot@0.41.0:
     resolution: {integrity: sha512-igDBb8CTYr8YTQlOKgaN9nSS0Be7z+WRuaeYqGf3Cjz3aKmSnqEmYnkfVjzIuumGqfHpa3fLIvMEAfhrpqN8ng==}
     peerDependencies:
@@ -2327,9 +2331,6 @@ packages:
   yallist@5.0.0:
     resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
     engines: {node: '>=18'}
-
-  zod@3.24.4:
-    resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
 
 snapshots:
 
@@ -4328,6 +4329,8 @@ snapshots:
 
   utils-merge@1.0.1: {}
 
+  uuid@11.1.0: {}
+
   valibot@0.41.0(typescript@5.8.3):
     optionalDependencies:
       typescript: 5.8.3
@@ -4475,5 +4478,3 @@ snapshots:
   yallist@3.1.1: {}
 
   yallist@5.0.0: {}
-
-  zod@3.24.4: {}

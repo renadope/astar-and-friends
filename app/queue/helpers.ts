@@ -1,5 +1,5 @@
 import type {HeapNode} from "~/queue/binary-heap";
-import { randomUUID } from 'node:crypto';
+import { v4 as uuidv4 } from 'uuid'
 
 export function makeNode<T>(
     value: T,
@@ -20,5 +20,5 @@ export function makeNodeWithValueAsPriority(value: number, id: string) {
 }
 
 export function makeNodeWithValueAsPriorityAutoID(value: number,) {
-    return makeNodeWithValueAsPriority(value, randomUUID())
+    return makeNodeWithValueAsPriority(value, uuidv4())
 }
