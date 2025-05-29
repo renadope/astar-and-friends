@@ -1,17 +1,13 @@
 import type {Pos} from "~/types/pathfinding";
 import {isNullOrUndefined} from "~/utils/helpers";
+import type {Nullish} from "~/types/helpers";
 
 export function isValidGridIndex(
     grid: unknown[][],
     row: number,
     col: number,
 ): boolean {
-    const invalidRow = row < 0 || row >= grid.length;
-    if (invalidRow) {
-        return false;
-    }
-    const invalidCol = col < 0 || col >= grid[row].length;
-    return !invalidCol;
+    return isValidPos([row, col]) && row < grid.length && col < grid[row].length;
 }
 
 export function stringifyPos(...pos: number[]): string {
@@ -23,6 +19,9 @@ export function parsePos(key: string): number[] {
 }
 
 export function checkPosEquality(a: Pos, b: Pos): boolean {
+    if (!isValidPos(a) || !isValidPos(b)) {
+        return false
+    }
     return a[0] === b[0] && a[1] === b[1];
 }
 
@@ -35,8 +34,17 @@ export function isValidNode(grid: number[][], row: number, col: number) {
 }
 
 export function isSamePos(a?: Pos | null, b?: Pos | null): boolean {
-    if (isNullOrUndefined(a) || isNullOrUndefined(b)) {
+    if (!isValidPos(a) || !isValidPos(b)) {
         return false
     }
     return a[0] === b[0] && a[1] === b[1];
+}
+
+export function isValidPos(pos?: Nullish<Pos>): pos is Pos {
+    return !isNullOrUndefined(pos)
+        && Array.isArray(pos)
+        && pos.length === 2
+        && typeof pos[0] === "number" && typeof pos[1] === "number"
+        && pos[0] >= 0 && pos[1] >= 0
+        && Number.isInteger(pos[0]) && Number.isInteger(pos[1]);
 }
