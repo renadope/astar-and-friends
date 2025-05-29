@@ -45,6 +45,6 @@ export function isValidPos(pos?: Nullish<Pos>): pos is Pos {
         && Array.isArray(pos)
         && pos.length === 2
         && typeof pos[0] === "number" && typeof pos[1] === "number"
+        && Number.isInteger(pos[0]) && Number.isInteger(pos[1])
         && pos[0] >= 0 && pos[1] >= 0
-        && Number.isInteger(pos[0]) && Number.isInteger(pos[1]);
 }

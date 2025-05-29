@@ -3,7 +3,7 @@ import {isSamePos, isValidPos} from "~/utils/grid-helpers";
 import type {Pos} from "~/types/pathfinding";
 import type {Nullish} from "~/types/helpers";
 
-type TableTest = {
+type IsSamePosTableTest = {
     pos1?: Nullish<Pos>,
     pos2?: Nullish<Pos>,
     expected: boolean,
@@ -36,7 +36,7 @@ describe("isValidPos - are we passing valid positions?", () => {
     });
 })
 describe("areGridPositionsEqual", () => {
-    const tests: TableTest[] = [
+    const tests: IsSamePosTableTest[] = [
         {pos1: [1, 2], pos2: undefined, expected: false, case: 'defined vs undefined'},
         {pos1: undefined, pos2: [1, 3], expected: false, case: 'undefined vs defined'},
         {pos1: [1, 2], pos2: [1, 2], expected: true, case: 'same positions'},
