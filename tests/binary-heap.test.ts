@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect} from "vitest";
 import {BinaryHeap, type HeapNode} from "~/queue/binary-heap";
-import {makeNode, makeNodeWithValueAsPriorityAutoID} from "~/queue/helpers";
+import {makeNodeWithValueAsPriorityAutoID} from "~/queue/helpers";
 
 describe("binary heap", () => {
 
@@ -15,8 +15,8 @@ describe("binary heap", () => {
     })
     describe("minHeap", () => {
         let minHeap: BinaryHeap<number>
-        let positiveValues: HeapNode<number>[]
-        let negativeValues: HeapNode<number>[]
+        let positiveValues: HeapNode<number>[] = []
+        let negativeValues: HeapNode<number>[] = []
         beforeEach(() => {
             minHeap = new BinaryHeap<number>((a, b) => a.priority - b.priority)
             positiveValues = fisherYates(orderedPositiveValues)
@@ -24,7 +24,7 @@ describe("binary heap", () => {
 
         })
 
-        it('should insert 100 elements', () => {
+        it(`should insert ${positiveValues.length} elements`, () => {
             minHeap.insertAll(positiveValues)
             expect(minHeap.size()).toBe(positiveValues.length)
             expect(minHeap.peek()?.value).toBe(1)
