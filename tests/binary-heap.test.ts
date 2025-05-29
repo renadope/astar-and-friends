@@ -1,11 +1,10 @@
 import {beforeEach, describe, expect} from "vitest";
-import {BinaryHeap} from "~/queue/binary-heap";
+import {BinaryHeap, type HeapNode} from "~/queue/binary-heap";
 import {makeNodeWithValueAsPriorityAutoID} from "~/queue/helpers";
 
 describe("binary heap", () => {
 
-    const values = Array.from({length: 100}).map((_, index) => makeNodeWithValueAsPriorityAutoID(index + 1))
-    const reversedValues = Array.from({length: 100}).map((_, index) => makeNodeWithValueAsPriorityAutoID(100 - index))
+    const orderedPositiveValues = Array.from({length: 100}).map((_, index) => makeNodeWithValueAsPriorityAutoID(index + 1))
 
     describe("constructor", () => {
         it("should create empty heap", () => {
@@ -15,20 +14,23 @@ describe("binary heap", () => {
     })
     describe("minHeap", () => {
         let minHeap: BinaryHeap<number>
+        let positiveValues: HeapNode<number>[]
         beforeEach(() => {
             minHeap = new BinaryHeap<number>((a, b) => a.priority - b.priority)
+            positiveValues = fisherYates(orderedPositiveValues)
+
         })
 
         it('should insert 100 elements', () => {
-            minHeap.insertAll(values)
-            expect(minHeap.size()).toBe(100)
+            minHeap.insertAll(positiveValues)
+            expect(minHeap.size()).toBe(positiveValues.length)
             expect(minHeap.peek()?.value).toBe(1)
         })
 
         it('should extract elements in ascending order', () => {
-            minHeap.insertAll(values)
+            minHeap.insertAll(positiveValues)
             expect(minHeap.extractTop()?.value).toBe(1)
-            expect(minHeap.size()).toBe(99)
+            expect(minHeap.size()).toBe(positiveValues.length - 1)
 
             const expected = [2, 3, 4, 5, 6]
             for (let i = 0; i < 5; i++) {
@@ -59,8 +61,56 @@ describe("binary heap", () => {
             expect(minHeap.peek()?.value).toBe(45)
         });
 
+        it('should handle empty heap extraction', () => {
+            expect(minHeap.extractTop()?.value).toBeUndefined()
+        });
+
+        it('should handle duplicate priorities', () => {
+            minHeap.insertAll([5, 5, 1, 1]
+                .map(val => makeNodeWithValueAsPriorityAutoID(val)))
+
+            expect(minHeap.extractTop()?.value).toBe(1)
+            expect(minHeap.extractTop()?.value).toBe(1)
+            expect(minHeap.peek()?.value).toBe(5)
+        })
+
+
+        it('should handle random large dataset', () => {
+            const randomValues = fisherYates(Array.from({length: 10000}, () => Math.floor(Math.random() * 10000))
+                .map((val) => makeNodeWithValueAsPriorityAutoID(val)))
+            minHeap.insertAll(randomValues)
+            let prev = -Infinity
+            while (minHeap.size() > 0) {
+                //i know this is generally not a good practice, but we guard against empty heaps in the loop
+                const curr = minHeap.extractTop()?.value!
+                expect(curr).toBeDefined()
+                expect(curr).toBeGreaterThanOrEqual(prev)
+                prev = curr
+            }
+        });
+
+        it('should handle negative numbers', () => {
+            minHeap.insertAll([-5, -1, -10, 0, 3].map(val => makeNodeWithValueAsPriorityAutoID(val)))
+
+            expect(minHeap.extractTop()?.value).toBe(-10)
+            expect(minHeap.extractTop()?.value).toBe(-5)
+            expect(minHeap.extractTop()?.value).toBe(-1)
+        })
+
 
     })
 
 
 })
+
+function fisherYates<T>(array: T[]): T[] {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i >= 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        const temp = shuffled[i]
+        shuffled[i] = shuffled[j]
+        shuffled[j] = temp
+    }
+
+    return shuffled
+}
