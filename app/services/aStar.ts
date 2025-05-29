@@ -239,7 +239,6 @@ export function aStar(
         totalCost: allPathData[allPathData.length - 1].gCost,
         prevMap: prev
     };
-    // console.log(JSON.stringify(data));
     return ResultOk<AStarData>(data);
 }
 
