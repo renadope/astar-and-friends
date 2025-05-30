@@ -1,6 +1,7 @@
-import type {Weights} from "~/types/pathfinding";
-import {expect, it} from "vitest";
-import {calculateFCost} from "~/services/aStar";
+import type {Pos, Weights} from "~/types/pathfinding";
+import {describe, expect, it} from "vitest";
+import {aStar, calculateFCost} from "~/services/aStar";
+import {manhattan} from "~/utils/heuristics";
 
 type fCostTableTests = {
     g: number,
@@ -36,3 +37,85 @@ describe('fCost', () => {
         expect(calculateFCost(weights, g, h)).toBeCloseTo(expected)
     });
 })
+
+describe("aStar", () => {
+
+    describe("aStar - bad Start & Goal positions", () => {
+
+        let invalidPositions: number[][] = []
+        let weightGrid: number[][] = []
+
+        beforeEach(() => {
+            invalidPositions = Array.from({length: 10}, (_, i) => generateInvalidCoords(i))
+            weightGrid = [
+                [1, 1, 1],
+                [1, 1, 1],
+                [1, 1, 1]
+            ];
+            const outOfBoundsRow = weightGrid.length + 1
+            const outOfBoundsCol = weightGrid[weightGrid.length - 1].length + 1
+            invalidPositions.push([outOfBoundsRow, outOfBoundsCol])
+            invalidPositions.push([0, outOfBoundsCol])
+            invalidPositions.push([outOfBoundsRow, 0])
+            //just add some more based on the out of bounds row or out of bounds column
+            for (let i = 0; i < 20; i++) {
+                const roll = Math.random() * 100
+                if (roll < 25) {
+                    invalidPositions.push([outOfBoundsRow + i, outOfBoundsCol])
+                } else if (roll < 50) {
+                    invalidPositions.push([outOfBoundsRow, outOfBoundsCol + i])
+                } else if (roll < 75) {
+                    invalidPositions.push([outOfBoundsRow + i, outOfBoundsCol + i])
+                } else if (roll < 87.5) {
+                    invalidPositions.push([0, outOfBoundsCol + i])
+                } else {
+                    invalidPositions.push([outOfBoundsRow + i, 0])
+                }
+            }
+        })
+
+        it('should return success=false when start position is outside grid', () => {
+            invalidPositions.forEach(([row, col], index) => {
+                const res = aStar(
+                    weightGrid,
+                    [row, col],
+                    [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1],
+                    manhattan,
+                    {allowed: false},
+                    {gWeight: 1, hWeight: 1, name: "AStar"},
+                );
+                expect(res.success, `Failed for position [${row}, ${col}] at index ${index}`).toBeFalsy();
+            });
+        });
+
+        it('should return success=false when goal position is outside grid', () => {
+            invalidPositions.forEach(([row, col], index) => {
+                const res = aStar(
+                    weightGrid,
+                    [0, 0],
+                    [row, col],
+                    manhattan,
+                    {allowed: false},
+                    {gWeight: 1, hWeight: 1, name: "AStar"},
+                );
+                expect(res.success, `Failed for position [${row}, ${col}] at index ${index}`).toBeFalsy();
+            });
+        });
+
+    })
+
+})
+
+
+function generateInvalidCoords(i: number): Pos {
+    if (i === 0) {
+        return [0, -1]
+    }
+    const roll = Math.random() * 100
+    if (roll < 30) {
+        return [i, -i]
+    } else if (roll < 60) {
+        return [-i, i]
+    }
+    return [-i, -i]
+}
