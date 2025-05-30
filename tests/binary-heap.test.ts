@@ -128,6 +128,130 @@ describe("binary heap", () => {
             expect(minHeap.extractTop()?.value).toBe(newVal)
         })
     })
+    describe("maxHeap", () => {
+        let maxHeap: BinaryHeap<number>
+        let positiveValues: HeapNode<number>[] = []
+        let negativeValues: HeapNode<number>[] = []
+        beforeEach(() => {
+            maxHeap = new BinaryHeap<number>((a, b) => b.priority - a.priority)
+            positiveValues = fisherYates(orderedPositiveValues)
+            negativeValues = fisherYates(orderedNegativeValues)
+
+        })
+
+        it(`should insert ${positiveValues.length} elements`, () => {
+            maxHeap.insertAll(positiveValues)
+            expect(maxHeap.size()).toBe(positiveValues.length)
+            expect(maxHeap.peek()?.value).toBe(10000)
+        })
+
+        it('should extract elements in descending order', () => {
+            maxHeap.insertAll(positiveValues)
+            expect(maxHeap.extractTop()?.value).toBe(10000)
+            expect(maxHeap.size()).toBe(positiveValues.length - 1)
+
+            const expected = [9999, 9998, 9997, 9996, 9995]
+            for (let i = 0; i < 5; i++) {
+                expect(maxHeap.extractTop()?.value).toBe(expected[i])
+            }
+            expect(maxHeap.extractTop()?.value).toBe(9994)
+            expect(maxHeap.extractTop()?.value).toBe(9993)
+            expect(maxHeap.extractTop()?.value).toBe(9992)
+            expect(maxHeap.peek()?.value).toBe(9991)
+
+        })
+
+        it('should maintain max heap property with multiple insertions', () => {
+            maxHeap.insert(makeNodeWithValueAsPriorityAutoID(12))
+            maxHeap.insert(makeNodeWithValueAsPriorityAutoID(120))
+            maxHeap.insert(makeNodeWithValueAsPriorityAutoID(6))
+            maxHeap.insert(makeNodeWithValueAsPriorityAutoID(3))
+            maxHeap.insert(makeNodeWithValueAsPriorityAutoID(45))
+            maxHeap.insert(makeNodeWithValueAsPriorityAutoID(1000))
+            expect(maxHeap.size()).toBe(6)
+            expect(maxHeap.peek()?.value).toBe(1000)
+
+            expect(maxHeap.extractTop()?.value).toBe(1000)
+            expect(maxHeap.size()).toBe(5)
+
+            expect(maxHeap.extractTop()?.value).toBe(120)
+            expect(maxHeap.size()).toBe(4)
+
+            expect(maxHeap.extractTop()?.value).toBe(45)
+            expect(maxHeap.size()).toBe(3)
+
+            expect(maxHeap.peek()?.value).toBe(12)
+        });
+
+        it('should handle empty heap extraction', () => {
+            expect(maxHeap.extractTop()?.value).toBeUndefined()
+        });
+
+        it('should handle duplicate priorities', () => {
+            maxHeap.insertAll([5, 5, 1, 1]
+                .map(val => makeNodeWithValueAsPriorityAutoID(val)))
+
+            expect(maxHeap.extractTop()?.value).toBe(5)
+            expect(maxHeap.extractTop()?.value).toBe(5)
+            expect(maxHeap.peek()?.value).toBe(1)
+        })
+
+
+        it('should handle random large dataset', () => {
+            const randomValues = fisherYates(Array.from({length: 10000}, () => Math.floor(Math.random() * 10000))
+                .map((val) => makeNodeWithValueAsPriorityAutoID(val)))
+            maxHeap.insertAll(randomValues)
+            let prev = Infinity
+            while (maxHeap.size() > 0) {
+                //i know this is generally not a good practice, but we guard against empty heaps in the loop
+                const curr = maxHeap.extractTop()?.value!
+                expect(curr).toBeDefined()
+                expect(curr).toBeLessThanOrEqual(prev)
+                prev = curr
+            }
+        });
+
+        it('should handle negative numbers', () => {
+            maxHeap.insertAll(negativeValues)
+            expect(maxHeap.extractTop()?.value).toBe(-1)
+            expect(maxHeap.extractTop()?.value).toBe(-2)
+            expect(maxHeap.extractTop()?.value).toBe(-3)
+        })
+
+        it('should have the sorted array with each subsequent number being smaller than the previous one', () => {
+            maxHeap.insertAll([...negativeValues, ...positiveValues])
+            expect(maxHeap.size()).toBe(positiveValues.length + negativeValues.length)
+            const sortedArr = maxHeap.toSorted()
+            for (let i = 1; i < sortedArr.length; i++) {
+                expect(sortedArr[i - 1].value).toBeGreaterThanOrEqual(sortedArr[i].value)
+            }
+
+        })
+
+        it('should correctly identify if a node exists by ID', () => {
+            const node = makeNodeWithValueAsPriorityAutoID(120412)
+            maxHeap.insert(node)
+            expect(maxHeap.contains(node.id)).toBe(true)
+            maxHeap.extractTop()
+            expect(maxHeap.contains(node.id)).toBe(false)
+        })
+
+        it('should update priority and maintain heap property', () => {
+            const newVal = orderedPositiveValues[orderedPositiveValues.length - 1].value * (Math.floor((Math.random() + 1) * 20))
+            const node = makeNodeWithValueAsPriorityAutoID(newVal)
+            maxHeap.insertAll(positiveValues)
+            expect(maxHeap.peek()?.value).not.toBe(newVal)
+            maxHeap.insert(node)
+            maxHeap.updatePriorityID(node.id, 1000000)
+            expect(maxHeap.peek()?.value).toBe(newVal)
+            expect(maxHeap.extractTop()?.value).toBe(newVal)
+        })
+        it('should silently ignore updatePriority on a missing node', () => {
+            //since im currently testing this behavior, i do wonder if its better if we return an error or the node instead of silently ignoring
+            maxHeap.updatePriorityID('f.r.i.e.n.d.s', 1000000)
+            expect(maxHeap.size()).toBe(0)
+        })
+    })
 
 
 })
