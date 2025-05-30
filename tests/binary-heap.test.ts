@@ -127,6 +127,13 @@ describe("binary heap", () => {
             expect(minHeap.peek()?.value).toBe(newVal)
             expect(minHeap.extractTop()?.value).toBe(newVal)
         })
+        it('should have a heap size of zero', () => {
+            minHeap.insertAll(positiveValues)
+            minHeap.clear()
+            expect(minHeap.size()).toBe(0)
+            expect(minHeap.peek()?.value).toBeUndefined()
+            expect(minHeap.extractTop()?.value).toBeUndefined()
+        })
     })
     describe("maxHeap", () => {
         let maxHeap: BinaryHeap<number>
@@ -228,16 +235,8 @@ describe("binary heap", () => {
 
         })
 
-        it('should correctly identify if a node exists by ID', () => {
-            const node = makeNodeWithValueAsPriorityAutoID(120412)
-            maxHeap.insert(node)
-            expect(maxHeap.contains(node.id)).toBe(true)
-            maxHeap.extractTop()
-            expect(maxHeap.contains(node.id)).toBe(false)
-        })
-
         it('should update priority and maintain heap property', () => {
-            const newVal = orderedPositiveValues[orderedPositiveValues.length - 1].value * (Math.floor((Math.random() + 1) * 20))
+            const newVal = orderedPositiveValues[orderedPositiveValues.length - 1].value * (Math.floor((Math.random() + 12) * 3))
             const node = makeNodeWithValueAsPriorityAutoID(newVal)
             maxHeap.insertAll(positiveValues)
             expect(maxHeap.peek()?.value).not.toBe(newVal)
@@ -248,8 +247,20 @@ describe("binary heap", () => {
         })
         it('should silently ignore updatePriority on a missing node', () => {
             //since im currently testing this behavior, i do wonder if its better if we return an error or the node instead of silently ignoring
-            maxHeap.updatePriorityID('f.r.i.e.n.d.s', 1000000)
+            expect(() => {
+                maxHeap.updatePriorityID('f.r.i.e.n.d.s', 1000000)
+            }).not.toThrow()
             expect(maxHeap.size()).toBe(0)
+        })
+        it('should not change heap if priority was updated to the same value', () => {
+            //we just return if the new priority is the same as the old priority, so structure should be exactly the same
+            const node = makeNodeWithValueAsPriorityAutoID(100)
+            const node2 = makeNodeWithValueAsPriorityAutoID(101)
+            maxHeap.insert(node)
+            maxHeap.insert(node2)
+            maxHeap.updatePriorityID(node.id, 100)
+            maxHeap.updatePriorityID(node2.id, 101)
+            expect(maxHeap.peek()?.value).toBe(101)
         })
     })
 

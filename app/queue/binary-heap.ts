@@ -18,6 +18,11 @@ export class BinaryHeap<T> {
         this.compare = compareFunc;
     }
 
+    clear() {
+        this.heap = []
+        this.indexMap = new Map<string, number>()
+    }
+
     toString() {
         return this.size() > 0
             ? this.heap.map((heapEle) => JSON.stringify(heapEle)).join(", ")
@@ -62,6 +67,7 @@ export class BinaryHeap<T> {
         this.indexMap.delete(min.id);
         return min;
     }
+
     toSorted(): HeapNode<T>[] {
         const values = [...this.heap];
         const copy = new BinaryHeap<T>(this.compare);
@@ -75,6 +81,7 @@ export class BinaryHeap<T> {
         }
         return result;
     }
+
     updatePriority(node: HeapNode<T>, newPriority: number) {
         this.updatePriorityID(node.id, newPriority);
     }
@@ -91,6 +98,7 @@ export class BinaryHeap<T> {
         this.heapifyUpFrom(index);
         this.heapifyDownFrom(index);
     }
+
     updateNode(node: HeapNode<T>) {
         const index = this.indexMap.get(node.id);
         if (isNullOrUndefined(index)) {
