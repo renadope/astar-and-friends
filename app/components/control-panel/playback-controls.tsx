@@ -106,7 +106,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             value={currentTimelineIndex}
                             onChange={handleSetIndex}
                             className={`w-full h-2 bg-gray-200 accent-sky-500                        
-                             rounded-full appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed`}
+                     rounded-full appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed`}
                             style={{
                                 background:
                                     timeline.length > 0 && currentTimelineIndex >= 0
@@ -119,20 +119,19 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             }}
                         />
                     </div>
-                    <div className="2xs:ml-2 flex-shrink-0">
+                    <div className="2xs:hidden xs:block 2xs:ml-2 flex-shrink-0">
                         <PlaybackStatusIndicator/>
                     </div>
                 </div>
 
-                <div className="flex flex-col xs:flex-row xs:items-center gap-3 xs:justify-between md:justify-center">
-
-                    <div className="flex justify-center xs:justify-start">
+                <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:justify-center">
+                    <div className="flex justify-center">
                         <div
                             className="inline-flex items-center gap-1 2xs:gap-1.5 sm:gap-2 bg-gray-50 px-1.5 2xs:px-2 py-1 rounded-full">
                             <button
                                 disabled={hasNoAStarData}
                                 onClick={handleJumpToStart}
-                                className="p-2 2xs:p-2.5 sm:p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="p-1.5 2xs:p-2 sm:p-2.5 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title="Jump to Start"
                             >
                                 <RewindIcon className="size-3 2xs:size-3.5 sm:size-4"/>
@@ -141,7 +140,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             <button
                                 disabled={hasNoAStarData}
                                 onClick={handleDecrement}
-                                className="p-2 2xs:p-2.5 sm:p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="p-1.5 2xs:p-2 sm:p-2.5 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title="Previous Step"
                             >
                                 <PreviousIcon className="size-3 2xs:size-3.5 sm:size-4"/>
@@ -149,9 +148,9 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
 
                             <button
                                 onClick={handlePlay}
-                                className={`p-2.5 2xs:p-3 sm:p-3.5
-                                  ${state.configChanged && !hasNoAStarData ? ' animate-bounce bg-amber-500' : ' bg-sky-500'}
-                                  text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
+                                className={`p-2 2xs:p-2.5 sm:p-3
+                          ${state.configChanged && !hasNoAStarData ? ' animate-bounce bg-amber-500' : ' bg-sky-500'}
+                          text-white rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
                                 title={state.isPlaying ? "Pause" : "Play"}
                             >
                                 <PlayButton/>
@@ -160,7 +159,7 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             <button
                                 disabled={hasNoAStarData}
                                 onClick={handleIncrement}
-                                className="p-2 2xs:p-2.5 sm:p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="p-1.5 2xs:p-2 sm:p-2.5 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title="Next Step"
                             >
                                 <ForwardIcon className="size-3 2xs:size-3.5 sm:size-4"/>
@@ -169,25 +168,43 @@ export function PlaybackControls({className, ...props}: ComponentPropsWithoutRef
                             <button
                                 disabled={hasNoAStarData}
                                 onClick={handleJumpToEnd}
-                                className="p-2 2xs:p-2.5 sm:p-3 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="p-1.5 2xs:p-2 sm:p-2.5 hover:bg-white text-gray-500 hover:text-gray-700 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 title="Jump to End"
                             >
                                 <FastForwardIcon className="size-3 2xs:size-3.5 sm:size-4"/>
                             </button>
+
+                            <div className="hidden xs:block h-4 w-px bg-gray-300 mx-1"></div>
                             <button
                                 disabled={hasNoAStarData}
                                 onClick={handleJumpToPathStart}
-                                className="inline-flex items-center gap-2 2xs:gap-2.5 sm:gap-3 px-2 2xs:px-2.5 sm:px-3 py-1 2xs:py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs 2xs:text-sm font-medium rounded border border-emerald-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className={`hidden xs:inline-flex items-center gap-1.5 2xs:gap-2 sm:gap-2.5
+                                 px-2 2xs:px-2.5 sm:px-3 py-1 2xs:py-1.5 
+                                bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs 2xs:text-sm font-medium rounded 
+                                border border-emerald-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
                                 title="Jump to Path Start"
                             >
                                 <MapIcon className="size-3 2xs:size-3.5 sm:size-4"/>
-                                <span className="hidden 2xs:inline">Path</span>
-                                <span className="2xs:hidden">P</span>
+                                <span className="hidden sm:inline">Path</span>
                             </button>
                         </div>
                     </div>
 
+                    <div className="xs:hidden flex justify-center">
+                        <button
+                            disabled={hasNoAStarData}
+                            onClick={handleJumpToPathStart}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100
+                          text-emerald-700 text-xs font-medium rounded 
+                            border border-emerald-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
+                            title="Jump to Path Start"
+                        >
+                            <MapIcon className="size-3"/>
+                            <span className={'2xs:hidden xs:block'}>Path</span>
+                        </button>
+                    </div>
                 </div>
+
             </div>
         </div>
     )
