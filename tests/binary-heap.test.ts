@@ -261,6 +261,10 @@ describe("binary heap", () => {
             maxHeap.updatePriorityID(node.id, 100)
             maxHeap.updatePriorityID(node2.id, 101)
             expect(maxHeap.peek()?.value).toBe(101)
+            const s = maxHeap.toSorted()
+            expect(s[0].value).toBe(101)
+            expect(s[1].value).toBe(100)
+
         })
     })
 
