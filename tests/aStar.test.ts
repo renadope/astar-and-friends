@@ -103,6 +103,40 @@ describe("aStar", () => {
         });
 
     })
+    describe("aStar - start and goal is an impassable position", () => {
+        let weightGrid: number[][] = []
+        beforeEach(() => {
+            weightGrid = [
+                [0, 1, 1],
+                [1, 1, 1],
+                [1, 1, 0],
+                [1, 1, 1]
+            ];
+        })
+        it('should return success=false when start position is impassable', () => {
+            const res = aStar(
+                weightGrid,
+                [0, 0],
+                [1, 1],
+                manhattan,
+                {allowed: false},
+                {gWeight: 1, hWeight: 1, name: "AStar"},
+            );
+            expect(res.success,).toBeFalsy();
+        });
+
+        it('should return success=false when goal position is impassable', () => {
+            const res = aStar(
+                weightGrid,
+                [1, 1],
+                [2, 2],
+                manhattan,
+                {allowed: false},
+                {gWeight: 1, hWeight: 1, name: "AStar"},
+            );
+            expect(res.success,).toBeFalsy();
+        });
+    })
 
 })
 
