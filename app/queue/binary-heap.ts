@@ -151,22 +151,17 @@ export class BinaryHeap<T> {
     }
 
     private heapifyUpFrom(index: number) {
-        if (!this.hasParent(index)) {
-            return;
-        }
-        while (index > 0) {
-            if (this.hasParent(index)) {
-                const parentIndex = this.getParentIndex(index);
-                const compareResult = this.compare(
-                    this.heap[parentIndex],
-                    this.heap[index],
-                );
-                if (compareResult <= 0) {
-                    break;
-                } else if (compareResult > 0) {
-                    this.swap(parentIndex, index);
-                    index = parentIndex;
-                }
+        while (this.hasParent(index)) {
+            const parentIndex = this.getParentIndex(index);
+            const compareResult = this.compare(
+                this.heap[parentIndex],
+                this.heap[index],
+            );
+            if (compareResult <= 0) {
+                break;
+            } else if (compareResult > 0) {
+                this.swap(parentIndex, index);
+                index = parentIndex;
             }
         }
     }
