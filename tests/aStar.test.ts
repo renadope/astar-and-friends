@@ -40,7 +40,7 @@ describe('fCost', () => {
 
 describe("aStar", () => {
 
-    describe("aStar - bad Start & Goal positions", () => {
+    describe("aStar - bad start and goal positions", () => {
 
         let invalidPositions: number[][] = []
         let weightGrid: number[][] = []
@@ -137,8 +137,49 @@ describe("aStar", () => {
             expect(res.success,).toBeFalsy();
         });
     })
+    describe("aStar - start and goal is the same position", () => {
+        let weightGrid: number[][] = []
+        beforeEach(() => {
+            weightGrid = [
+                [1, 1, 1],
+                [1, 1, 1],
+                [1, 1, 1]
+            ];
+        })
+        it('should return success=true and path containing only the start position', () => {
+            const res = aStar(
+                weightGrid,
+                [1, 1],
+                [1, 1],
+                manhattan,
+                {allowed: false},
+                {gWeight: 1, hWeight: 1, name: "AStar"},
+            );
+            expect(res.success).toBeTruthy();
+            expect(res.value).toBeDefined();
+            expect(res.value?.path).toHaveLength(1);
+            expect(res.value?.path[0].pos[0]).toBe(1)
+            expect(res.value?.path[0].pos[1]).toBe(1)
+        });
+        it('should return success=true and path containing only the start position', () => {
+            const res = aStar(
+                weightGrid,
+                [1, 2],
+                [1, 2],
+                manhattan,
+                {allowed: false},
+                {gWeight: 1, hWeight: 1, name: "AStar"},
+            );
+            expect(res.success).toBeTruthy();
+            expect(res.value).toBeDefined();
+            expect(res.value?.path).toHaveLength(1);
+            expect(res.value?.path[0].pos[0]).toBe(1)
+            expect(res.value?.path[0].pos[1]).toBe(2)
+        });
+    })
 
 })
+
 
 
 function generateInvalidCoords(i: number): Pos {
