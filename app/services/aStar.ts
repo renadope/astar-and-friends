@@ -289,7 +289,7 @@ export function reconstructPath(
 }
 
 
-function calculateFCost(
+export function calculateFCost(
     weights: Weights,
     gCost: number,
     hCost: number,
