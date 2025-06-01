@@ -2,7 +2,7 @@ import type {AStarNode, DiagonalConfig, PathData, Pos, Weights} from "~/types/pa
 import {describe, expect, it} from "vitest";
 import {aStar, calculateFCost} from "~/services/aStar";
 import {type HeuristicFunc, manhattan} from "~/utils/heuristics";
-import {isSamePos} from "~/utils/grid-helpers";
+import {isSamePos, isValidPos} from "~/utils/grid-helpers";
 import type {Nullish} from "~/types/helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
 
@@ -219,15 +219,22 @@ type FallBackConfig = {
 }
 
 function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
+
+    expect(isValidPos(config.goal)).toBeTruthy();
+    expect(isValidPos(config.start)).toBeTruthy();
+    expect(isValidPos(config.expectedFallback)).toBeTruthy();
+
     const aStarInitialRes = aStar(config.weightGrid,
         config.start,
         config.goal,
         config.heuristic,
         config.allowedDiagonal,
         config.weights)
+
     expect(aStarInitialRes.success).toBeTruthy();
     expectDefinedAndNonNull(aStarInitialRes.value);
     expectDefinedAndNonNull(aStarInitialRes.value.fallBack)
+    expect(aStarInitialRes.value.goalFound).toBeFalsy()
 
     expect(aStarInitialRes.value.fallBack.length).toBe(2);
     expect(aStarInitialRes.value.fallBack[0]).toEqual(config.expectedFallback[0])
@@ -246,14 +253,29 @@ function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
     expect(aStarFallbackGoalRes.value.goalFound).toBeTruthy()
     expect(aStarFallbackGoalRes.value.fallBack).toBeNull();
 
+    //comparing both
+    expect(aStarInitialRes.value.totalCost).toBe(aStarFallbackGoalRes.value.totalCost)
+    expect(aStarInitialRes.value.steps).toBe(aStarFallbackGoalRes.value.steps)
     expect(aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos[0]).toBe(aStarInitialRes.value.fallBack[0])
     expect(aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos[1]).toBe(aStarInitialRes.value.fallBack[1])
-
+    expectPrevMapsToBeEqual(aStarInitialRes.value.prevMap, aStarFallbackGoalRes.value.prevMap)
     expectPathsToBeEqual(aStarInitialRes.value.path, aStarFallbackGoalRes.value.path)
     expectVisitedOrderToBeEqual(aStarInitialRes.value.visitedOrder, aStarFallbackGoalRes.value.visitedOrder)
     expectFrontierToBeEqual(aStarInitialRes.value.frontier, aStarFallbackGoalRes.value.frontier)
 
 
+}
+
+function expectPrevMapsToBeEqual(prevMap1?: Map<string, string>, prevMap2?: Map<string, string>) {
+    expectDefinedAndNonNull(prevMap1)
+    expectDefinedAndNonNull(prevMap2)
+    expect(prevMap1.size).toBeGreaterThan(0)
+    expect(prevMap2.size).toBeGreaterThan(0)
+    expect(prevMap1.size).toBe(prevMap2.size)
+    for (const [key, value] of prevMap1) {
+        expect(prevMap2.has(key), `missing key ${key}`).toBeTruthy()
+        expect(prevMap2.get(key), `mismatch at ${key}`).toBe(value)
+    }
 }
 
 function expectAStarNodeToBeEqual(node1?: AStarNode, node2?: AStarNode, options?: {
@@ -315,8 +337,18 @@ function expectPathsToBeEqual(path1?: PathData[], path2?: PathData[], precision:
     expect(path2[0].from).toBeUndefined()
 
     for (let i = 0; i < path1.length; i++) {
-        const path1Data = path1[i]
-        const path2Data = path2[i]
+        const path1Data: AStarNode = {
+            pos: path1[i].pos,
+            fCost: path1[i].fCost,
+            gCost: path1[i].gCost,
+            hCost: path1[i].hCost
+        }
+        const path2Data: AStarNode = {
+            pos: path2[i].pos,
+            fCost: path2[i].fCost,
+            gCost: path2[i].gCost,
+            hCost: path2[i].hCost
+        }
         expectAStarNodeToBeEqual(path1Data, path2Data, {index: i, precision: precision})
     }
 
