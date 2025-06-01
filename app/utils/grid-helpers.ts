@@ -27,7 +27,7 @@ export function checkPosEquality(a: Pos, b: Pos): boolean {
     if (!isValidPos(a) || !isValidPos(b)) {
         return false
     }
-    return a[0] === b[0] && a[1] === b[1];
+    return isSamePos(a, b);
 }
 
 export function isNodePassable(val: number): boolean {
