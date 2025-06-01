@@ -1,9 +1,10 @@
-import type {PathData, Pos, Weights} from "~/types/pathfinding";
+import type {AStarNode, PathData, Pos, Weights} from "~/types/pathfinding";
 import {describe, expect, it} from "vitest";
 import {aStar, calculateFCost} from "~/services/aStar";
 import {manhattan} from "~/utils/heuristics";
 import {isSamePos} from "~/utils/grid-helpers";
 import type {Nullish} from "~/types/helpers";
+import {isNullOrUndefined} from "~/utils/helpers";
 
 type fCostTableTests = {
     g: number,
@@ -203,51 +204,26 @@ describe("aStar", () => {
                 expect(aStarInitialRes.value.fallBack.length).toBe(2);
                 expect(aStarInitialRes.value.fallBack[0]).toEqual(1)
                 expect(aStarInitialRes.value.fallBack[1]).toEqual(3)
-                expectDefinedAndNonNull(aStarInitialRes.value.path)
-                expectDefinedAndNonNull(aStarInitialRes.value.frontier)
-                expectDefinedAndNonNull(aStarInitialRes.value.visitedOrder)
 
-                const aStarFallbackGoalRes = aStar(weightGrid, [0, 0], aStarInitialRes.value.fallBack, manhattan, {allowed: false}, {
-                    gWeight: 1,
-                    hWeight: 1,
-                    name: "AStar"
-                })
+                const aStarFallbackGoalRes = aStar(weightGrid,
+                    [0, 0],
+                    aStarInitialRes.value.fallBack,
+                    manhattan,
+                    {allowed: false},
+                    {
+                        gWeight: 1,
+                        hWeight: 1,
+                        name: "AStar"
+                    })
+
                 expect(aStarFallbackGoalRes.success).toBeTruthy();
                 expectDefinedAndNonNull(aStarFallbackGoalRes.value)
                 expect(aStarFallbackGoalRes.value.goalFound).toBeTruthy()
                 expect(aStarFallbackGoalRes.value.fallBack).toBeNull();
-                expectDefinedAndNonNull(aStarFallbackGoalRes.value.path)
-                expectDefinedAndNonNull(aStarFallbackGoalRes.value.frontier)
-                expectDefinedAndNonNull(aStarFallbackGoalRes.value.visitedOrder)
-
-
-                //now we test both sets of data against each othe to make sure we are in sync
-                expect(aStarInitialRes.value.frontier.length).toBe(aStarFallbackGoalRes.value.frontier.length)
-                expect(aStarInitialRes.value.visitedOrder.length).toBe(aStarFallbackGoalRes.value.visitedOrder.length)
 
                 expectPathsToBeEqual(aStarInitialRes.value.path, aStarFallbackGoalRes.value.path)
-
-                for (let i = 0; i < aStarFallbackGoalRes.value.visitedOrder.length; i++) {
-                    const currVisitedOrderFallbackElement = aStarFallbackGoalRes.value.visitedOrder[i]
-                    const currVisitedOrderInitialResElement = aStarInitialRes.value.visitedOrder[i]
-
-                    expect(isSamePos(currVisitedOrderFallbackElement.pos, currVisitedOrderInitialResElement.pos)).toBeTruthy()
-                    expect(currVisitedOrderFallbackElement.fCost).toBeCloseTo(currVisitedOrderInitialResElement.fCost, 5)
-                    expect(currVisitedOrderFallbackElement.hCost).toBeCloseTo(currVisitedOrderInitialResElement.hCost, 5)
-                    expect(currVisitedOrderFallbackElement.gCost).toBeCloseTo(currVisitedOrderInitialResElement.gCost, 5)
-                }
-                for (let i = 0; i < aStarFallbackGoalRes.value.frontier.length; i++) {
-                    for (let j = 0; j < aStarFallbackGoalRes.value.frontier[i].length; j++) {
-                        const frontierFallbackElement = aStarFallbackGoalRes.value.frontier[i][j]
-                        const frontierInitialResElement = aStarInitialRes.value.frontier[i][j]
-
-                        expect(isSamePos(frontierFallbackElement.pos, frontierInitialResElement.pos)).toBeTruthy()
-                        expect(frontierFallbackElement.fCost).toBeCloseTo(frontierInitialResElement.fCost, 5)
-                        expect(frontierFallbackElement.hCost).toBeCloseTo(frontierInitialResElement.hCost, 5)
-                        expect(frontierFallbackElement.gCost).toBeCloseTo(frontierInitialResElement.gCost, 5)
-                    }
-
-                }
+                expectVisitedOrderToBeEqual(aStarInitialRes.value.visitedOrder, aStarFallbackGoalRes.value.visitedOrder)
+                expectFrontierToBeEqual(aStarInitialRes.value.frontier, aStarFallbackGoalRes.value.frontier)
 
             });
 
@@ -256,7 +232,54 @@ describe("aStar", () => {
 
 })
 
-function expectPathsToBeEqual(path1: PathData[], path2: PathData[], precision: number = 5) {
+function expectAStarNodeToBeEqual(node1?: AStarNode, node2?: AStarNode, options?: {
+    precision?: number,
+    index?: number
+}) {
+    expectDefinedAndNonNull(node1)
+    expectDefinedAndNonNull(node2)
+    const indexPhrase = !isNullOrUndefined(options) && !isNullOrUndefined(options.index) ? ` at index ${options.index}` : ""
+    const precision = !isNullOrUndefined(options) && !isNullOrUndefined(options.precision) ? options.precision : 2
+    expect(isSamePos(node1.pos, node2.pos)).toBeTruthy()
+    expect(node1.fCost, `fCost mismatch${indexPhrase}`).toBeCloseTo(node2.fCost, precision)
+    expect(node1.hCost, `hCost mismatch${indexPhrase}`).toBeCloseTo(node2.hCost, precision)
+    expect(node1.gCost, `gCost mismatch${indexPhrase}`).toBeCloseTo(node2.gCost, precision)
+}
+
+function expectFrontierToBeEqual(frontier1?: AStarNode[][], frontier2?: AStarNode[][], precision: number = 5) {
+    expectDefinedAndNonNull(frontier1)
+    expectDefinedAndNonNull(frontier2)
+    expect(frontier1.length).toBeGreaterThan(0)
+    expect(frontier2.length).toBeGreaterThan(0)
+    expect(frontier1.length).toBe(frontier2.length)
+
+    for (let i = 0; i < frontier1.length; i++) {
+        expect(frontier1[i].length, `frontier length mismatch at ${i} `).toBe(frontier2[i].length)
+        for (let j = 0; j < frontier1[i].length; j++) {
+            const f1 = frontier1[i][j]
+            const f2 = frontier2[i][j]
+            //cant pass i, j so we would have to look at the index i and compare there
+            expectAStarNodeToBeEqual(f1, f2, {index: i, precision: precision})
+        }
+    }
+}
+
+function expectVisitedOrderToBeEqual(visitedOrder1?: AStarNode[], visitedOrder2?: AStarNode[], precision: number = 5) {
+    expectDefinedAndNonNull(visitedOrder1)
+    expectDefinedAndNonNull(visitedOrder2)
+
+    expect(visitedOrder1.length).toBeGreaterThan(0)
+    expect(visitedOrder2.length).toBeGreaterThan(0)
+    expect(visitedOrder1.length).toBe(visitedOrder2.length)
+    for (let i = 0; i < visitedOrder1.length; i++) {
+        const path1Data = visitedOrder1[i]
+        const path2Data = visitedOrder2[i]
+        expectAStarNodeToBeEqual(path1Data, path2Data, {index: i, precision: precision})
+    }
+
+}
+
+function expectPathsToBeEqual(path1?: PathData[], path2?: PathData[], precision: number = 5) {
     expectDefinedAndNonNull(path1)
     expectDefinedAndNonNull(path2)
 
@@ -270,17 +293,14 @@ function expectPathsToBeEqual(path1: PathData[], path2: PathData[], precision: n
     for (let i = 0; i < path1.length; i++) {
         const path1Data = path1[i]
         const path2Data = path2[i]
-        expect(isSamePos(path1Data.pos, path2Data.pos)).toBeTruthy()
-        expect(path1Data.fCost, `fCost mismatch at index ${i}`).toBeCloseTo(path2Data.fCost, precision)
-        expect(path1Data.hCost, `hCost mismatch at index ${i}`).toBeCloseTo(path2Data.hCost, precision)
-        expect(path1Data.gCost, `gCost mismatch at index ${i}`).toBeCloseTo(path2Data.gCost, precision)
+        expectAStarNodeToBeEqual(path1Data, path2Data, {index: i, precision: precision})
     }
 
 }
 
-function expectDefinedAndNonNull<T>(value: Nullish<T>): asserts value is T {
-    expect(value).toBeDefined()
-    expect(value).not.toBeNull()
+function expectDefinedAndNonNull<T>(value: Nullish<T>, message?: string): asserts value is T {
+    expect(value, message).toBeDefined()
+    expect(value, message).not.toBeNull()
 }
 
 function generateInvalidCoords(i: number): Pos {
