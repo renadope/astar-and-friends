@@ -24,9 +24,6 @@ export function parsePos(key: string): number[] {
 }
 
 export function checkPosEquality(a: Pos, b: Pos): boolean {
-    if (!isValidPos(a) || !isValidPos(b)) {
-        return false
-    }
     return isSamePos(a, b);
 }
 
