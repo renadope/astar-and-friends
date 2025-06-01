@@ -209,23 +209,13 @@ export default function Grid() {
                                         <span>{(cell.g).toFixed(2)}</span>
                                     </div>
                                 )}
-                                {!isNullOrUndefined(cell.h) && !isSamePos(cell.pos, aStarData?.fallBack) && (
+                                {!isNullOrUndefined(cell.h) && (
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">H-Score:</span>
                                         <span>{(cell.h * state.gwWeights.hWeight).toFixed(2)}</span>
                                     </div>
                                 )}
-                                {!isNullOrUndefined(cell.h)
-                                    && !isNullOrUndefined(aStarData?.fallBack)
-                                    && state.goalPos
-                                    && isSamePos(cell.pos, aStarData?.fallBack) && (
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">H-Score:</span>
-                                            <span
-                                                className="ml-auto italic text-muted-foreground">{(heuristic.func(aStarData.fallBack, state.goalPos) * state.gwWeights.hWeight).toFixed(2)}
-                                        </span>
-                                        </div>
-                                    )}
+
                                 {!isNullOrUndefined(cell.f) && (
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">F-Score:</span>
@@ -234,10 +224,10 @@ export default function Grid() {
                                 )}
                                 {isSamePos(cell.pos, aStarData?.fallBack) && isLastStep && (
                                     <div className="flex">
-                                        <span className="ml-auto italic text-xs text-muted-foreground">
-                                            Fallback Goal
+                                        <span className="ml-auto italic text-sm text-muted-foreground"
+                                              title="This node is the closest reachable point to the intended goal. The real goal was unreachable.">
+                                            🧭{' '}Fallback Goal
                                         </span>
-
                                     </div>
                                 )}
 
