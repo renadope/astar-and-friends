@@ -1,87 +1,106 @@
 # 🧭 A* and Friends: Pathfinding Visualizer
 
-A high-performance, fully customizable grid-based pathfinding visualizer featuring multiple search algorithms, detailed
-configuration, and real-time animation — designed for education, exploration, and technical demonstration.
+<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+  <img src="https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5.8.3-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/TailwindCSS-4.1.4-06B6D4?style=for-the-badge&logo=tailwindcss" alt="TailwindCSS" />
+  <img src="https://img.shields.io/badge/Vitest-3.1.4-6E9F18?style=for-the-badge&logo=vitest" alt="Vitest" />
+</div>
 
-## [🚀 Live Demo](https://astarandfriends.io/)
+<p style="text-align: center; margin-bottom: 24px;">
+  <strong>A high-performance, fully customizable grid-based pathfinding visualizer</strong> featuring multiple search algorithms, detailed configuration, and real-time animation — designed for education, exploration, and technical demonstration.
+</p>
+
+<div style="display: flex; justify-content: center; margin-bottom: 32px;">
+  <a href="https://astarandfriends.io/" target="_blank">
+    <img src="https://img.shields.io/badge/🚀_Live_Demo-Visit_Site-FF5757?style=for-the-badge" alt="Live Demo" />
+  </a>
+</div>
+
+<p style="text-align: center; font-size: 0.95rem; color: gray; margin-bottom: 32px;">
+  🖥️ Fully functional on mobile, but best experienced on desktop for full grid interaction.
+</p>
+
+## ✨ Overview
+
+Visualize how pathfinding algorithms work in real-time on an interactive grid. Perfect for computer science students, algorithm enthusiasts, and developers interested in the inner workings of spatial search algorithms.
 
 ## 🎯 Key Features
 
 ### 🔁 Supported Algorithms
 
-* **AStar** Search: Adjustable `g` (path cost) and `h` (heuristic) weightings.
-* **Dijkstra's Algorithm**: Uses path cost only (`g`).
-* **Greedy Best-First Search**: Uses heuristic only (`h`).
-* **Breadth-First Search**: Simulated by setting *gWeight = 0* and *hWeight = 0*, resulting in uniform-cost, level-order
-  traversal where all nodes have equal priority.
+- **AStar Search**: The gold standard pathfinding algorithm with adjustable `g` (path cost) and `h` (heuristic) weightings
+- **Dijkstra's Algorithm**: The classic shortest-path algorithm that uses path cost only (`g`)
+- **Greedy Best-First Search**: A faster, less optimal approach that uses heuristic only (`h`)
+- **Breadth-First Search**: A fundamental graph traversal technique, simulated by setting *gWeight = 0* and *hWeight = 0*
 
-### 🧮 Algorithm Scoring Formula
+### 🧮 Unified Algorithm Framework
 
-Each algorithm is unified under the same scoring formula:
+All algorithms operate under a single elegant formula:
 
-* f(n) = g(n) * gWeight + h(n) * hWeight
+> **f(n) = g(n) × gWeight + h(n) × hWeight**
 
-This flexible architecture enables real-time transitions between **Breadth-First Search**, **Dijkstra**, **Greedy
-Best-First Search**, and **AStar** by simply adjusting the weight sliders — no core logic changes required.
+This design allows seamless real-time transitions between algorithms by simply adjusting weight parameters—no code switching required!
 
-### 🎮 Interactive Playback
+### 🎮 Interactive Visualization Controls
 
-* Control playback speed (0.5x to 10x).
-* Full timeline support with scrubbing and jumping.
-* Play, pause, and restart actions.
-* Jump to final path.
-* Dual Timeline Modes:
-    * **Snapshot** Mode: Highlights the grid state per algorithm step.
-    * **Granular** Mode: Displays fine-grained step-by-step changes.
+- **Dynamic Speed Control**: Adjust from 0.5× to 10× to match your learning pace
+- **Timeline Scrubbing**: Jump to any point in the algorithm's execution
+- **Playback Controls**: Play, pause, restart, and skip to solution
+- **Dual Visualization Modes**:
+  - 📸 **Snapshot Mode**: See the complete state at each algorithm step
+  - 🔍 **Granular Mode**: Watch fine-grained changes for deeper understanding
 
-### 🎨 Grid Interactivity
+### 🎨 Rich Grid Interaction
 
-* Drag to paint weights directly onto the grid.
-* Click to set custom start and goal nodes.
-* Toggle walls to mark impassable cells.
-* Generate randomized grid with presets.
-* Enable diagonal movement
-    * *none* - Diagonal movement completely disabled, only up,down,left and right movements alone
-    * *strict* - Diagonal movement is allowed only if both adjacent cardinal neighbors are passable.
-      (This prevents “cutting corners” around walls.)
-    * *lax* - Diagonal movement is allowed if at least one of the adjacent cardinal neighbors is passable.
-      (Prevents total corner cutting through tight gaps but allows more flexibility than strict.)
+- **Interactive Painting**: Drag to add weights, barriers, and customize your grid
+- **Node Customization**: Set custom start and goal positions with a click
+- **Wall Creation**: Design complex mazes by toggling impassable cells
+- **Randomized Environments**: Generate preset scenarios or completely random grids
+- **Diagonal Movement Options**:
+  - **None**: Classic four-direction movement (up, down, left, right)
+  - **Strict**: Diagonal movement only when both adjacent cells are passable (no corner cutting)
+  - **Lax**: Diagonal movement when at least one adjacent cell is passable (partial corner cutting)
+- **Customizable Costs**: Adjust diagonal movement cost (default: √2)
 
-* Customize diagonal movement cost (default: √2).
+### 👀 Intuitive Visual Feedback
 
-### 👀 Visual Feedback
+- **Ghost Path Preview**: Instantly visualize potential paths by hovering over any cell
+- **Color-Coded States**: Clear distinction between frontier, visited nodes, and final path
+- **Responsive Design**: Optimal experience across devices and screen sizes
 
-* **Ghost Path Preview**: Hover to preview the A\* path from start to any cell.
-* Color-coded states: frontier, visited nodes, final path.
-* Responsive layout for different screen sizes.
+### 🧠 Advanced Heuristic Configuration
 
-### 🧠 Heuristic Configuration
+Choose from multiple distance calculations:
+- **Manhattan**: Optimal for grid-based movement without diagonals
+- **Euclidean**: True "as the crow flies" distance
+- **Octile**: Optimized for grids with diagonal movement at cost √2
+- **Chebyshev**: Equal cost in all directions (including diagonals)
 
-* Select heuristic function:
-    * Manhattan Distance
-    * Euclidean Distance
-    * Octile
-    * Chebyshev
-* Fine-tune weights for `g` and `h` using intuitive sliders.
+Fine-tune algorithm behavior with intuitive weight sliders for perfect customization.
 
-### ⚙️ Unified Configuration Panel
+### ⚙️ Streamlined Controls
 
-* Consolidated control panel for algorithm and grid options.
-* Real-time updates with toggleable features.
+- **Unified Control Panel**: All settings in one convenient location
+- **Real-Time Updates**: See how changes affect pathfinding instantly
+- **Feature Toggles**: Enable/disable functionalities based on your needs
 
-### 🧪 Testing & CI Integration
+### 🧪 Quality Assurance
 
-* Unit tests for core components (e.g., min-heap, grid utilities, algorithm functionality).
-* CI/CD pipeline runs tests automatically on commit.
+- **Comprehensive Testing**: Core components thoroughly tested with Vitest
+- **CI/CD Pipeline**: Automated testing on every commit ensures reliability
 
 ## 🧠 Tech Stack
 
-* **Frontend**: React + ReactRouter + TailwindCSS + shadcn/ui
-* **Animation Engine**: Custom timeline logic for frame-based playback
-* **Testing**: Vitest
-* **CI/CD**: GitHub Actions
+- **Frontend**: React 19 + React Router + TailwindCSS + shadcn/ui
+- **State Management**: Custom hooks and context for efficient state handling
+- **Animation Engine**: Purpose-built timeline system for precise playback control
+- **Testing**: Vitest for unit and integration tests
+- **CI/CD**: GitHub Actions for automated testing and deployment
 
-## 🛠 Getting Started
+## 🛠️ Getting Started
+
+Clone and run the project locally in just three simple steps:
 
 ```bash
 git clone https://github.com/renadope/astar-and-friends.git
@@ -89,11 +108,3 @@ cd astar-and-friends
 pnpm install
 pnpm run dev
 ```
-
-[//]: # (## 🔭 Future Enhancements)
-
-[//]: # ()
-
-[//]: # (*)
-
-
