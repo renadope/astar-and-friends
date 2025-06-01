@@ -3,11 +3,7 @@
 A high-performance, fully customizable grid-based pathfinding visualizer featuring multiple search algorithms, detailed
 configuration, and real-time animation — designed for education, exploration, and technical demonstration.
 
-## 🚀 Live Demo
-
-TODO
-
-[//]: # ([**View the Live App**]&#40;https://your-deployment-url.com&#41; &#40;replace with your deployment URL&#41;)
+## [🚀 Live Demo](https://astarandfriends.io/)
 
 ## 🎯 Key Features
 
