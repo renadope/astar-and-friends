@@ -217,6 +217,27 @@ export function aStar(
         }
     }
 
+    if (!goalFound) {
+        //we still need to recompute the scores relative to the fallback goal as the visited data and frontier data would be reflecting data towards the old goal
+        for (let i = 0; i < visitedOrder.length; i++) {
+            const v = visitedOrder[i];
+            const h = heuristic(v.pos, goal);
+            visitedOrder[i].fCost = calculateFCost(weights, costs[v.pos[0]][v.pos[1]], h)
+            visitedOrder[i].hCost = h
+        }
+        // The algorithm fully exhausts the frontier queue when the goal is unreachable.
+        // But for playback and UI accuracy, we still update heuristic and fCost for frontier elements.
+        for (let i = 0; i < frontier.length; i++) {
+            const frontierElements = frontier[i];
+            for (let j = 0; j < frontierElements.length; j++) {
+                const frontierEle = frontierElements[j];
+                const h = heuristic(frontierEle.pos, goal);
+                frontierEle.fCost = calculateFCost(weights, costs[frontierEle.pos[0]][frontierEle.pos[1]], h)
+                frontierEle.hCost = h
+            }
+        }
+    }
+
     const allPathData = reconstructPath(
         grid,
         costs,
