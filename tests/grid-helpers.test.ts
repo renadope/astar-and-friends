@@ -23,6 +23,8 @@ describe("isValidPos - are we passing valid positions?", () => {
         {input: [-1.4, 2], type: 'invalid Pos'},
         {input: [1.1, 4.876543], type: 'invalid Pos'},
         {input: ['1', '1'], type: 'invalid Pos'},
+        {input: [12.5, 12], type: 'invalid Pos'},
+        {input: [1, 12.178213], type: 'invalid Pos'},
     ]
 
     const validInputs: Pos[] = [
@@ -137,8 +139,20 @@ describe("isValidGridIndex", () => {
         {grid: [], row: 0, col: 0, case: 'empty grid'},
         {grid: null, row: 0, col: 0, case: 'null grid'},
         {grid: undefined, row: 0, col: 0, case: 'undefined grid'},
+        {grid: true, row: 0, col: 0, case: 'boolean'},
+        {grid: false, row: 0, col: 0, case: 'boolean'},
+        {grid: Infinity, row: 0, col: 0, case: 'Infinity'},
+        {grid: NaN, row: 0, col: 0, case: 'NaN'},
         {grid: [1, 2, 3], row: 0, col: 0, case: 'non-2D array'},
         {grid: [[]], row: 0, col: 0, case: 'grid with empty row'},
+        {grid: {}, row: 0, col: 0, case: 'object'},
+        {grid: [null, [1, 2]], row: 0, col: 0, case: 'null row in grid'},
+        {grid: [[1, 2], undefined], row: 1, col: 0, case: 'undefined row in grid'},
+        {grid: [[1, 2], "not array"], row: 1, col: 0, case: 'non-array row'},
+        {grid: [[1, 2], [3, 4]], row: 1.5, col: 0, case: 'decimal row'},
+        {grid: [[1, 2], [3, 4]], row: 0, col: 1.9, case: 'decimal column'},
+
+
     ]
 
     const invalidIndices = [
@@ -158,6 +172,10 @@ describe("isValidGridIndex", () => {
         {grid: [[1, 2], [3, 4]], row: 1, col: 0, case: 'bottom-left corner'},
         {grid: [[1, 2], [3, 4]], row: 1, col: 1, case: 'bottom-right corner'},
         {grid: [[1, 2], [3, 4], [5, 6]], row: 2, col: 1, case: 'bottom-right corner'},
+        {grid: [['1', '2'], ['3', '4'], ['5', '6']], row: 2, col: 1, case: 'bottom-right corner'},
+        {grid: [[1]], row: 0, col: 0, case: '1x1 grid'},
+        {grid: [[1, 2, 3, 4, 5]], row: 0, col: 4, case: 'single row grid'},
+        {grid: [[1], [2], [3]], row: 2, col: 0, case: 'single column grid'},
     ]
 
     it.each(invalidGrids)('should return false for $case', ({grid, row, col}) => {
