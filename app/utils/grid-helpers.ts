@@ -7,7 +7,12 @@ export function isValidGridIndex(
     row: number,
     col: number,
 ): boolean {
-    return isValidPos([row, col]) && row < grid.length && col < grid[row].length;
+    return !isNullOrUndefined(grid)
+        && isValidPos([row, col])
+        && Array.isArray(grid)
+        && row < grid.length
+        && Array.isArray(grid[row])
+        && col < grid[row].length;
 }
 
 export function stringifyPos(...pos: number[]): string {

@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {isNodePassable, isSamePos, isValidPos} from "~/utils/grid-helpers";
+import {isNodePassable, isSamePos, isValidGridIndex, isValidPos} from "~/utils/grid-helpers";
 import type {Pos} from "~/types/pathfinding";
 import type {Nullish} from "~/types/helpers";
 
@@ -129,5 +129,47 @@ describe("isNodePassable", () => {
 
     it.each(validCases)('should return true for $case', ({input, expected}) => {
         expect(isNodePassable(input)).toBe(expected)
+    })
+})
+
+describe("isValidGridIndex", () => {
+    const invalidGrids = [
+        {grid: [], row: 0, col: 0, case: 'empty grid'},
+        {grid: null, row: 0, col: 0, case: 'null grid'},
+        {grid: undefined, row: 0, col: 0, case: 'undefined grid'},
+        {grid: [1, 2, 3], row: 0, col: 0, case: 'non-2D array'},
+        {grid: [[]], row: 0, col: 0, case: 'grid with empty row'},
+    ]
+
+    const invalidIndices = [
+        {grid: [[1, 2], [3, 4]], row: -1, col: 0, case: 'negative row'},
+        {grid: [[1, 2], [3, 4]], row: 0, col: -1, case: 'negative column'},
+        {grid: [[1, 2], [3, 4]], row: 2, col: 0, case: 'row out of bounds'},
+        {grid: [[1, 2], [3, 4]], row: 0, col: 2, case: 'column out of bounds'},
+        {grid: [[1, 2], [3, 4]], row: NaN, col: 0, case: 'NaN row'},
+        {grid: [[1, 2], [3, 4]], row: 0, col: NaN, case: 'NaN column'},
+        {grid: [[1, 2], [3, 4]], row: Infinity, col: NaN, case: 'Infinity row'},
+        {grid: [[1, 2], [3, 4]], row: 0, col: Infinity, case: 'Infinity column'},
+    ]
+
+    const validCases = [
+        {grid: [[1, 2], [3, 4]], row: 0, col: 0, case: 'top-left corner'},
+        {grid: [[1, 2], [3, 4]], row: 0, col: 1, case: 'top-right corner'},
+        {grid: [[1, 2], [3, 4]], row: 1, col: 0, case: 'bottom-left corner'},
+        {grid: [[1, 2], [3, 4]], row: 1, col: 1, case: 'bottom-right corner'},
+        {grid: [[1, 2], [3, 4], [5, 6]], row: 2, col: 1, case: 'bottom-right corner'},
+    ]
+
+    it.each(invalidGrids)('should return false for $case', ({grid, row, col}) => {
+        // @ts-expect-error
+        expect(isValidGridIndex(grid, row, col)).toBe(false)
+    })
+
+    it.each(invalidIndices)('should return false for $case', ({grid, row, col}) => {
+        expect(isValidGridIndex(grid, row, col)).toBe(false)
+    })
+
+    it.each(validCases)('should return true for $case', ({grid, row, col}) => {
+        expect(isValidGridIndex(grid, row, col)).toBe(true)
     })
 })
