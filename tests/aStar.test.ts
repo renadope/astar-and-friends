@@ -3,6 +3,7 @@ import {describe, expect, it} from "vitest";
 import {aStar, calculateFCost} from "~/services/aStar";
 import {manhattan} from "~/utils/heuristics";
 import {isSamePos} from "~/utils/grid-helpers";
+import type {Nullish} from "~/types/helpers";
 
 type fCostTableTests = {
     g: number,
@@ -194,79 +195,64 @@ describe("aStar", () => {
                     name: "AStar"
                 })
                 expect(aStarInitialRes.success).toBeTruthy();
-                expect(aStarInitialRes.value).toBeDefined();
-                expect(aStarInitialRes.value?.fallBack).toBeDefined();
-                expect(aStarInitialRes.value?.fallBack?.length).toBe(2);
-                //@ts-expect-error
-                expect(aStarInitialRes.value?.fallBack[0]).toEqual(1)
-                //@ts-expect-error
-                expect(aStarInitialRes.value?.fallBack[1]).toEqual(3)
-                expect(aStarInitialRes.value?.path).toBeDefined()
-                expect(aStarInitialRes.value?.frontier).toBeDefined()
-                expect(aStarInitialRes.value?.visitedOrder).toBeDefined()
+                expectDefinedAndNonNull(aStarInitialRes.value);
 
-                //@ts-expect-error
-                const aStarFallbackGoalRes = aStar(weightGrid, [0, 0], aStarInitialRes.value?.fallBack, manhattan, {allowed: false}, {
+                expect(aStarInitialRes.value).toBeDefined();
+                expectDefinedAndNonNull(aStarInitialRes.value.fallBack)
+
+                expect(aStarInitialRes.value.fallBack.length).toBe(2);
+                expect(aStarInitialRes.value.fallBack[0]).toEqual(1)
+                expect(aStarInitialRes.value.fallBack[1]).toEqual(3)
+                expectDefinedAndNonNull(aStarInitialRes.value.path)
+                expectDefinedAndNonNull(aStarInitialRes.value.frontier)
+                expectDefinedAndNonNull(aStarInitialRes.value.visitedOrder)
+
+                const aStarFallbackGoalRes = aStar(weightGrid, [0, 0], aStarInitialRes.value.fallBack, manhattan, {allowed: false}, {
                     gWeight: 1,
                     hWeight: 1,
                     name: "AStar"
                 })
                 expect(aStarFallbackGoalRes.success).toBeTruthy();
-                expect(aStarFallbackGoalRes.value).toBeDefined();
-                expect(aStarFallbackGoalRes.value?.goalFound).toBeTruthy()
-                expect(aStarFallbackGoalRes.value?.fallBack).toBeFalsy();
-                expect(aStarFallbackGoalRes.value?.path).toBeDefined()
-                expect(aStarFallbackGoalRes.value?.frontier).toBeDefined()
-                expect(aStarFallbackGoalRes.value?.visitedOrder).toBeDefined()
+                expectDefinedAndNonNull(aStarFallbackGoalRes.value)
+                expect(aStarFallbackGoalRes.value.goalFound).toBeTruthy()
+                expect(aStarFallbackGoalRes.value.fallBack).toBeNull();
+                expectDefinedAndNonNull(aStarFallbackGoalRes.value.path)
+                expectDefinedAndNonNull(aStarFallbackGoalRes.value.frontier)
+                expectDefinedAndNonNull(aStarFallbackGoalRes.value.visitedOrder)
 
 
                 //now we test both sets of data against each othe to make sure we are in sync
-                expect(aStarInitialRes.value?.path.length).toBe(aStarFallbackGoalRes.value?.path.length)
-                expect(aStarInitialRes.value?.frontier.length).toBe(aStarFallbackGoalRes.value?.frontier.length)
-                expect(aStarInitialRes.value?.visitedOrder.length).toBe(aStarFallbackGoalRes.value?.visitedOrder.length)
-                // @ts-expect-error
-                for (let i = 0; i < aStarFallbackGoalRes.value?.path?.length; i++) {
-                    const currFallbackPathElement = aStarFallbackGoalRes.value?.path[i]
-                    const currInitialResPathElemetn = aStarInitialRes.value?.path[i]
+                expect(aStarInitialRes.value.path.length).toBe(aStarFallbackGoalRes.value.path.length)
+                expect(aStarInitialRes.value.frontier.length).toBe(aStarFallbackGoalRes.value.frontier.length)
+                expect(aStarInitialRes.value.visitedOrder.length).toBe(aStarFallbackGoalRes.value.visitedOrder.length)
 
-                    // @ts-expect-error
+                for (let i = 0; i < aStarFallbackGoalRes.value.path.length; i++) {
+                    const currFallbackPathElement = aStarFallbackGoalRes.value.path[i]
+                    const currInitialResPathElemetn = aStarInitialRes.value.path[i]
+
                     expect(isSamePos(currFallbackPathElement.pos, currInitialResPathElemetn.pos)).toBeTruthy()
-                    // @ts-expect-error
                     expect(currFallbackPathElement.fCost).toBeCloseTo(currInitialResPathElemetn.fCost, 5)
-                    // @ts-expect-error
                     expect(currFallbackPathElement.hCost).toBeCloseTo(currInitialResPathElemetn.hCost, 5)
-                    // @ts-expect-error
                     expect(currFallbackPathElement.gCost).toBeCloseTo(currInitialResPathElemetn.gCost, 5)
                 }
 
-                // @ts-expect-error/
-                for (let i = 0; i < aStarFallbackGoalRes.value?.visitedOrder?.length; i++) {
-                    const currVisitedOrderFallbackElement = aStarFallbackGoalRes.value?.visitedOrder[i]
-                    const currVisitedOrderInitialResElement = aStarInitialRes.value?.visitedOrder[i]
+                for (let i = 0; i < aStarFallbackGoalRes.value.visitedOrder.length; i++) {
+                    const currVisitedOrderFallbackElement = aStarFallbackGoalRes.value.visitedOrder[i]
+                    const currVisitedOrderInitialResElement = aStarInitialRes.value.visitedOrder[i]
 
-                    // @ts-expect-error
                     expect(isSamePos(currVisitedOrderFallbackElement.pos, currVisitedOrderInitialResElement.pos)).toBeTruthy()
-                    // @ts-expect-error
-                    expect(currVisitedOrderFallbackElement.fCost).toBeCloseTo(currVisitedOrderInitialResElement.fCost, 5, 5)
-                    // @ts-expect-error
-                    expect(currVisitedOrderFallbackElement.hCost).toBeCloseTo(currVisitedOrderInitialResElement.hCost, 5, 5)
-                    // @ts-expect-error
-                    expect(currVisitedOrderFallbackElement.gCost).toBeCloseTo(currVisitedOrderInitialResElement.gCost, 5, 5)
+                    expect(currVisitedOrderFallbackElement.fCost).toBeCloseTo(currVisitedOrderInitialResElement.fCost, 5)
+                    expect(currVisitedOrderFallbackElement.hCost).toBeCloseTo(currVisitedOrderInitialResElement.hCost, 5)
+                    expect(currVisitedOrderFallbackElement.gCost).toBeCloseTo(currVisitedOrderInitialResElement.gCost, 5)
                 }
-                // @ts-expect-error/
-                for (let i = 0; i < aStarFallbackGoalRes.value?.frontier?.length; i++) {
-                    // @ts-expect-error/
-                    for (let j = 0; j < aStarFallbackGoalRes.value?.frontier[i].length; j++) {
-                        const frontierFallbackElement = aStarFallbackGoalRes.value?.frontier[i][j]
-                        const frontierInitialResElement = aStarInitialRes.value?.frontier[i][j]
+                for (let i = 0; i < aStarFallbackGoalRes.value.frontier.length; i++) {
+                    for (let j = 0; j < aStarFallbackGoalRes.value.frontier[i].length; j++) {
+                        const frontierFallbackElement = aStarFallbackGoalRes.value.frontier[i][j]
+                        const frontierInitialResElement = aStarInitialRes.value.frontier[i][j]
 
-                        // @ts-expect-error
                         expect(isSamePos(frontierFallbackElement.pos, frontierInitialResElement.pos)).toBeTruthy()
-                        // @ts-expect-error
                         expect(frontierFallbackElement.fCost).toBeCloseTo(frontierInitialResElement.fCost, 5)
-                        // @ts-expect-error
                         expect(frontierFallbackElement.hCost).toBeCloseTo(frontierInitialResElement.hCost, 5)
-                        // @ts-expect-error
                         expect(frontierFallbackElement.gCost).toBeCloseTo(frontierInitialResElement.gCost, 5)
                     }
 
@@ -279,6 +265,10 @@ describe("aStar", () => {
 
 })
 
+function expectDefinedAndNonNull<T>(value: Nullish<T>): asserts value is T {
+    expect(value).toBeDefined()
+    expect(value).not.toBeNull()
+}
 
 function generateInvalidCoords(i: number): Pos {
     if (i === 0) {
