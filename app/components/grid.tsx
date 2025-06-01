@@ -22,7 +22,8 @@ export default function Grid() {
         currentTimelineIndex,
         timeline: stateTimeline,
         snapshotTimeline,
-        granularTimeline
+        granularTimeline,
+        heuristic
     } = state
     const hasAStarData = !isNullOrUndefined(aStarData)
     const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0
@@ -208,12 +209,23 @@ export default function Grid() {
                                         <span>{(cell.g).toFixed(2)}</span>
                                     </div>
                                 )}
-                                {!isNullOrUndefined(cell.h) && (
+                                {!isNullOrUndefined(cell.h) && !isSamePos(cell.pos, aStarData?.fallBack) && (
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">H-Score:</span>
                                         <span>{(cell.h * state.gwWeights.hWeight).toFixed(2)}</span>
                                     </div>
                                 )}
+                                {!isNullOrUndefined(cell.h)
+                                    && !isNullOrUndefined(aStarData?.fallBack)
+                                    && state.goalPos
+                                    && isSamePos(cell.pos, aStarData?.fallBack) && (
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">H-Score:</span>
+                                            <span
+                                                className="ml-auto italic text-muted-foreground">{(heuristic.func(aStarData.fallBack, state.goalPos) * state.gwWeights.hWeight).toFixed(2)}
+                                        </span>
+                                        </div>
+                                    )}
                                 {!isNullOrUndefined(cell.f) && (
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">F-Score:</span>
@@ -222,7 +234,10 @@ export default function Grid() {
                                 )}
                                 {isSamePos(cell.pos, aStarData?.fallBack) && isLastStep && (
                                     <div className="flex">
-                                        <span className="ml-auto italic text-xs text-muted-foreground">Fallback Goal</span>
+                                        <span className="ml-auto italic text-xs text-muted-foreground">
+                                            Fallback Goal
+                                        </span>
+
                                     </div>
                                 )}
 
@@ -272,6 +287,8 @@ export default function Grid() {
         </div>
     )
 }
+
+
 //[12,8,4]
 //[]
 function avgDiff(nums: number[]): number {
