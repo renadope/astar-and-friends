@@ -26,7 +26,7 @@ export function checkPosEquality(a: Pos, b: Pos): boolean {
 }
 
 export function isNodePassable(val: number): boolean {
-    return val > 0 && Number.isFinite(val);
+    return Number.isFinite(val) && val > 0;
 }
 
 export function isValidNode(grid: number[][], row: number, col: number) {

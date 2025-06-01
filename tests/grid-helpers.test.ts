@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {isSamePos, isValidPos} from "~/utils/grid-helpers";
+import {isNodePassable, isSamePos, isValidPos} from "~/utils/grid-helpers";
 import type {Pos} from "~/types/pathfinding";
 import type {Nullish} from "~/types/helpers";
 
@@ -89,5 +89,47 @@ describe("areGridPositionsEqual - battle testing", () => {
 
         // @ts-expect-error
         expect(isSamePos(["a", "b"], [1, 2])).toBe(false)
+    })
+})
+
+describe("isNodePassable", () => {
+
+    const invalidCases = [
+        {input: 0, expected: false, case: 'zero'},
+        {input: -1, expected: false, case: 'negative number'},
+        {input: -0.00000001, expected: false, case: 'negative number'},
+        {input: Infinity, expected: false, case: 'Infinity'},
+        {input: -Infinity, expected: false, case: '-Infinity'},
+        {input: NaN, expected: false, case: 'NaN'},
+        {input: '1', expected: false, case: 'string number'},
+        {input: 'abc', expected: false, case: 'string'},
+        {input: true, expected: false, case: 'boolean true'},
+        {input: false, expected: false, case: 'boolean false'},
+        {input: [], expected: false, case: 'empty array'},
+        {input: [1], expected: false, case: 'array'},
+        {input: {}, expected: false, case: 'empty object'},
+        {input: null, expected: false, case: 'null'},
+        {input: undefined, expected: false, case: 'undefined'},
+        {input: Number.MIN_SAFE_INTEGER, expected: false, case: 'min integer'},
+        {input: -Number.MIN_VALUE, expected: false, case: 'smallest negative number'},
+        {input: -0.0000000001, expected: false, case: 'very small negative number'}
+    ]
+
+    const validCases = [
+        {input: 1, expected: true, case: 'one'},
+        {input: 42, expected: true, case: 'positive integer'},
+        {input: Number.MAX_SAFE_INTEGER, expected: true, case: 'max integer'},
+        {input: Number.MAX_VALUE, expected: true, case: 'max value'},
+        {input: 1.5, expected: true, case: 'positive float'},
+        {input: 0.000001, expected: true, case: 'positive float'},
+    ]
+
+    it.each(invalidCases)('should return false for $case', ({input, expected}) => {
+        //@ts-expect-error
+        expect(isNodePassable(input)).toBe(expected)
+    })
+
+    it.each(validCases)('should return true for $case', ({input, expected}) => {
+        expect(isNodePassable(input)).toBe(expected)
     })
 })
