@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {isNodePassable, isSamePos, isValidGridIndex, isValidPos} from "~/utils/grid-helpers";
+import {isNodePassable, isSamePos, isValidGridIndex, isValidNode, isValidPos} from "~/utils/grid-helpers";
 import type {Pos} from "~/types/pathfinding";
 import type {Nullish} from "~/types/helpers";
 
@@ -151,8 +151,6 @@ describe("isValidGridIndex", () => {
         {grid: [[1, 2], "not array"], row: 1, col: 0, case: 'non-array row'},
         {grid: [[1, 2], [3, 4]], row: 1.5, col: 0, case: 'decimal row'},
         {grid: [[1, 2], [3, 4]], row: 0, col: 1.9, case: 'decimal column'},
-
-
     ]
 
     const invalidIndices = [
@@ -190,4 +188,47 @@ describe("isValidGridIndex", () => {
     it.each(validCases)('should return true for $case', ({grid, row, col}) => {
         expect(isValidGridIndex(grid, row, col)).toBe(true)
     })
+
+
+    describe("isValidNode", () => {
+
+        const invalidNodes = [
+            {grid: [[0, 1], [1, 1]], row: 0, col: 0, case: 'zero value'},
+            {grid: [[-1, 1], [1, 1]], row: 0, col: 0, case: 'negative value'},
+            {grid: [[Infinity, 1], [1, 1]], row: 0, col: 0, case: 'Infinity'},
+            {grid: [[-Infinity, 1], [1200, 1]], row: 0, col: 0, case: 'Infinity'},
+            {grid: [[1, 1], [1200, 0]], row: 1, col: 1, case: 'zero value'},
+            {grid: [[NaN, 1], [1, 1]], row: 0, col: 0, case: 'NaN'},
+        ]
+
+        const validCases = [
+            {grid: [[1, 2], [3, 4]], row: 0, col: 0, case: 'valid positive integer'},
+            {grid: [[1.5, 2], [3, 4]], row: 0, col: 0, case: 'valid positive float'},
+            {grid: [[Number.MAX_VALUE, 2], [3, 4]], row: 0, col: 0, case: 'valid max value'},
+            {grid: [[Number.MAX_VALUE, 2], [3, 4]], row: 1, col: 0, case: 'valid  value'},
+        ]
+
+        it.each(invalidGrids)('should return false for $case', ({grid, row, col}) => {
+            // @ts-expect-error
+            expect(isValidNode(grid, row, col)).toBe(false)
+        })
+
+        it.each(invalidIndices)('should return false for $case', ({grid, row, col}) => {
+            expect(isValidNode(grid, row, col)).toBe(false)
+        })
+
+        it.each(invalidNodes)('should return false for $case', ({grid, row, col}) => {
+            expect(isValidNode(grid, row, col)).toBe(false)
+        })
+
+        it.each(validCases)('should return true for $case', ({grid, row, col}) => {
+            expect(isValidNode(grid, row, col)).toBe(true)
+        })
+    })
+
+
 })
+
+
+
+
