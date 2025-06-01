@@ -1,4 +1,4 @@
-import type {Pos, Weights} from "~/types/pathfinding";
+import type {PathData, Pos, Weights} from "~/types/pathfinding";
 import {describe, expect, it} from "vitest";
 import {aStar, calculateFCost} from "~/services/aStar";
 import {manhattan} from "~/utils/heuristics";
@@ -222,19 +222,10 @@ describe("aStar", () => {
 
 
                 //now we test both sets of data against each othe to make sure we are in sync
-                expect(aStarInitialRes.value.path.length).toBe(aStarFallbackGoalRes.value.path.length)
                 expect(aStarInitialRes.value.frontier.length).toBe(aStarFallbackGoalRes.value.frontier.length)
                 expect(aStarInitialRes.value.visitedOrder.length).toBe(aStarFallbackGoalRes.value.visitedOrder.length)
 
-                for (let i = 0; i < aStarFallbackGoalRes.value.path.length; i++) {
-                    const currFallbackPathElement = aStarFallbackGoalRes.value.path[i]
-                    const currInitialResPathElemetn = aStarInitialRes.value.path[i]
-
-                    expect(isSamePos(currFallbackPathElement.pos, currInitialResPathElemetn.pos)).toBeTruthy()
-                    expect(currFallbackPathElement.fCost).toBeCloseTo(currInitialResPathElemetn.fCost, 5)
-                    expect(currFallbackPathElement.hCost).toBeCloseTo(currInitialResPathElemetn.hCost, 5)
-                    expect(currFallbackPathElement.gCost).toBeCloseTo(currInitialResPathElemetn.gCost, 5)
-                }
+                expectPathsToBeEqual(aStarInitialRes.value.path, aStarFallbackGoalRes.value.path)
 
                 for (let i = 0; i < aStarFallbackGoalRes.value.visitedOrder.length; i++) {
                     const currVisitedOrderFallbackElement = aStarFallbackGoalRes.value.visitedOrder[i]
@@ -264,6 +255,28 @@ describe("aStar", () => {
     })
 
 })
+
+function expectPathsToBeEqual(path1: PathData[], path2: PathData[], precision: number = 5) {
+    expectDefinedAndNonNull(path1)
+    expectDefinedAndNonNull(path2)
+
+    expect(path1.length).toBeGreaterThan(0)
+    expect(path2.length).toBeGreaterThan(0)
+
+    expect(path1.length).toBe(path2.length)
+    expect(path1[0].from).toBeUndefined()
+    expect(path2[0].from).toBeUndefined()
+
+    for (let i = 0; i < path1.length; i++) {
+        const path1Data = path1[i]
+        const path2Data = path2[i]
+        expect(isSamePos(path1Data.pos, path2Data.pos)).toBeTruthy()
+        expect(path1Data.fCost, `fCost mismatch at index ${i}`).toBeCloseTo(path2Data.fCost, precision)
+        expect(path1Data.hCost, `hCost mismatch at index ${i}`).toBeCloseTo(path2Data.hCost, precision)
+        expect(path1Data.gCost, `gCost mismatch at index ${i}`).toBeCloseTo(path2Data.gCost, precision)
+    }
+
+}
 
 function expectDefinedAndNonNull<T>(value: Nullish<T>): asserts value is T {
     expect(value).toBeDefined()
