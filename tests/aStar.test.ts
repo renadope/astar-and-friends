@@ -229,13 +229,9 @@ function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
     expectDefinedAndNonNull(aStarInitialRes.value);
     expectDefinedAndNonNull(aStarInitialRes.value.fallBack)
 
-    expect(aStarInitialRes.success).toBeTruthy();
-    expectDefinedAndNonNull(aStarInitialRes.value);
-    expectDefinedAndNonNull(aStarInitialRes.value.fallBack)
-
     expect(aStarInitialRes.value.fallBack.length).toBe(2);
-    expect(aStarInitialRes.value.fallBack[0]).toEqual(1)
-    expect(aStarInitialRes.value.fallBack[1]).toEqual(3)
+    expect(aStarInitialRes.value.fallBack[0]).toEqual(config.expectedFallback[0])
+    expect(aStarInitialRes.value.fallBack[1]).toEqual(config.expectedFallback[1])
 
 
     const aStarFallbackGoalRes = aStar(config.weightGrid,
