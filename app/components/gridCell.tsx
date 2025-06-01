@@ -153,6 +153,7 @@ export default function GridCell({
         ${cellSelectionState === 'set_start' && !isSamePos([r, c], startPos) ? "pointer-events-auto hover:animate-[wiggle_1s_ease-in-out_infinite] hover:bg-sky-300" : ""}
         ${isPainting ? "scale-105" : ""}
         ${isSamePos([r, c], aStarData?.fallBack) && isLastStep ? "rotate-3" : ""}
+        ${!isNullOrUndefined(aStarData?.fallBack) && isSamePos([r, c], goalPos) && isLastStep ? "opacity-65 blur-[1px] -rotate-3 " : ""}
         `}
             onClick={() => {
                 if (cellSelectionState !== 'inactive') {
