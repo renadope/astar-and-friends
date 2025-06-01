@@ -1,7 +1,7 @@
-import type {AStarNode, PathData, Pos, Weights} from "~/types/pathfinding";
+import type {AStarNode, DiagonalConfig, PathData, Pos, Weights} from "~/types/pathfinding";
 import {describe, expect, it} from "vitest";
 import {aStar, calculateFCost} from "~/services/aStar";
-import {manhattan} from "~/utils/heuristics";
+import {type HeuristicFunc, manhattan} from "~/utils/heuristics";
 import {isSamePos} from "~/utils/grid-helpers";
 import type {Nullish} from "~/types/helpers";
 import {isNullOrUndefined} from "~/utils/helpers";
@@ -189,41 +189,17 @@ describe("aStar", () => {
                     [0, 0, 0, 0],
                     [1, 1, 1, 1],
                 ]
-                const naturalEnd: Pos = [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1]
-                const aStarInitialRes = aStar(weightGrid, [0, 0], naturalEnd, manhattan, {allowed: false}, {
-                    gWeight: 1,
-                    hWeight: 1,
-                    name: "AStar"
+
+                expectFallbackGoalRoundTripConsistency({
+                    weightGrid,
+                    start: [0, 0],
+                    expectedFallback: [1, 3],
+                    goal: [3, 3],
+                    heuristic: manhattan,
+                    allowedDiagonal: {allowed: false},
+                    weights: {gWeight: 1, hWeight: 1, name: "AStar"}
                 })
-                expect(aStarInitialRes.success).toBeTruthy();
-                expectDefinedAndNonNull(aStarInitialRes.value);
 
-                expect(aStarInitialRes.value).toBeDefined();
-                expectDefinedAndNonNull(aStarInitialRes.value.fallBack)
-
-                expect(aStarInitialRes.value.fallBack.length).toBe(2);
-                expect(aStarInitialRes.value.fallBack[0]).toEqual(1)
-                expect(aStarInitialRes.value.fallBack[1]).toEqual(3)
-
-                const aStarFallbackGoalRes = aStar(weightGrid,
-                    [0, 0],
-                    aStarInitialRes.value.fallBack,
-                    manhattan,
-                    {allowed: false},
-                    {
-                        gWeight: 1,
-                        hWeight: 1,
-                        name: "AStar"
-                    })
-
-                expect(aStarFallbackGoalRes.success).toBeTruthy();
-                expectDefinedAndNonNull(aStarFallbackGoalRes.value)
-                expect(aStarFallbackGoalRes.value.goalFound).toBeTruthy()
-                expect(aStarFallbackGoalRes.value.fallBack).toBeNull();
-
-                expectPathsToBeEqual(aStarInitialRes.value.path, aStarFallbackGoalRes.value.path)
-                expectVisitedOrderToBeEqual(aStarInitialRes.value.visitedOrder, aStarFallbackGoalRes.value.visitedOrder)
-                expectFrontierToBeEqual(aStarInitialRes.value.frontier, aStarFallbackGoalRes.value.frontier)
 
             });
 
@@ -231,6 +207,58 @@ describe("aStar", () => {
     })
 
 })
+
+type FallBackConfig = {
+    weightGrid: number[][]
+    expectedFallback: Pos
+    start: Pos
+    goal: Pos
+    heuristic: HeuristicFunc
+    allowedDiagonal: DiagonalConfig
+    weights: Weights
+}
+
+function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
+    const aStarInitialRes = aStar(config.weightGrid,
+        config.start,
+        config.goal,
+        config.heuristic,
+        config.allowedDiagonal,
+        config.weights)
+    expect(aStarInitialRes.success).toBeTruthy();
+    expectDefinedAndNonNull(aStarInitialRes.value);
+    expectDefinedAndNonNull(aStarInitialRes.value.fallBack)
+
+    expect(aStarInitialRes.success).toBeTruthy();
+    expectDefinedAndNonNull(aStarInitialRes.value);
+    expectDefinedAndNonNull(aStarInitialRes.value.fallBack)
+
+    expect(aStarInitialRes.value.fallBack.length).toBe(2);
+    expect(aStarInitialRes.value.fallBack[0]).toEqual(1)
+    expect(aStarInitialRes.value.fallBack[1]).toEqual(3)
+
+
+    const aStarFallbackGoalRes = aStar(config.weightGrid,
+        config.start,
+        aStarInitialRes.value.fallBack,
+        config.heuristic,
+        config.allowedDiagonal,
+        config.weights)
+
+    expect(aStarFallbackGoalRes.success).toBeTruthy();
+    expectDefinedAndNonNull(aStarFallbackGoalRes.value)
+    expect(aStarFallbackGoalRes.value.goalFound).toBeTruthy()
+    expect(aStarFallbackGoalRes.value.fallBack).toBeNull();
+
+    expect(aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos[0]).toBe(aStarInitialRes.value.fallBack[0])
+    expect(aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos[1]).toBe(aStarInitialRes.value.fallBack[1])
+
+    expectPathsToBeEqual(aStarInitialRes.value.path, aStarFallbackGoalRes.value.path)
+    expectVisitedOrderToBeEqual(aStarInitialRes.value.visitedOrder, aStarFallbackGoalRes.value.visitedOrder)
+    expectFrontierToBeEqual(aStarInitialRes.value.frontier, aStarFallbackGoalRes.value.frontier)
+
+
+}
 
 function expectAStarNodeToBeEqual(node1?: AStarNode, node2?: AStarNode, options?: {
     precision?: number,
