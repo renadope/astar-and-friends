@@ -177,9 +177,52 @@ describe("aStar", () => {
             expect(res.value?.path[0].pos[1]).toBe(2)
         });
     })
+    describe("aStar - cases where goal is not found", () => {
+        describe("aStar - no diagonal allowed, gWeight = 1 and hWeight = 1, manhattan heuristic", () => {
+            it('should return a fallback goal in pos 1,3', () => {
+                const weightGrid: number[][] = [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [0, 0, 0, 0],
+                    [1, 1, 1, 1],
+                ]
+                const naturalEnd: Pos = [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1]
+                const aStarInitialRes = aStar(weightGrid, [0, 0], naturalEnd, manhattan, {allowed: false}, {
+                    gWeight: 1,
+                    hWeight: 1,
+                    name: "AStar"
+                })
+                expect(aStarInitialRes.success).toBeTruthy();
+                expect(aStarInitialRes.value).toBeDefined();
+                expect(aStarInitialRes.value?.fallBack).toBeDefined();
+                expect(aStarInitialRes.value?.fallBack?.length).toBe(2);
+                //@ts-expect-error
+                expect(aStarInitialRes.value?.fallBack[0]).toEqual(1)
+                //@ts-expect-error
+                expect(aStarInitialRes.value?.fallBack[1]).toEqual(3)
+
+                //@ts-expect-error
+                const aStarFallbackGoalRes = aStar(weightGrid, [0, 0], aStarInitialRes.value?.fallBack, manhattan, {allowed: false}, {
+                    gWeight: 1,
+                    hWeight: 1,
+                    name: "AStar"
+                })
+                expect(aStarFallbackGoalRes.success).toBeTruthy();
+                expect(aStarFallbackGoalRes.value).toBeDefined();
+                expect(aStarFallbackGoalRes.value?.goalFound).toBeTruthy()
+                //null/undefined falls under falsy
+                expect(aStarFallbackGoalRes.value?.fallBack).toBeFalsy();
+
+                //now we test both sets of data against each othe to make sure we are in sync
+                expect(aStarInitialRes.value?.path.length).toBe(aStarFallbackGoalRes.value?.path.length)
+                expect(aStarInitialRes.value?.frontier.length).toBe(aStarFallbackGoalRes.value?.frontier.length)
+                expect(aStarInitialRes.value?.visitedOrder.length).toBe(aStarFallbackGoalRes.value?.visitedOrder.length)
+            });
+
+        })
+    })
 
 })
-
 
 
 function generateInvalidCoords(i: number): Pos {
