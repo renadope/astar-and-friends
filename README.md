@@ -82,7 +82,6 @@ Fine-tune algorithm behavior with intuitive weight sliders for perfect customiza
 ### ⚙️ Streamlined Controls
 
 - **Unified Control Panel**: All settings in one convenient location
-- **Real-Time Updates**: See how changes affect pathfinding instantly
 - **Feature Toggles**: Enable/disable functionalities based on your needs
 
 ### 🧪 Quality Assurance
