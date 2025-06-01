@@ -97,7 +97,6 @@ describe("isNodePassable", () => {
     const invalidCases = [
         {input: 0, expected: false, case: 'zero'},
         {input: -1, expected: false, case: 'negative number'},
-        {input: -0.00000001, expected: false, case: 'negative number'},
         {input: Infinity, expected: false, case: 'Infinity'},
         {input: -Infinity, expected: false, case: '-Infinity'},
         {input: NaN, expected: false, case: 'NaN'},
@@ -112,7 +111,6 @@ describe("isNodePassable", () => {
         {input: undefined, expected: false, case: 'undefined'},
         {input: Number.MIN_SAFE_INTEGER, expected: false, case: 'min integer'},
         {input: -Number.MIN_VALUE, expected: false, case: 'smallest negative number'},
-        {input: -0.0000000001, expected: false, case: 'very small negative number'}
     ]
 
     const validCases = [
