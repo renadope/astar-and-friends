@@ -17,7 +17,7 @@ export const weightPresets: WeightData[] = [
     },
     {
         label: "Fake Noise",
-        value: "fake_noise",
+        value: "fakeNoise",
         description: "Adds pseudo-random variation in weights to simulate natural terrain.",
         emoji: "🌫️",
         tag: "Experimental"
@@ -54,6 +54,13 @@ export const weightPresets: WeightData[] = [
         label: "Random Terrain",
         value: "random",
         description: "Completely randomized weights for each cell. Unpredictable paths.",
+        emoji: "🎲",
+        tag: "Experimental"
+    },
+    {
+        label: "Random (No walls)",
+        value: "randomNoWalls",
+        description: "Completely randomized weights for each cell with no walls. Unpredictable paths.",
         emoji: "🎲",
         tag: "Experimental"
     },

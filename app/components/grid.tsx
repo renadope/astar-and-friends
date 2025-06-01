@@ -13,7 +13,17 @@ import {LockIcon, UnlockIcon} from "lucide-react";
 
 export default function Grid() {
     const {state, dispatch} = useGridContext()
-    const {cellData, aStarData, cellSelectionState, startPos, goalPos} = state
+    const {
+        cellData,
+        aStarData,
+        cellSelectionState,
+        startPos,
+        goalPos,
+        currentTimelineIndex,
+        timeline: stateTimeline,
+        snapshotTimeline,
+        granularTimeline
+    } = state
     const hasAStarData = !isNullOrUndefined(aStarData)
     const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0
     const [clickedCell, setClickedCell] = useState<Nullish<Pos>>(undefined)
@@ -22,6 +32,9 @@ export default function Grid() {
     const isClickedStartOrGoal = isSamePos(clickedCell, startPos) || isSamePos(clickedCell, goalPos)
     const [isPainting, setIsPainting] = useState<boolean>(false)
     const [paintingWeight, setPaintingWeight] = useState<Nullish<number>>(undefined)
+
+    const timeline = stateTimeline === 'snapshot' ? snapshotTimeline : granularTimeline
+    const isLastStep = timeline.length - 1 === currentTimelineIndex
 
     useEffect(() => {
         if (!isPainting) {
@@ -205,6 +218,11 @@ export default function Grid() {
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">F-Score:</span>
                                         <span>{cell.f.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                {isSamePos(cell.pos, aStarData?.fallBack) && isLastStep && (
+                                    <div className="flex">
+                                        <span className="ml-auto italic text-xs text-muted-foreground">Fallback Goal</span>
                                     </div>
                                 )}
 

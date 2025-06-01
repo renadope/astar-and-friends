@@ -46,6 +46,15 @@ function getTerrain(_r: number, _c: number, _size: number): CostAndWeight {
     }
 }
 
+function getTerrainNoWalls(_r: number, _c: number, _size: number): CostAndWeight {
+    return {
+        1: 3,
+        3: 2.5,
+        5: 2,
+        10: 1,
+    }
+}
+
 function diagonalCostGradient(r: number, c: number, size: number): CostAndWeight {
 
     const d = (r + c) / (2 * size);
@@ -129,19 +138,21 @@ export type CostAndWeightKind =
     | "wall"
     | "circularBasin"
     | "centerRidge"
-    | "fake_noise"
+    | "fakeNoise"
     | "uniform"
     | "highCost"
     | "zeroToTenEven"
+    | "randomNoWalls"
 
 export const predefinedWeightFuncs: Record<CostAndWeightKind, CostAndWeightFunc> = {
     biome: biomeWeights,
     random: getTerrain,
+    randomNoWalls: getTerrainNoWalls,
     diagonal: diagonalCostGradient,
     wall: wallCorridorBias,
     circularBasin: circularBasin,
     centerRidge: centerRidge,
-    fake_noise: fakeNoise,
+    fakeNoise: fakeNoise,
     uniform: uniform,
     highCost: highCost,
     zeroToTenEven: zeroToTenEven
