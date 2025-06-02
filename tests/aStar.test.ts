@@ -181,7 +181,7 @@ describe("aStar", () => {
         });
     })
 
-
+//TODO:While with the eye test and paper calculations, we see that the happy path works, we still need to test that.
     describe("aStar - cases where goal is not found", () => {
         describe("aStar - no diagonal allowed, gWeight = 1 and hWeight = 1, manhattan heuristic", () => {
             const configs: FallBackConfig[] = [
@@ -282,8 +282,7 @@ function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
     expect(aStarInitialRes.value.goalFound).toBeFalsy()
 
     expect(aStarInitialRes.value.fallBack.length).toBe(2);
-    expect(aStarInitialRes.value.fallBack[0]).toEqual(config.expectedFallback[0])
-    expect(aStarInitialRes.value.fallBack[1]).toEqual(config.expectedFallback[1])
+    expect(isSamePos(aStarInitialRes.value.fallBack, config.expectedFallback)).toBeTruthy();
 
 
     const aStarFallbackGoalRes = aStar(config.weightGrid,
@@ -301,8 +300,8 @@ function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
     //comparing both
     expect(aStarInitialRes.value.totalCost).toBe(aStarFallbackGoalRes.value.totalCost)
     expect(aStarInitialRes.value.steps).toBe(aStarFallbackGoalRes.value.steps)
-    expect(aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos[0]).toBe(aStarInitialRes.value.fallBack[0])
-    expect(aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos[1]).toBe(aStarInitialRes.value.fallBack[1])
+    const lastPos = aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos
+    expect(isSamePos(lastPos, aStarInitialRes.value.fallBack)).toBeTruthy()
     expectPathsToBeEqual(aStarInitialRes.value.path, aStarFallbackGoalRes.value.path)
 
 }
