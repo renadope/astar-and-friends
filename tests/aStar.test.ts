@@ -303,23 +303,8 @@ function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
     expect(aStarInitialRes.value.steps).toBe(aStarFallbackGoalRes.value.steps)
     expect(aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos[0]).toBe(aStarInitialRes.value.fallBack[0])
     expect(aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos[1]).toBe(aStarInitialRes.value.fallBack[1])
-    // expectPrevMapsToBeEqual(aStarInitialRes.value.prevMap, aStarFallbackGoalRes.value.prevMap)
     expectPathsToBeEqual(aStarInitialRes.value.path, aStarFallbackGoalRes.value.path)
-    // expectVisitedOrderToBeEqual(aStarInitialRes.value.visitedOrder, aStarFallbackGoalRes.value.visitedOrder)
-    // expectFrontierToBeEqual(aStarInitialRes.value.frontier, aStarFallbackGoalRes.value.frontier)
 
-
-}
-
-function expectPrevMapsToBeEqual(prevMap1?: Map<string, string>, prevMap2?: Map<string, string>) {
-    expectDefinedAndNonNull(prevMap1)
-    expectDefinedAndNonNull(prevMap2)
-    expect(prevMap1.size, 'prevMap sizes should be the same').toBe(prevMap2.size)
-    if (prevMap1.size === 0) return
-    for (const [key, value] of prevMap1.entries()) {
-        expect(prevMap2.has(key), `missing key ${key}`).toBeTruthy()
-        expect(prevMap2.get(key), `mismatch at ${key}`).toBe(value)
-    }
 }
 
 function expectAStarNodeToBeEqual(node1: AStarNode, node2?: AStarNode, options?: {
@@ -336,38 +321,6 @@ function expectAStarNodeToBeEqual(node1: AStarNode, node2?: AStarNode, options?:
     expect(node1.gCost, `gCost mismatch${indexPhrase}`).toBeCloseTo(node2.gCost, precision)
 }
 
-function expectFrontierToBeEqual(frontier1?: AStarNode[][], frontier2?: AStarNode[][], precision: number = 5) {
-    expectDefinedAndNonNull(frontier1)
-    expectDefinedAndNonNull(frontier2)
-    expect(frontier1.length).toBeGreaterThan(0)
-    expect(frontier2.length).toBeGreaterThan(0)
-    expect(frontier1.length).toBe(frontier2.length)
-
-    for (let i = 0; i < frontier1.length; i++) {
-        expect(frontier1[i].length, `frontier length mismatch at ${i} `).toBe(frontier2[i].length)
-        for (let j = 0; j < frontier1[i].length; j++) {
-            const f1 = frontier1[i][j]
-            const f2 = frontier2[i][j]
-            //cant pass i, j so we would have to look at the index i and compare there
-            expectAStarNodeToBeEqual(f1, f2, {index: i, precision: precision})
-        }
-    }
-}
-
-function expectVisitedOrderToBeEqual(visitedOrder1?: AStarNode[], visitedOrder2?: AStarNode[], precision: number = 5) {
-    expectDefinedAndNonNull(visitedOrder1)
-    expectDefinedAndNonNull(visitedOrder2)
-
-    expect(visitedOrder1.length).toBeGreaterThan(0)
-    expect(visitedOrder2.length).toBeGreaterThan(0)
-    expect(visitedOrder1.length).toBe(visitedOrder2.length)
-    for (let i = 0; i < visitedOrder1.length; i++) {
-        const path1Data = visitedOrder1[i]
-        const path2Data = visitedOrder2[i]
-        expectAStarNodeToBeEqual(path1Data, path2Data, {index: i, precision: precision})
-    }
-
-}
 
 function expectPathsToBeEqual(path1?: PathData[], path2?: PathData[], precision: number = 5) {
     expectDefinedAndNonNull(path1)
