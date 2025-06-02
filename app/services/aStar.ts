@@ -71,7 +71,7 @@ export function aStar(
             visitedOrder: [startNode],
             costUpdateHistory: {},
             updatesPerStep: {},
-            frontier: [],
+            frontier: [[startNode]],
             totalCost: costs[startR][startC],
             steps: 0,
             fallBack: null,

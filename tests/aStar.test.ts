@@ -180,27 +180,57 @@ describe("aStar", () => {
             expect(res.value?.path[0].pos[1]).toBe(2)
         });
     })
+
+
     describe("aStar - cases where goal is not found", () => {
         describe("aStar - no diagonal allowed, gWeight = 1 and hWeight = 1, manhattan heuristic", () => {
-            it('should return a fallback goal in pos 1,3', () => {
-                const weightGrid: number[][] = [
-                    [1, 1, 1, 1],
-                    [1, 1, 1, 1],
-                    [0, 0, 0, 0],
-                    [1, 1, 1, 1],
-                ]
-
-                expectFallbackGoalRoundTripConsistency({
-                    weightGrid,
+            const configs: FallBackConfig[] = [
+                {
+                    weightGrid: [
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                        [0, 0, 0, 0],
+                        [1, 1, 1, 1],
+                    ],
                     start: [0, 0],
                     expectedFallback: [1, 3],
                     goal: [3, 3],
                     heuristic: manhattan,
                     allowedDiagonal: {allowed: false},
                     weights: {gWeight: 1, hWeight: 1, name: "AStar"}
-                })
+                },
+                {
+                    weightGrid: [
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                        [0, 0, 0, 0],
+                        [1, 1, 1, 1],
+                    ],
+                    start: [0, 0],
+                    expectedFallback: [1, 3],
+                    goal: [3, 3],
+                    heuristic: manhattan,
+                    allowedDiagonal: {allowed: false},
+                    weights: {gWeight: 1, hWeight: 1, name: "AStar"},
+                },
+                {
+                    weightGrid: [
+                        [1, 0, 1, 1],
+                        [0, 0, 1, 1],
+                        [0, 1, 0, 0],
+                        [1, 0, 0, 1],
+                    ],
+                    start: [0, 0],
+                    expectedFallback: [0, 0],
+                    goal: [3, 3],
+                    heuristic: manhattan,
+                    allowedDiagonal: {allowed: false},
+                    weights: {gWeight: 1, hWeight: 1, name: "AStar"},
+                }
+            ]
 
-
+            it.each(configs)('should return a fallback goal in pos [$expectedFallback] when goal at [$goal] is unreachable', (config) => {
+                expectFallbackGoalRoundTripConsistency(config);
             });
 
         })
@@ -217,6 +247,7 @@ type FallBackConfig = {
     allowedDiagonal: DiagonalConfig
     weights: Weights
 }
+
 
 function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
 
@@ -269,16 +300,14 @@ function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
 function expectPrevMapsToBeEqual(prevMap1?: Map<string, string>, prevMap2?: Map<string, string>) {
     expectDefinedAndNonNull(prevMap1)
     expectDefinedAndNonNull(prevMap2)
-    expect(prevMap1.size).toBeGreaterThan(0)
-    expect(prevMap2.size).toBeGreaterThan(0)
     expect(prevMap1.size).toBe(prevMap2.size)
-    for (const [key, value] of prevMap1) {
+    for (const [key, value] of prevMap1.entries()) {
         expect(prevMap2.has(key), `missing key ${key}`).toBeTruthy()
         expect(prevMap2.get(key), `mismatch at ${key}`).toBe(value)
     }
 }
 
-function expectAStarNodeToBeEqual(node1?: AStarNode, node2?: AStarNode, options?: {
+function expectAStarNodeToBeEqual(node1: AStarNode, node2?: AStarNode, options?: {
     precision?: number,
     index?: number
 }) {
@@ -337,17 +366,19 @@ function expectPathsToBeEqual(path1?: PathData[], path2?: PathData[], precision:
     expect(path2[0].from).toBeUndefined()
 
     for (let i = 0; i < path1.length; i++) {
+        const p1 = path1[i]
+        const p2 = path2[i]
         const path1Data: AStarNode = {
-            pos: path1[i].pos,
-            fCost: path1[i].fCost,
-            gCost: path1[i].gCost,
-            hCost: path1[i].hCost
+            pos: p1.pos,
+            fCost: p1.fCost,
+            gCost: p1.gCost,
+            hCost: p1.hCost
         }
         const path2Data: AStarNode = {
-            pos: path2[i].pos,
-            fCost: path2[i].fCost,
-            gCost: path2[i].gCost,
-            hCost: path2[i].hCost
+            pos: p2.pos,
+            fCost: p2.fCost,
+            gCost: p2.gCost,
+            hCost: p2.hCost
         }
         expectAStarNodeToBeEqual(path1Data, path2Data, {index: i, precision: precision})
     }
