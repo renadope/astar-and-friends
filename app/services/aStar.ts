@@ -210,6 +210,14 @@ export function aStar(
             if (closest) {
                 goal = [...closest];
             }
+
+            /**
+             * In a case where there is no heuristic, we are at BFS or Dijkstra algorithm
+             * First idea was to take the one with the lowest gCost, but that just ends up always being the first node
+             * I figured a clearer way to represent the fallback was the so called deepest / last node it explored
+             * So it becomes start to last node visited under this situation where the goal isnt found
+             * and there is no heuristic to guide
+             * **/
         } else {
             if (visitedOrder.length > 0) {
                 goal = [...visitedOrder[visitedOrder.length - 1].pos];
