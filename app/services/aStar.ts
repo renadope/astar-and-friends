@@ -217,15 +217,31 @@ export function aStar(
         }
     }
 
+    /**
+     * Some notes on Algorithm Behavior for Fallback Goals
+     *
+     * When the original goal is not found, we have two different concerns:
+     *
+     * 1. Algorithm Correctness:
+     *    - Only the final path and total cost matter
+     *    - The specific goal reached (fallback or not) is not relevant to correctness
+     *
+     * 2. Visual Representation:
+     *    - For UI playback purposes, we treat the fallback goal as if it were
+     *      the originally intended goal and recompute the hCost and fCost,
+     *      gCost is unaffected and preserves the correct score.
+     * This ensures the visualization aligns with how the algorithm would have behaved if the fallback goal had been the
+     * target from the get-go.
+     *
+     */
     if (!goalFound) {
-        //we still need to recompute the scores relative to the fallback goal as the visited data and frontier data would be reflecting data towards the old goal
         for (let i = 0; i < visitedOrder.length; i++) {
             const v = visitedOrder[i];
             const h = heuristic(v.pos, goal);
             visitedOrder[i].fCost = calculateFCost(weights, costs[v.pos[0]][v.pos[1]], h)
             visitedOrder[i].hCost = h
         }
-        // The algorithm fully exhausts the frontier queue when the goal is unreachable.
+        // The algorithm fully exhausts the frontier queue when the **original** goal is unreachable.
         // But for playback and UI accuracy, we still update heuristic and fCost for frontier elements.
         for (let i = 0; i < frontier.length; i++) {
             const frontierElements = frontier[i];
@@ -356,4 +372,3 @@ export function getAlgorithmName(gWeight: number, hWeight: number): string {
     // return `Weighted A* (g×${g}, h×${h})`;
     return `Weighted A*`;
 }
-
