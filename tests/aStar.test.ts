@@ -41,6 +41,17 @@ describe('fCost', () => {
     });
 })
 
+type HappyPathConfig = {
+    weightGrid: number[][]
+    start: Pos
+    goal: Pos
+    expectedCost: number
+    expectedPathLength: number
+    heuristic: HeuristicFunc
+    allowedDiagonal: DiagonalConfig
+    weights: Weights
+}
+
 describe("aStar", () => {
 
     describe("aStar - bad start and goal positions", () => {
@@ -180,8 +191,76 @@ describe("aStar", () => {
             expect(res.value?.path[0].pos[1]).toBe(2)
         });
     })
+    describe("aStar - happy path - goal is findable", () => {
 
-//TODO:While with the eye test and paper calculations, we see that the happy path works, we still need to test that.
+        describe("aStar - no diagonal allowed, gWeight = 1 and hWeight = 1, manhattan heuristic", () => {
+            const configs: HappyPathConfig[] = [
+                {
+                    weightGrid: [
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                    ],
+                    start: [0, 0],
+                    goal: [3, 3],
+                    expectedCost: 7,
+                    expectedPathLength: 7,
+                    heuristic: manhattan,
+                    allowedDiagonal: {allowed: false},
+                    weights: {gWeight: 1, hWeight: 1, name: "AStar"}
+                },
+                {
+                    weightGrid: [
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                    ],
+                    start: [0, 0],
+                    goal: [1, 1],
+                    expectedCost: 3,
+                    expectedPathLength: 3,
+                    heuristic: manhattan,
+                    allowedDiagonal: {allowed: false},
+                    weights: {gWeight: 1, hWeight: 1, name: "AStar"}
+                },
+                {
+                    weightGrid: [
+                        [2, 2, 2, 2],
+                        [2, 2, 2, 2],
+                        [2, 2, 2, 2],
+                        [2, 2, 2, 2],
+                    ],
+                    start: [0, 0],
+                    goal: [3, 3],
+                    expectedCost: 14,
+                    expectedPathLength: 7,
+                    heuristic: manhattan,
+                    allowedDiagonal: {allowed: false},
+                    weights: {gWeight: 1, hWeight: 1, name: "AStar"}
+                },
+            ]
+
+            it.each(configs)('', (config) => {
+                const aStarData = aStar(config.weightGrid,
+                    config.start,
+                    config.goal,
+                    config.heuristic,
+                    config.allowedDiagonal,
+                    config.weights)
+
+                expectDefinedAndNonNull(aStarData.value)
+                expect(aStarData.success).toBeTruthy()
+                expect(aStarData.value.goalFound).toBeTruthy()
+                expect(aStarData.value.fallBack).toBeNull()
+                expect(aStarData.value.totalCost).toBe(config.expectedCost)
+                expect(aStarData.value.path.length).toBe(config.expectedPathLength)
+            });
+
+        })
+    })
+
     describe("aStar - cases where goal is not found", () => {
         describe("aStar - no diagonal allowed, gWeight = 1 and hWeight = 1, manhattan heuristic", () => {
             const configs: FallBackConfig[] = [
