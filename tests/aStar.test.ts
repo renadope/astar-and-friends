@@ -300,7 +300,8 @@ function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
 function expectPrevMapsToBeEqual(prevMap1?: Map<string, string>, prevMap2?: Map<string, string>) {
     expectDefinedAndNonNull(prevMap1)
     expectDefinedAndNonNull(prevMap2)
-    expect(prevMap1.size).toBe(prevMap2.size)
+    expect(prevMap1.size, 'prevMap sizes should be the same').toBe(prevMap2.size)
+    if (prevMap1.size === 0) return
     for (const [key, value] of prevMap1.entries()) {
         expect(prevMap2.has(key), `missing key ${key}`).toBeTruthy()
         expect(prevMap2.get(key), `mismatch at ${key}`).toBe(value)
