@@ -116,7 +116,8 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                             {diagonalSettings.diagonalMultiplier.toFixed(2)}×
                         </span>
                             {Math.abs(diagonalSettings.diagonalMultiplier - Math.sqrt(2)) <= 0.01 && (
-                                <span className="2xs:hidden  sm:block px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+                                <span
+                                    className="2xs:hidden  sm:block px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
                                 √2 (Euclidean)
                             </span>
                             )}
@@ -143,7 +144,7 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                         <div className="2xs:hidden xs:flex gap-1 justify-between">
                             {[
                                 {value: 1.0, label: "1.0", desc: "Same as orthogonal"},
-                                {value: Math.sqrt(2), label: "√2", desc: "Euclidean distance"},
+                                {value: Math.SQRT2, label: "√2", desc: "Euclidean distance"},
                                 {value: 2.0, label: "2.0", desc: "Double cost"}
                             ].map(preset => (
                                 <button
@@ -153,7 +154,7 @@ export function ToggleDiagonal({className, ...props}: ComponentPropsWithoutRef<'
                                         payload: preset.value
                                     })}
                                     className={`flex-1 px-2 py-1 text-xs font-medium rounded transition-colors ${
-                                        diagonalSettings.diagonalMultiplier === preset.value
+                                        Math.abs(diagonalSettings.diagonalMultiplier - preset.value) <= 1e-4
                                             ? 'bg-purple-600 text-white'
                                             : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
                                     }`}
