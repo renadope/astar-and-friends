@@ -18,7 +18,13 @@ import {
   updateCellDataFlattenedStep,
   updateCellDataSnapshotStep,
 } from '~/cell-data/cell-data';
-import { isSamePos, isValidPos, parsePos, stringifyPos } from '~/utils/grid-helpers';
+import {
+  isSamePos,
+  isValidGridIndex,
+  isValidPos,
+  parsePos,
+  stringifyPos,
+} from '~/utils/grid-helpers';
 import { LARGEST_PLAYBACK_FACTOR, NO_TIMELINE, SMALLEST_PLAYBACK_FACTOR } from '~/state/constants';
 
 export const initialState: AppState = {
@@ -145,11 +151,17 @@ export function reducer(state: AppState, action: Action): AppState {
       if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
         return state;
       }
-      const start: Pos = state.startPos ?? [0, 0];
-      const goal: Pos = state.goalPos ?? [
+      const start = state.startPos ?? [0, 0];
+      const goal = state.goalPos ?? [
         state.weightGrid.length - 1,
         state.weightGrid[state.weightGrid.length - 1].length - 1,
       ];
+      if (!isValidGridIndex(state.weightGrid, start[0], start[1])) {
+        throw new Error('start position is invalid');
+      }
+      if (!isValidGridIndex(state.weightGrid, goal[0], goal[1])) {
+        throw new Error('goal position is invalid');
+      }
       const aStarResult = aStar(
         state.weightGrid,
         start,

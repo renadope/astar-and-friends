@@ -1,5 +1,5 @@
 import type { Pos } from '~/types/pathfinding';
-import { isNodePassable } from '~/utils/grid-helpers';
+import { isNodePassable, isSamePos } from '~/utils/grid-helpers';
 import {
   type FlattenedStep,
   isFrontierSnapshot,
@@ -26,9 +26,9 @@ export function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): C
         step: undefined,
         snapShotStep: undefined,
         state: isNodePassable(weight)
-          ? r === st[0] && c === st[1]
+          ? isSamePos([r, c], st)
             ? 'start'
-            : r === end[0] && c === end[1]
+            : isSamePos([r, c], end)
               ? 'goal'
               : 'empty'
           : 'wall',
