@@ -82,7 +82,7 @@ export function CostWeightSliders({ className, ...props }: ComponentPropsWithout
           />
         </div>
 
-        <div className="2xs:hidden sm:flex justify-between text-sm text-sky-800">
+        <div className="2xs:hidden sm:flex justify-between text-xs text-sky-800">
           <span>0 (Ignore cost)</span>
           <span>5 (Balanced)</span>
           <span>10 (Cost priority)</span>
@@ -134,13 +134,13 @@ export function CostWeightSliders({ className, ...props }: ComponentPropsWithout
           />
         </div>
 
-        <div className="2xs:hidden sm:flex justify-between text-sm text-pink-800">
+        <div className="2xs:hidden sm:flex justify-between text-xs text-pink-800">
           <span>0 (No guidance)</span>
           <span>5 (Balanced)</span>
           <span>10 (Goal focused)</span>
         </div>
 
-        <p className="2xs:hidden sm:block text-sm text-pink-800 bg-pink-50 p-2 rounded-md">
+        <p className="2xs:hidden sm:block text-xs text-pink-800 bg-pink-50 p-2 rounded-md">
           Higher values focus more on reaching the goal, lower values explore uniformly.
         </p>
       </div>
