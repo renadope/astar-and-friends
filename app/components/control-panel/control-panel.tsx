@@ -94,7 +94,7 @@ export default function ControlPanel() {
       <div className={'flex flex-col lg:grid lg:grid-cols-2 gap-3 2xs:gap-4 lg:gap-6'}>
         <div className="bg-slate-200/90 rounded-md 2xs:rounded-lg p-2 2xs:p-3 sm:p-4 space-y-3 2xs:space-y-4">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2 text-xs 2xs:text-sm sm:text-base">
-            🏗️ Grid Setup
+            🏗️ Grid Setup & Weight Settings
           </h4>
           <ToggleCell />
           <CostWeightSliders />

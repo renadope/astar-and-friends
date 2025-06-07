@@ -22,21 +22,16 @@ export function Main() {
           </div>
         </div>
       </div>
-      <footer className="text-center text-sm text-gray-500 mt-12 pb-4 border-t pt-4 border-gray-200">
+      <footer className="text-center text-lg text-gray-500 mt-12 pb-4 border-t pt-4 border-gray-200">
         <div className="flex flex-col items-center justify-center space-y-2">
           <div className="flex items-center space-x-1">
             <p className="flex items-center space-x-1">
-              <span>Built with ⚡️ by</span>
-              <Link
-                to="https://github.com/renadope"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-gray-700 transition-colors"
-              >
+              <Link to="https://github.com/renadope" target="_blank" rel="noopener noreferrer">
                 <span
                   className={`bg-gradient-to-r
-                           from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent
-                           hover:from-pink-400 hover:via-fuchsia-400 hover:to-purple-400 transition-all duration-500`}
+                           from-purple-500 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent
+                           hover:from-pink-600 hover:via-fuchsia-600 hover:to-purple-600 hover:text-2xl
+                            transition-all duration-500`}
                 >
                   Renado
                 </span>
@@ -62,7 +57,11 @@ export function Main() {
               rel="noopener noreferrer"
               aria-label="LinkedIn Profile"
             >
-              <GithubIcon className={'size-5 hover:size-8 transition-all duration-300'} />
+              <GithubIcon
+                className={
+                  'size-5 hover:size-8 transition-all duration-300 animate-[wiggle_1s_ease-in-out_infinite]'
+                }
+              />
             </Link>
             <span>·</span>
           </div>

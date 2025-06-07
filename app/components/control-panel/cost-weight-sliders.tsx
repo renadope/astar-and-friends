@@ -16,7 +16,7 @@ export function CostWeightSliders({ className, ...props }: ComponentPropsWithout
       {...props}
     >
       <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-100 to-pink-100 rounded-lg">
+        <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-sky-100 to-pink-100 rounded-lg">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="w-5 h-5 text-purple-600"
@@ -43,14 +43,14 @@ export function CostWeightSliders({ className, ...props }: ComponentPropsWithout
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex justify-start bg-blue-500 rounded-full"></div>
-            <label htmlFor={`${id}_gWeight`} className="text-sm font-semibold text-blue-700">
+            <div className="flex justify-start bg-sky-500 rounded-full"></div>
+            <label htmlFor={`${id}_gWeight`} className="text-sm font-semibold text-sky-700">
               <span>G-Weight</span>
               <span className={'2xs:hidden sm:inline'}> (Path Cost)</span>
             </label>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-1 bg-blue-50 border border-blue-200 rounded text-sm font-bold text-blue-800">
+            <span className="px-2 py-1 bg-sky-50 border border-sky-200 rounded text-sm font-bold text-sky-800">
               {state.gwWeights.gWeight}
             </span>
             {state.gwWeights.gWeight === 1 && (
@@ -75,20 +75,20 @@ export function CostWeightSliders({ className, ...props }: ComponentPropsWithout
                 payload: Number(e.target.value),
               });
             }}
-            className="w-full h-3 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            className="w-full h-3 bg-sky-200 rounded-lg appearance-none cursor-pointer accent-sky-600"
             style={{
               background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(state.gwWeights.gWeight / 10) * 100}%, #dbeafe ${(state.gwWeights.gWeight / 10) * 100}%, #dbeafe 100%)`,
             }}
           />
         </div>
 
-        <div className="2xs:hidden sm:flex justify-between text-xs text-blue-600">
+        <div className="2xs:hidden sm:flex justify-between text-sm text-sky-800">
           <span>0 (Ignore cost)</span>
           <span>5 (Balanced)</span>
           <span>10 (Cost priority)</span>
         </div>
 
-        <p className="2xs:hidden sm:block text-xs text-blue-600 bg-blue-50 p-2 rounded-md">
+        <p className="2xs:hidden sm:block text-sm text-sky-800 bg-sky-50 p-2 rounded-md">
           Higher values prioritize shorter paths, lower values explore more freely.
         </p>
       </div>
@@ -102,7 +102,7 @@ export function CostWeightSliders({ className, ...props }: ComponentPropsWithout
             </label>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-1 bg-pink-50 border border-pink-200 rounded text-sm font-bold text-pink-800">
+            <span className="px-2 py-1 bg-pink-50 border border-pink-200 rounded text-sm font-bold text-pink-900">
               {state.gwWeights.hWeight}
             </span>
             {state.gwWeights.hWeight === 1 && (
@@ -134,13 +134,13 @@ export function CostWeightSliders({ className, ...props }: ComponentPropsWithout
           />
         </div>
 
-        <div className="2xs:hidden sm:flex justify-between text-xs text-pink-600">
+        <div className="2xs:hidden sm:flex justify-between text-sm text-pink-800">
           <span>0 (No guidance)</span>
           <span>5 (Balanced)</span>
           <span>10 (Goal focused)</span>
         </div>
 
-        <p className="2xs:hidden sm:block text-xs text-pink-600 bg-pink-50 p-2 rounded-md">
+        <p className="2xs:hidden sm:block text-sm text-pink-800 bg-pink-50 p-2 rounded-md">
           Higher values focus more on reaching the goal, lower values explore uniformly.
         </p>
       </div>
