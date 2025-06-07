@@ -18,7 +18,7 @@ import {
   updateCellDataFlattenedStep,
   updateCellDataSnapshotStep,
 } from '~/cell-data/cell-data';
-import { isSamePos, parsePos, stringifyPos } from '~/utils/grid-helpers';
+import { isSamePos, isValidPos, parsePos, stringifyPos } from '~/utils/grid-helpers';
 import { LARGEST_PLAYBACK_FACTOR, NO_TIMELINE, SMALLEST_PLAYBACK_FACTOR } from '~/state/constants';
 
 export const initialState: AppState = {
@@ -327,63 +327,61 @@ export function reducer(state: AppState, action: Action): AppState {
         cellSelectionState,
       };
     case 'UPDATE_CELL_STATUS':
+      if (!isValidPos(action.payload)) {
+        throw new Error('we should be receiving valid positions of [number,number]');
+      }
+
+      if (isNullOrUndefined(state.startPos) || isNullOrUndefined(state.goalPos)) {
+        throw new Error('this should not happen, must have a start & goal');
+      }
+
       if (state.cellSelectionState === 'inactive') {
         return state;
       }
-      const [targetRow, targetCol] = action.payload;
-      const flattened = state.cellData.flat();
-      const st = flattened.find((c) => c.state === 'start');
-      const go = flattened.find((c) => c.state === 'goal');
+      const targetPos = action.payload;
 
-      if (isNullOrUndefined(go) || isNullOrUndefined(st)) {
-        // return state
-        throw new Error('this should not happen, must have a start &  goal');
-      }
-
-      const [startRow, startCol] = st.pos;
-      const [goalRow, goalCol] = go.pos;
-
+      //the TLDR of this is that if its a wall and we set that position to a start or goal,
+      // we need to update the weight to a passable value a value that is positive and finite
       function updateCellWeightIfWall(
         weightGrid: number[][],
-        targetRow: number,
-        targetCol: number,
+        targetPos: Pos,
         newWeight: number = 1
       ) {
-        const currentWeight = weightGrid[targetRow][targetCol];
+        const currentWeight = weightGrid[targetPos[0]][targetPos[1]];
 
         if (currentWeight !== 0) {
           return weightGrid;
         }
 
         return weightGrid.map((row, r) =>
-          row.map((weight, c) => (r === targetRow && c === targetCol ? newWeight : weight))
+          row.map((weight, c) => (isSamePos([r, c], targetPos) ? newWeight : weight))
         );
       }
 
       if (state.cellSelectionState === 'set_goal') {
-        if (startRow === targetRow && startCol === targetCol) {
+        if (isSamePos(state.startPos, targetPos)) {
           return state;
         }
-        const updatedWeightGrid = updateCellWeightIfWall(state.weightGrid, targetRow, targetCol);
+        const updatedWeightGrid = updateCellWeightIfWall(state.weightGrid, targetPos);
         return {
           ...state,
           weightGrid: updatedWeightGrid,
-          cellData: initCellData(updatedWeightGrid, [startRow, startCol], [targetRow, targetCol]),
-          goalPos: [targetRow, targetCol],
-          startPos: [startRow, startCol],
+          cellData: initCellData(updatedWeightGrid, state.startPos, targetPos),
+          goalPos: targetPos,
+          startPos: state.startPos,
         };
       } else if (state.cellSelectionState === 'set_start') {
-        if (goalRow === targetRow && goalCol === targetCol) {
+        if (isSamePos(state.goalPos, targetPos)) {
           return state;
         }
-        const updatedWeightGrid = updateCellWeightIfWall(state.weightGrid, targetRow, targetCol);
+        const updatedWeightGrid = updateCellWeightIfWall(state.weightGrid, targetPos);
 
         return {
           ...state,
           weightGrid: updatedWeightGrid,
-          cellData: initCellData(updatedWeightGrid, [targetRow, targetCol], [goalRow, goalCol]),
-          startPos: [targetRow, targetCol],
-          goalPos: [goalRow, goalCol],
+          cellData: initCellData(updatedWeightGrid, targetPos, state.goalPos),
+          startPos: targetPos,
+          goalPos: state.goalPos,
         };
       }
       return state;
