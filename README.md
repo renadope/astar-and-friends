@@ -1,4 +1,4 @@
-# 🧭 A* and Friends: Pathfinding Visualizer
+# 🧭 A\* and Friends: Pathfinding Visualizer
 
 <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
   <img src="https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react" alt="React" />
@@ -32,7 +32,7 @@ Visualize how pathfinding algorithms work in real-time on an interactive grid. P
 - **AStar Search**: The gold standard pathfinding algorithm with adjustable `g` (path cost) and `h` (heuristic) weightings
 - **Dijkstra's Algorithm**: The classic shortest-path algorithm that uses path cost only (`g`)
 - **Greedy Best-First Search**: A faster, less optimal approach that uses heuristic only (`h`)
-- **Breadth-First Search**: A fundamental graph traversal technique, simulated by setting *gWeight = 0* and *hWeight = 0*
+- **Breadth-First Search**: A fundamental graph traversal technique, simulated by setting _gWeight = 0_ and _hWeight = 0_
 
 ### 🧮 Unified Algorithm Framework
 
@@ -72,6 +72,7 @@ This design allows seamless real-time transitions between algorithms by simply a
 ### 🧠 Advanced Heuristic Configuration
 
 Choose from multiple distance calculations:
+
 - **Manhattan**: Optimal for grid-based movement without diagonals
 - **Euclidean**: True "as the crow flies" distance
 - **Octile**: Optimized for grids with diagonal movement at cost √2
