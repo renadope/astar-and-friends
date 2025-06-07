@@ -1,7 +1,7 @@
 import { type ComponentPropsWithoutRef } from 'react';
 import { useGridContext } from '~/state/context';
 import { cn } from '~/lib/utils';
-import { Edit3, RefreshCcw } from 'lucide-react';
+import { Edit3 } from 'lucide-react';
 import { gridSize } from '~/components/control-panel/control-panel';
 import { toast } from 'sonner';
 import { isNullOrUndefined } from '~/utils/helpers';

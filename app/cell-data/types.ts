@@ -1,5 +1,3 @@
-import type { Weights } from '~/types/pathfinding';
-
 export type CellData = {
   pos: [number, number];
   cost: number;

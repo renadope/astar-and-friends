@@ -2,8 +2,6 @@ import type { Route } from './+types/home';
 import { GridProvider } from '~/state/context';
 import Grid from '~/components/grid';
 import ControlPanel from '~/components/control-panel/control-panel';
-import { Link } from 'react-router';
-import { GithubIcon, LinkedInIcon } from '~/components/icons/icons';
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'aStar' }, { name: 'description', content: 'aStar Demo!' }];

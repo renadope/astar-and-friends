@@ -1,5 +1,5 @@
 import type { FlattenedStep, SnapshotStep } from '~/utils/timeline-generation';
-import type { AStarData, DiagonalConfig, PathData, Pos, Weights } from '~/types/pathfinding';
+import type { AStarData, DiagonalConfig, Pos, Weights } from '~/types/pathfinding';
 import type { HeuristicFunc, HeuristicName } from '~/utils/heuristics';
 import type { CostAndWeightFunc, CostAndWeightKind } from '~/utils/grid-weights';
 import type { CellData, CellToggle } from '~/cell-data/types';
