@@ -28,7 +28,6 @@ export default function Grid() {
     timeline: stateTimeline,
     snapshotTimeline,
     granularTimeline,
-    heuristic,
   } = state;
   const hasAStarData = !isNullOrUndefined(aStarData);
   const hasCellData = !isNullOrUndefined(cellData) && cellData.length > 0;
@@ -176,12 +175,11 @@ export default function Grid() {
                         setClickedCell(undefined);
                       }
                     }}
-                    className={`
-                                      px-2 py-1.5 text-sm rounded-md border-2  flex flex-col items-center gap-0.5
-                                      border-transparent hover:border-black hover:bg-gray-100
-                                      disabled:opacity-50 disabled:cursor-not-allowed 
-                                      disabled:hover:border-transparent disabled:hover:bg-transparent
-                                      transition-all duration-150
+                    className={`px-2 py-1.5 text-sm rounded-md border-2  flex flex-col items-center gap-0.5
+                               border-transparent hover:border-black hover:bg-gray-100
+                               disabled:opacity-50 disabled:cursor-not-allowed 
+                               disabled:hover:border-transparent disabled:hover:bg-transparent
+                               transition-all duration-150
                                     `}
                   >
                     <span className="font-medium ">{name}</span>
