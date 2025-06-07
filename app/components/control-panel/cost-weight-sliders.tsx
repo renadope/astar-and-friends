@@ -88,7 +88,7 @@ export function CostWeightSliders({ className, ...props }: ComponentPropsWithout
           <span>10 (Cost priority)</span>
         </div>
 
-        <p className="2xs:hidden sm:block text-sm text-sky-800 bg-sky-50 p-2 rounded-md">
+        <p className="2xs:hidden sm:block text-xs text-sky-800 bg-sky-50 p-2 rounded-md">
           Higher values prioritize shorter paths, lower values explore more freely.
         </p>
       </div>
