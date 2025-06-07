@@ -611,12 +611,7 @@ export function reducer(state: AppState, action: Action): AppState {
         return state;
       }
       const updatedGrid = state.weightGrid.map((row, r) =>
-        row.map((weight, c) => {
-          if (r === rNew && c === cNew) {
-            return newCellWeight;
-          }
-          return weight;
-        })
+        row.map((weight, c) => (isSamePos([r, c], newCellWeightPos) ? newCellWeight : weight))
       );
       return {
         ...state,
