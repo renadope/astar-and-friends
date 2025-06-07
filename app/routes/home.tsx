@@ -22,7 +22,7 @@ export function Main() {
           </div>
         </div>
       </div>
-      <footer className="text-center text-sm text-gray-500 mt-12 pb-4 border-t pt-4 border-gray-300">
+      <footer className="text-center text-sm text-gray-500 mt-12 pb-4 border-t pt-4 border-gray-200">
         <div className="flex flex-col items-center justify-center space-y-2">
           <div className="flex items-center space-x-1">
             <p className="flex items-center space-x-1">
