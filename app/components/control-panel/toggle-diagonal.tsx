@@ -155,7 +155,7 @@ export function ToggleDiagonal({ className, ...props }: ComponentPropsWithoutRef
                     })
                   }
                   className={`flex-1 px-2 py-1 text-xs font-medium rounded transition-colors ${
-                    Math.abs(diagonalSettings.diagonalMultiplier - preset.value) <= 1e-4
+                    Math.abs(diagonalSettings.diagonalMultiplier - preset.value) <= 1e-2
                       ? 'bg-purple-600 text-white'
                       : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
                   }`}
