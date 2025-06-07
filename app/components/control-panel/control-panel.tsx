@@ -17,9 +17,8 @@ export const gridSize = 8//really need to remove this and add a selector/option 
 
 export default function ControlPanel() {
     const {state, dispatch} = useGridContext()
-    const {currentTimelineIndex, aStarData, playbackSpeedFactor} = state
+    const {aStarData, playbackSpeedFactor} = state
     const algorithmName = getAlgorithmName(state.gwWeights.gWeight, state.gwWeights.hWeight)
-    const timeline = state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline
     useEffect(() => {
         dispatch({
             type: 'GENERATE_GRID', payload: gridSize
@@ -27,22 +26,28 @@ export default function ControlPanel() {
     }, [])
 
     useEffect(() => {
-        if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0 || state.cellSelectionState !== 'inactive') {
+        if (isNullOrUndefined(aStarData) || state.weightGrid.length === 0 || state.cellSelectionState !== 'inactive' || !state.isPlaying) {
             return
         }
 
-        if (!state.isPlaying) {
-            return
-        }
         const delay = Math.max(DEFAULT_PLAYBACK_SPEED_MS / playbackSpeedFactor, 50);
-        const interval = setTimeout(() => {
-            dispatch({
-                type: 'INCREMENT_INDEX'
-            })
-        }, delay)
-        return () => clearTimeout(interval)
 
-    }, [aStarData, currentTimelineIndex, timeline.length, state.cellSelectionState, state.isPlaying, playbackSpeedFactor])
+        let frameId: number;
+        let lastTimestamp = performance.now();
+
+        function animate(timestamp: number) {
+            const elapsed = timestamp - lastTimestamp;
+            if (elapsed >= delay) {
+                lastTimestamp = timestamp;
+                dispatch({type: 'INCREMENT_INDEX'});
+            }
+            frameId = requestAnimationFrame(animate);
+        }
+
+        frameId = requestAnimationFrame(animate);
+
+        return () => cancelAnimationFrame(frameId);
+    }, [aStarData, state.weightGrid, state.cellSelectionState, state.isPlaying, playbackSpeedFactor,]);
 
 
     return (
