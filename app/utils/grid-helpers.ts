@@ -14,10 +14,7 @@ export function isValidGridIndex(grid: unknown, row: number, col: number): boole
 }
 
 function isValidGridStructure(grid: unknown): grid is unknown[][] {
-  if (!Array.isArray(grid)) {
-    return false;
-  }
-  return grid.length > 0 && grid.every((ele) => Array.isArray(ele));
+  return Array.isArray(grid) && grid.length > 0 && grid.every((ele) => Array.isArray(ele));
 }
 
 export function isValidGridOfNumbers(grid: unknown): grid is number[][] {
