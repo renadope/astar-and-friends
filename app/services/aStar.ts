@@ -11,6 +11,7 @@ import {
   checkPosEquality,
   isNodePassable,
   isValidGridIndex,
+  isValidGridOfNumbers,
   isValidNode,
   stringifyPos,
 } from '~/utils/grid-helpers';
@@ -48,6 +49,10 @@ export function aStar(
 ): Result<AStarData> {
   function heuristicFromNodeToGoal(node: Pos) {
     return heuristic(node, goal);
+  }
+
+  if (!isValidGridOfNumbers(grid)) {
+    return ResultErr(new Error('grid should only consist of numbers'));
   }
 
   if (!isValidNode(grid, start[0], start[1])) {

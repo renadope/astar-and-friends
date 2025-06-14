@@ -2,14 +2,27 @@ import type { Pos } from '~/types/pathfinding';
 import { isNullOrUndefined } from '~/utils/helpers';
 import type { Nullish } from '~/types/helpers';
 
-export function isValidGridIndex(grid: unknown[][], row: number, col: number): boolean {
+export function isValidGridIndex(grid: unknown, row: number, col: number): boolean {
   return (
     !isNullOrUndefined(grid) &&
     isValidPos([row, col]) &&
-    Array.isArray(grid) &&
+    isValidGridStructure(grid) &&
     row < grid.length &&
     Array.isArray(grid[row]) &&
     col < grid[row].length
+  );
+}
+
+function isValidGridStructure(grid: unknown): grid is unknown[][] {
+  if (!Array.isArray(grid)) {
+    return false;
+  }
+  return grid.length > 0 && grid.every((ele) => Array.isArray(ele));
+}
+
+export function isValidGridOfNumbers(grid: unknown): grid is number[][] {
+  return (
+    isValidGridStructure(grid) && grid.every((row) => row.every((ele) => typeof ele === 'number'))
   );
 }
 
