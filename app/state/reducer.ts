@@ -482,18 +482,10 @@ export function reducer(state: AppState, action: Action): AppState {
       if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
         return state;
       }
-      if (state.timeline === 'snapshot') {
-        return addCostHistoryToCells(
-          updateCellDataUsingTimelineData({
-            ...state,
-            currentTimelineIndex: state.snapshotTimeline.length - 1,
-          })
-        );
-      }
       return addCostHistoryToCells(
         updateCellDataUsingTimelineData({
           ...state,
-          currentTimelineIndex: state.granularTimeline.length - 1,
+          currentTimelineIndex: getActiveTimelineLength(state) - 1,
         })
       );
     case 'JUMP_TO_START':
@@ -516,8 +508,7 @@ export function reducer(state: AppState, action: Action): AppState {
       if (isNullOrUndefined(state.aStarData) || isNullOrUndefined(state.weightGrid)) {
         return state;
       }
-      const activeTimeline =
-        state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline;
+      const activeTimeline = getActiveTimeline(state);
       for (let i = 0; i < activeTimeline.length; i++) {
         const t = activeTimeline[i];
         if (t.type === 'path') {
@@ -536,8 +527,7 @@ export function reducer(state: AppState, action: Action): AppState {
       if (state.isPlaying === status) {
         return state;
       }
-      const currTimeline =
-        state.timeline === 'snapshot' ? state.snapshotTimeline : state.granularTimeline;
+      const currTimeline = getActiveTimeline(state);
       if (status) {
         if (state.currentTimelineIndex >= currTimeline.length - 1) {
           return {
