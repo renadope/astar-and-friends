@@ -3,8 +3,12 @@ import {
   isNodePassable,
   isSamePos,
   isValidGridIndex,
+  isValidGridOfNumbers,
+  isValidGridStructure,
   isValidNode,
+  isValidNonEmptyGridStructure,
   isValidPos,
+  isValidRectangularGridOfNumbers,
 } from '~/utils/grid-helpers';
 import type { Pos } from '~/types/pathfinding';
 import type { Nullish } from '~/types/helpers';
@@ -326,7 +330,6 @@ describe('isValidGridIndex', () => {
   ];
 
   it.each(invalidGrids)('should return false for $case', ({ grid, row, col }) => {
-    // @ts-expect-error
     expect(isValidGridIndex(grid, row, col)).toBe(false);
   });
 
@@ -451,5 +454,307 @@ describe('isValidGridIndex', () => {
     it.each(validCases)('should return true for $case', ({ grid, row, col }) => {
       expect(isValidNode(grid, row, col)).toBe(true);
     });
+  });
+});
+describe('isValidGridStructure', () => {
+  const invalidGrids = [
+    { grid: null, case: 'null grid' },
+    { grid: undefined, case: 'undefined grid' },
+    { grid: true, case: 'boolean' },
+    { grid: false, case: 'boolean' },
+    { grid: Infinity, case: 'Infinity' },
+    { grid: NaN, case: 'NaN' },
+    { grid: [1, 2, 3], case: 'non-2D array' },
+    { grid: {}, case: 'object' },
+    { grid: [null, [1, 2]], case: 'null row in grid' },
+    { grid: [[1, 2], undefined], case: 'undefined row in grid' },
+    { grid: [[1, 2], 'not array'], case: 'non-array row' },
+  ];
+
+  const validGrids = [
+    { grid: [], case: 'empty grid' },
+    {
+      grid: [[1]],
+      case: '1x1 minimal grid',
+    },
+    {
+      grid: [
+        [0, 0],
+        [0, 0],
+      ],
+      case: '2x2 all-zero grid',
+    },
+    {
+      grid: [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+      ],
+      case: '3x3 sequential grid',
+    },
+    {
+      grid: [
+        [5, 5],
+        [5, 5],
+        [5, 5],
+        [5, 5],
+      ],
+      case: '4x2 constant value grid',
+    },
+    {
+      grid: [
+        [1.1, 2.2],
+        [3.3, 4.4],
+      ],
+      case: '2x2 floating point grid',
+    },
+    {
+      grid: [
+        [Infinity, 1],
+        [1, Infinity],
+      ],
+      case: '2x2 with Infinity',
+    },
+    {
+      grid: [
+        [-1, 0],
+        [0, -1],
+      ],
+      case: '2x2 with negative numbers',
+    },
+  ];
+
+  it.each(invalidGrids)('should return false for $case', ({ grid }) => {
+    expect(isValidGridStructure(grid)).toBe(false);
+  });
+
+  it.each(validGrids)('should return true for $case', ({ grid }) => {
+    expect(isValidGridStructure(grid)).toBeTruthy();
+  });
+});
+
+describe('isValidNonEmptyGridStructure', () => {
+  const invalidGrids = [{ grid: [], case: 'empty grid' }];
+  const validGrids = [
+    { grid: [[]], case: 'has at least one row but is still empty' },
+    {
+      grid: [[1]],
+      case: '1x1 minimal grid',
+    },
+    {
+      grid: [
+        [0, 0],
+        [0, 0],
+      ],
+      case: '2x2 all-zero grid',
+    },
+    {
+      grid: [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+      ],
+      case: '3x3 sequential grid',
+    },
+    {
+      grid: [
+        [5, 5],
+        [5, 5],
+        [5, 5],
+        [5, 5],
+      ],
+      case: '4x2 constant value grid',
+    },
+    {
+      grid: [
+        [1.1, 2.2],
+        [3.3, 4.4],
+      ],
+      case: '2x2 floating point grid',
+    },
+    {
+      grid: [
+        [Infinity, 1],
+        [1, Infinity],
+      ],
+      case: '2x2 with Infinity',
+    },
+    {
+      grid: [
+        [-1, 0],
+        [0, -1],
+      ],
+      case: '2x2 with negative numbers',
+    },
+  ];
+
+  it.each(invalidGrids)('should return false for $case', ({ grid }) => {
+    expect(isValidNonEmptyGridStructure(grid)).toBeFalsy();
+  });
+
+  it.each(validGrids)('should return true for $case', ({ grid }) => {
+    expect(isValidNonEmptyGridStructure(grid)).toBeTruthy();
+  });
+});
+
+describe('isValidGridOfNumbers', () => {
+  const invalidGrids = [
+    { grid: [], case: 'empty grid' },
+    {
+      grid: [[]],
+      case: 'has at least one row but is still empty',
+    },
+  ];
+  const validGrids = [
+    {
+      grid: [[1]],
+      case: '1x1 minimal grid',
+    },
+    {
+      grid: [
+        [0, 0],
+        [0, 0],
+      ],
+      case: '2x2 all-zero grid',
+    },
+    {
+      grid: [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+      ],
+      case: '3x3 sequential grid',
+    },
+    {
+      grid: [
+        [5, 5],
+        [5, 5],
+        [5, 5],
+        [5, 5],
+      ],
+      case: '4x2 constant value grid',
+    },
+    {
+      grid: [
+        [1.1, 2.2],
+        [3.3, 4.4],
+      ],
+      case: '2x2 floating point grid',
+    },
+    {
+      grid: [
+        [Infinity, 1],
+        [1, Infinity],
+      ],
+      case: '2x2 with Infinity',
+    },
+    {
+      grid: [
+        [-1, 0],
+        [0, -1],
+      ],
+      case: '2x2 with negative numbers',
+    },
+  ];
+
+  it.each(invalidGrids)('should return false for $case', ({ grid }) => {
+    expect(isValidGridOfNumbers(grid)).toBeFalsy();
+  });
+
+  it.each(validGrids)('should return true for $case', ({ grid }) => {
+    expect(isValidGridOfNumbers(grid)).toBeTruthy();
+  });
+});
+
+describe('isValidRectangularGrid', () => {
+  const invalidGrids = [
+    { grid: [], case: 'empty grid' },
+    { grid: [[]], case: 'has at least one row but is still empty' },
+
+    {
+      grid: [
+        [1, 2, 3],
+        [4, 5],
+      ],
+      case: 'second row is shorter',
+    },
+    {
+      grid: [
+        [1, 2],
+        [3, 4, 5],
+      ],
+      case: 'second row is longer',
+    },
+    {
+      grid: [[0], [1, 2], [3, 4, 5]],
+      case: 'gradually increasing row lengths',
+    },
+    {
+      grid: [[7, 8], []],
+      case: 'one row is empty, rest are not',
+    },
+    {
+      grid: [[1, 2, 3], [4, 5, 6], [7]],
+      case: 'last row is too short',
+    },
+  ];
+  const validGrids = [
+    {
+      grid: [[1]],
+      case: '1x1 minimal grid',
+    },
+    {
+      grid: [
+        [0, 0],
+        [0, 0],
+      ],
+      case: '2x2 all-zero grid',
+    },
+    {
+      grid: [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+      ],
+      case: '3x3 sequential grid',
+    },
+    {
+      grid: [
+        [5, 5],
+        [5, 5],
+        [5, 5],
+        [5, 5],
+      ],
+      case: '4x2 constant value grid',
+    },
+    {
+      grid: [
+        [1.1, 2.2],
+        [3.3, 4.4],
+      ],
+      case: '2x2 floating point grid',
+    },
+    {
+      grid: [
+        [Infinity, 1],
+        [1, Infinity],
+      ],
+      case: '2x2 with Infinity',
+    },
+    {
+      grid: [
+        [-1, 0],
+        [0, -1],
+      ],
+      case: '2x2 with negative numbers',
+    },
+  ];
+
+  it.each(invalidGrids)('should return false for $case', ({ grid }) => {
+    expect(isValidRectangularGridOfNumbers(grid)).toBeFalsy();
+  });
+
+  it.each(validGrids)('should return true for $case', ({ grid }) => {
+    expect(isValidRectangularGridOfNumbers(grid)).toBeTruthy();
   });
 });

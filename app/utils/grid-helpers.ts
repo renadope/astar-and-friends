@@ -13,14 +13,27 @@ export function isValidGridIndex(grid: unknown, row: number, col: number): boole
   );
 }
 
-function isValidGridStructure(grid: unknown): grid is unknown[][] {
-  return Array.isArray(grid) && grid.length > 0 && grid.every((ele) => Array.isArray(ele));
+export function isValidGridStructure(grid: unknown): grid is unknown[][] {
+  return Array.isArray(grid) && grid.every((row) => Array.isArray(row));
+}
+
+export function isValidNonEmptyGridStructure(grid: unknown): grid is unknown[][] {
+  return isValidGridStructure(grid) && grid.length > 0;
 }
 
 export function isValidGridOfNumbers(grid: unknown): grid is number[][] {
   return (
-    isValidGridStructure(grid) && grid.every((row) => row.every((ele) => typeof ele === 'number'))
+    isValidNonEmptyGridStructure(grid) &&
+    grid.every((row) => row.length > 0 && row.every((ele) => typeof ele === 'number'))
   );
+}
+
+export function isValidRectangularGridOfNumbers(grid: unknown): grid is number[][] {
+  if (isValidGridOfNumbers(grid)) {
+    const firstLen = grid[0].length;
+    return grid.every((row) => row.length === firstLen);
+  }
+  return false;
 }
 
 export function stringifyPos(...pos: number[]): string {

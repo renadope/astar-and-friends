@@ -11,8 +11,8 @@ import {
   checkPosEquality,
   isNodePassable,
   isValidGridIndex,
-  isValidGridOfNumbers,
   isValidNode,
+  isValidRectangularGridOfNumbers,
   stringifyPos,
 } from '~/utils/grid-helpers';
 import { isNullOrUndefined, ResultErr, ResultOk } from '~/utils/helpers';
@@ -51,8 +51,8 @@ export function aStar(
     return heuristic(node, goal);
   }
 
-  if (!isValidGridOfNumbers(grid)) {
-    return ResultErr(new Error('grid should only consist of numbers'));
+  if (!isValidRectangularGridOfNumbers(grid)) {
+    return ResultErr(new Error('grid should only consist of numbers and be rectangular'));
   }
 
   if (!isValidNode(grid, start[0], start[1])) {
