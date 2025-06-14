@@ -252,21 +252,72 @@ describe('aStar', () => {
       ];
 
       it.each(configs)('', (config) => {
-        const aStarData = aStar(
-          config.weightGrid,
-          config.start,
-          config.goal,
-          config.heuristic,
-          config.allowedDiagonal,
-          config.weights
-        );
+        expectSuccessfulAStarResult(config, { exactMatch: true });
+      });
+    });
+    describe('aStar - strict diagonal allowed at SQRT2 multiplier, gWeight = 1 and hWeight = 1, manhattan heuristic', () => {
+      const configs: HappyPathConfig[] = [
+        {
+          weightGrid: [
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+          ],
+          start: [0, 0],
+          goal: [3, 3],
+          expectedCost: 5.242640687119,
+          expectedPathLength: 4,
+          heuristic: manhattan,
+          allowedDiagonal: {
+            allowed: true,
+            cornerCutting: 'strict',
+            diagonalMultiplier: Math.SQRT2,
+          },
+          weights: { gWeight: 1, hWeight: 1, name: 'AStar' },
+        },
+        {
+          weightGrid: [
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+          ],
+          start: [0, 0],
+          goal: [1, 1],
+          expectedCost: 2.414213562373,
+          expectedPathLength: 2,
+          heuristic: manhattan,
+          allowedDiagonal: {
+            allowed: true,
+            cornerCutting: 'strict',
+            diagonalMultiplier: Math.SQRT2,
+          },
+          weights: { gWeight: 1, hWeight: 1, name: 'AStar' },
+        },
+        {
+          weightGrid: [
+            [2, 2, 2, 2],
+            [2, 2, 2, 2],
+            [2, 2, 2, 2],
+            [2, 2, 2, 2],
+          ],
+          start: [0, 0],
+          goal: [3, 3],
+          expectedCost: 10.48528137423,
+          expectedPathLength: 4,
+          heuristic: manhattan,
+          allowedDiagonal: {
+            allowed: true,
+            cornerCutting: 'strict',
+            diagonalMultiplier: Math.SQRT2,
+          },
+          weights: { gWeight: 1, hWeight: 1, name: 'AStar' },
+        },
+      ];
 
-        expectDefinedAndNonNull(aStarData.value);
-        expect(aStarData.success).toBeTruthy();
-        expect(aStarData.value.goalFound).toBeTruthy();
-        expect(aStarData.value.fallBack).toBeNull();
-        expect(aStarData.value.totalCost).toBe(config.expectedCost);
-        expect(aStarData.value.path.length).toBe(config.expectedPathLength);
+      it.each(configs)('should return valid data for this astar config', (config) => {
+        expectSuccessfulAStarResult(config, { exactMatch: false, precision: 3 });
       });
     });
   });
@@ -394,6 +445,46 @@ function expectFallbackGoalRoundTripConsistency(config: FallBackConfig) {
   const lastPos = aStarFallbackGoalRes.value.path[aStarFallbackGoalRes.value.path.length - 1].pos;
   expect(isSamePos(lastPos, aStarInitialRes.value.fallBack)).toBeTruthy();
   expectPathsToBeEqual(aStarInitialRes.value.path, aStarFallbackGoalRes.value.path);
+}
+
+type ExactMatch = {
+  exactMatch: true;
+  precision?: never;
+};
+type WithPrecision = {
+  exactMatch: false;
+  precision: number;
+};
+type ToleranceOptions = ExactMatch | WithPrecision;
+
+function isExactMatchOption(tolerance: ToleranceOptions): tolerance is ExactMatch {
+  return tolerance.exactMatch && isNullOrUndefined(tolerance.precision);
+}
+
+function isWithPrecisionOption(tolerance: ToleranceOptions): tolerance is WithPrecision {
+  return !tolerance.exactMatch && Number.isInteger(tolerance.precision) && tolerance.precision >= 0;
+}
+
+function expectSuccessfulAStarResult(config: HappyPathConfig, toleranceOptions: ToleranceOptions) {
+  const aStarData = aStar(
+    config.weightGrid,
+    config.start,
+    config.goal,
+    config.heuristic,
+    config.allowedDiagonal,
+    config.weights
+  );
+
+  expectDefinedAndNonNull(aStarData.value);
+  expect(aStarData.success).toBeTruthy();
+  expect(aStarData.value.goalFound).toBeTruthy();
+  expect(aStarData.value.fallBack).toBeNull();
+  if (isExactMatchOption(toleranceOptions)) {
+    expect(aStarData.value.totalCost).toBe(config.expectedCost);
+  } else if (isWithPrecisionOption(toleranceOptions)) {
+    expect(aStarData.value.totalCost).toBeCloseTo(config.expectedCost, toleranceOptions.precision);
+  }
+  expect(aStarData.value.path.length).toBe(config.expectedPathLength);
 }
 
 function expectAStarNodeToBeEqual(
