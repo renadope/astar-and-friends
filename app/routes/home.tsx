@@ -6,7 +6,37 @@ import { Link } from 'react-router';
 import { GithubIcon, LinkedInIcon } from '~/components/icons/icons';
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: 'aStar' }, { name: 'description', content: 'aStar Demo!' }];
+  return [
+    { title: 'A* and Friends – Interactive Pathfinding Visualizer' },
+    {
+      name: 'description',
+      content:
+        'Interactive visualization of A*, Dijkstra, BFS, and Greedy BFS algorithms with advanced controls and step-by-step debugging.',
+    },
+
+    { name: 'theme-color', content: '#0f172a' },
+
+    { property: 'og:title', content: 'A* and Friends – Interactive Pathfinding Visualizer' },
+    {
+      property: 'og:description',
+      content:
+        'Interactive visualization of A*, Dijkstra, BFS, and Greedy BFS algorithms with advanced controls and step-by-step debugging.',
+    },
+    { property: 'og:image', content: 'https://astarandfriends.io/preview.png' },
+    { property: 'og:url', content: 'https://astarandfriends.io' },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:site_name', content: 'A* and Friends' },
+
+    // Twitter Card
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: 'A* and Friends – Interactive Pathfinding Visualizer' },
+    {
+      name: 'twitter:description',
+      content:
+        'Try A*, Dijkstra, BFS, and Greedy BFS algorithms in an interactive playground with animations and step-by-step visualization.',
+    },
+    { name: 'twitter:image', content: 'https://astarandfriends.io/preview.png' },
+  ];
 }
 
 export function Main() {
