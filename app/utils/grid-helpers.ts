@@ -17,6 +17,14 @@ export function isValidGridIndex(grid: unknown, row: number, col: number): boole
   );
 }
 
+export function isValidGridIndexUsingPos(grid: unknown, pos?: Pos): boolean {
+  if (!isValidPos(pos)) {
+    return false;
+  }
+  const [row, col] = pos;
+  return isValidGridIndex(grid, row, col);
+}
+
 export function isValidGridStructure(grid: unknown): grid is unknown[][] {
   return Array.isArray(grid) && grid.every((row) => Array.isArray(row));
 }

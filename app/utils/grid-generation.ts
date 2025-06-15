@@ -1,7 +1,12 @@
 //The first number represents the cost that we want to select, and the second number represents the odds of that cost being selected
 import type { Pos } from '~/types/pathfinding';
 import type { CostAndWeight, CostAndWeightFunc } from '~/utils/grid-weights';
-import { isPosInbounds, isSamePos, isValidGridOfNumbers, isValidPos } from '~/utils/grid-helpers';
+import {
+  isPosInbounds,
+  isSamePos,
+  isValidPos,
+  isValidRectangularGridOfNumbers,
+} from '~/utils/grid-helpers';
 
 export type CDFEntry = {
   cost: number;
@@ -74,7 +79,7 @@ function generateRandomCostGridRowsCols(
     grid.push(row);
   }
   //putting this as we have not tested this function yet, will remove after testing
-  if (!isValidGridOfNumbers(grid)) {
+  if (!isValidRectangularGridOfNumbers(grid)) {
     throw new Error('Generated grid is invalid.');
   }
   return grid;

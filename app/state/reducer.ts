@@ -21,11 +21,14 @@ import {
 import {
   isSamePos,
   isValidGridIndex,
+  isValidGridIndexUsingPos,
+  isValidGridOfNumbers,
   isValidPos,
   parsePos,
   stringifyPos,
 } from '~/utils/grid-helpers';
 import { LARGEST_PLAYBACK_FACTOR, NO_TIMELINE, SMALLEST_PLAYBACK_FACTOR } from '~/state/constants';
+import type { Nullish } from '~/types/helpers';
 
 export const initialState: AppState = {
   weightGrid: [],
@@ -75,11 +78,8 @@ function updateCellDataUsingTimelineData(state: AppState) {
   const adjustedTimeline = timeline.slice(0, idx + 1);
   const initCell = initCellData(
     state.weightGrid,
-    state.startPos ?? [0, 0],
-    state.goalPos ?? [
-      state.weightGrid.length - 1,
-      state.weightGrid[state.weightGrid.length - 1].length - 1,
-    ]
+    handleFallbackStart(state.weightGrid, state.startPos),
+    handleFallBackGoal(state.weightGrid, state.goalPos)
   );
   return {
     ...state,
@@ -151,11 +151,8 @@ export function reducer(state: AppState, action: Action): AppState {
       if (isNullOrUndefined(state.weightGrid) || state.weightGrid.length === 0) {
         return state;
       }
-      const start = state.startPos ?? [0, 0];
-      const goal = state.goalPos ?? [
-        state.weightGrid.length - 1,
-        state.weightGrid[state.weightGrid.length - 1].length - 1,
-      ];
+      const start = handleFallbackStart(state.weightGrid, state.startPos);
+      const goal = handleFallBackGoal(state.weightGrid, state.goalPos);
       if (!isValidGridIndex(state.weightGrid, start[0], start[1])) {
         throw new Error('start position is invalid');
       }
@@ -407,11 +404,8 @@ export function reducer(state: AppState, action: Action): AppState {
           state.weightGrid.length > 0
             ? initCellData(
                 state.weightGrid,
-                state.startPos ?? [0, 0],
-                state.goalPos ?? [
-                  state.weightGrid.length - 1,
-                  state.weightGrid[state.weightGrid.length - 1].length - 1,
-                ]
+                handleFallbackStart(state.weightGrid, state.startPos),
+                handleFallBackGoal(state.weightGrid, state.goalPos)
               )
             : [],
         granularTimeline: [],
@@ -470,11 +464,8 @@ export function reducer(state: AppState, action: Action): AppState {
           state.weightGrid.length > 0
             ? initCellData(
                 state.weightGrid,
-                state.startPos ?? [0, 0],
-                state.goalPos ?? [
-                  state.weightGrid.length - 1,
-                  state.weightGrid[state.weightGrid.length - 1].length - 1,
-                ]
+                handleFallbackStart(state.weightGrid, state.startPos),
+                handleFallBackGoal(state.weightGrid, state.goalPos)
               )
             : [],
       };
@@ -497,11 +488,8 @@ export function reducer(state: AppState, action: Action): AppState {
         currentTimelineIndex: NO_TIMELINE,
         cellData: initCellData(
           state.weightGrid,
-          state.startPos ?? [0, 0],
-          state.goalPos ?? [
-            state.weightGrid.length - 1,
-            state.weightGrid[state.weightGrid.length - 1].length - 1,
-          ]
+          handleFallbackStart(state.weightGrid, state.startPos),
+          handleFallBackGoal(state.weightGrid, state.goalPos)
         ),
       };
     case 'JUMP_TO_PATH_START':
@@ -536,11 +524,8 @@ export function reducer(state: AppState, action: Action): AppState {
             isPlaying: true,
             cellData: initCellData(
               state.weightGrid,
-              state.startPos ?? [0, 0],
-              state.goalPos ?? [
-                state.weightGrid.length - 1,
-                state.weightGrid[state.weightGrid.length - 1].length - 1,
-              ]
+              handleFallbackStart(state.weightGrid, state.startPos),
+              handleFallBackGoal(state.weightGrid, state.goalPos)
             ),
           };
         }
@@ -624,4 +609,34 @@ export function reducer(state: AppState, action: Action): AppState {
     default:
       return state;
   }
+}
+
+function fallbackToPos(weightGrid: number[][], pos: Nullish<Pos>, fallback: Pos, label: string) {
+  if (!isValidGridOfNumbers(weightGrid)) {
+    throw new Error('invalid grid');
+  }
+  if (!isValidPos(fallback)) {
+    throw new Error(`Invalid fallback for ${label}, fix your hardcoded value.`);
+  }
+  if (!isValidPos(pos) || !isValidGridIndexUsingPos(weightGrid, pos)) {
+    console.warn(`Invalid ${label} position provided. Falling back to ${fallback}.`);
+    if (!isValidGridIndexUsingPos(weightGrid, fallback)) {
+      throw new Error('im tired boss');
+    }
+    return fallback;
+  }
+  return pos;
+}
+
+function handleFallBackGoal(weightGrid: number[][], goal?: Pos): Pos {
+  return fallbackToPos(
+    weightGrid,
+    goal,
+    [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1],
+    'goal'
+  );
+}
+
+function handleFallbackStart(weightGrid: number[][], start?: Pos): Pos {
+  return fallbackToPos(weightGrid, start, [0, 0], 'start');
 }
