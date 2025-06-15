@@ -2,6 +2,10 @@ import type { Pos } from '~/types/pathfinding';
 import { isNullOrUndefined } from '~/utils/helpers';
 import type { Nullish } from '~/types/helpers';
 
+export function isPosInbounds(pos: Pos, rows: number, cols: number): boolean {
+  return isValidPos(pos) && pos[0] < rows && pos[1] < cols;
+}
+
 export function isValidGridIndex(grid: unknown, row: number, col: number): boolean {
   return (
     !isNullOrUndefined(grid) &&

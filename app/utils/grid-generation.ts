@@ -1,6 +1,7 @@
 //The first number represents the cost that we want to select, and the second number represents the odds of that cost being selected
 import type { Pos } from '~/types/pathfinding';
 import type { CostAndWeight, CostAndWeightFunc } from '~/utils/grid-weights';
+import { isPosInbounds, isSamePos, isValidGridOfNumbers, isValidPos } from '~/utils/grid-helpers';
 
 export type CDFEntry = {
   cost: number;
@@ -35,6 +36,71 @@ export function generateRandomCostGrid(
   }
 
   return grid;
+}
+
+/**
+ * Generates a rows x cols grid of terrain weights.
+ * Start and goal positions are assigned a flat cost of 1.
+ */
+function generateRandomCostGridRowsCols(
+  rows: number,
+  cols: number,
+  getCostAndWeight: CostAndWeightFunc,
+  st: Pos,
+  goal: Pos
+): number[][] {
+  if (rows < 1 || cols < 1) {
+    throw new Error('invalid dims');
+  }
+  if (!isValidPos(st) || !isValidPos(goal)) {
+    throw new Error('start or goal is not a valid position');
+  }
+  if (!isPosInbounds(st, rows, cols) || !isPosInbounds(goal, rows, cols)) {
+    throw new Error('start or goal cannot be placed on this grid');
+  }
+  const grid: number[][] = [];
+  for (let r = 0; r < rows; r++) {
+    const row: number[] = [];
+    for (let c = 0; c < cols; c++) {
+      const terrainWeight = getTerrainWeight(getCostAndWeight, r, c, rows * cols);
+      const isStart = isSamePos([r, c], st);
+      const isGoal = isSamePos([r, c], goal);
+      if (isStart || isGoal) {
+        row.push(1);
+      } else {
+        row.push(terrainWeight);
+      }
+    }
+    grid.push(row);
+  }
+  //putting this as we have not tested this function yet, will remove after testing
+  if (!isValidGridOfNumbers(grid)) {
+    throw new Error('Generated grid is invalid.');
+  }
+  return grid;
+}
+
+export function generateRandomCostGriForPathFinding(
+  rows: number,
+  cols: number,
+  getCostAndWeight: CostAndWeightFunc,
+  st: Pos,
+  goal: Pos
+): number[][] {
+  if (rows <= 1 || cols <= 1) {
+    throw new Error('must be larger than a 1x1 grid, otherwise start===goal');
+  }
+  if (!isValidPos(st) || !isValidPos(goal)) {
+    throw new Error('start or goal is not a valid position');
+  }
+  if (isSamePos(st, goal)) {
+    throw new Error('start and goal should not be the same in the explicit case');
+  }
+  if (!isPosInbounds(st, rows, cols) || !isPosInbounds(goal, rows, cols)) {
+    throw new Error('start or goal cannot be placed on this grid');
+  }
+
+  return generateRandomCostGridRowsCols(rows, cols, getCostAndWeight, st, goal);
 }
 
 export function getTerrainWeight(func: CostAndWeightFunc, r: number, c: number, size: number) {
