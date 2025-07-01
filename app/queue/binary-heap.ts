@@ -18,12 +18,12 @@ export class BinaryHeap<T> {
     this.compare = compareFunc;
   }
 
-  clear() {
+  clear(): void {
     this.heap = [];
     this.indexMap = new Map<string, number>();
   }
 
-  toString() {
+  toString(): string {
     return this.size() > 0 ? this.heap.map((heapEle) => JSON.stringify(heapEle)).join(', ') : '';
   }
 
@@ -39,13 +39,13 @@ export class BinaryHeap<T> {
     return this.isEmpty() ? undefined : this.heap[0];
   }
 
-  insert(node: HeapNode<T>) {
+  insert(node: HeapNode<T>): void {
     this.heap.push(node);
     this.indexMap.set(node.id, this.heap.length - 1);
     this.heapifyUp();
   }
 
-  insertAll(nodes: HeapNode<T>[]) {
+  insertAll(nodes: HeapNode<T>[]): void {
     for (let i = 0; i < nodes.length; i++) {
       this.insert(nodes[i]);
     }
@@ -80,11 +80,11 @@ export class BinaryHeap<T> {
     return result;
   }
 
-  updatePriority(node: HeapNode<T>, newPriority: number) {
+  updatePriority(node: HeapNode<T>, newPriority: number): void {
     this.updatePriorityID(node.id, newPriority);
   }
 
-  updatePriorityID(id: string, newPriority: number) {
+  updatePriorityID(id: string, newPriority: number): void {
     const index = this.indexMap.get(id);
     if (isNullOrUndefined(index)) {
       return;
@@ -97,7 +97,7 @@ export class BinaryHeap<T> {
     this.heapifyDownFrom(index);
   }
 
-  updateNode(node: HeapNode<T>) {
+  updateNode(node: HeapNode<T>): void {
     const index = this.indexMap.get(node.id);
     if (isNullOrUndefined(index)) {
       return;
@@ -144,11 +144,11 @@ export class BinaryHeap<T> {
     // [this.heap[index1], this.heap[index2]] = [this.heap[index2], this.heap[index1]];
   }
 
-  private heapifyUp() {
+  private heapifyUp(): void {
     this.heapifyUpFrom(this.size() - 1);
   }
 
-  private heapifyUpFrom(index: number) {
+  private heapifyUpFrom(index: number): void {
     while (this.hasParent(index)) {
       const parentIndex = this.getParentIndex(index);
       const compareResult = this.compare(this.heap[parentIndex], this.heap[index]);
@@ -161,7 +161,7 @@ export class BinaryHeap<T> {
     }
   }
 
-  private heapifyDown() {
+  private heapifyDown(): void {
     this.heapifyDownFrom(0);
   }
 
