@@ -145,7 +145,7 @@ export class BinaryHeap<T> {
   }
 
   private heapifyUp() {
-    return this.heapifyUpFrom(this.size() - 1);
+    this.heapifyUpFrom(this.size() - 1);
   }
 
   private heapifyUpFrom(index: number) {
