@@ -20,8 +20,8 @@ export function generateRandomCostGrid(
   st?: Pos,
   goal?: Pos
 ): number[][] {
-  const start = st ?? [0, 0];
-  const end = goal ?? [size - 1, size - 1];
+  const start: Pos = st ?? [0, 0];
+  const end: Pos = goal ?? [size - 1, size - 1];
 
   const grid: number[][] = [];
   for (let r = 0; r < size; r++) {
