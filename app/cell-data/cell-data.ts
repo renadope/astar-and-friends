@@ -118,5 +118,5 @@ export function updateCellDataFlattenedStep(
 }
 
 export function copyCellData(cellData: CellData[][]): CellData[][] {
-  return cellData.map((row) => row.map((cell) => ({ ...cell }) as CellData));
+  return cellData.map((row: CellData[]) => row.map((cell: CellData) => ({ ...cell })));
 }
