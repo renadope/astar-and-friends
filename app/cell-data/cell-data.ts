@@ -15,10 +15,10 @@ import type { CellData } from '~/cell-data/types';
 export function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): CellData[][] {
   const st = start ?? [0, 0];
   const end = goal ?? [weightGrid.length - 1, weightGrid[weightGrid.length - 1].length - 1];
-  return weightGrid.map((row, r) => {
-    return row.map((weight, c) => {
+  return weightGrid.map((row: number[], rowIdx: number) => {
+    return row.map((weight: number, colIdx: number) => {
       const cellData: CellData = {
-        pos: [r, c],
+        pos: [rowIdx, colIdx],
         cost: weight,
         h: undefined,
         f: undefined,
@@ -26,9 +26,9 @@ export function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): C
         step: undefined,
         snapShotStep: undefined,
         state: isNodePassable(weight)
-          ? isSamePos([r, c], st)
+          ? isSamePos([rowIdx, colIdx], st)
             ? 'start'
-            : isSamePos([r, c], end)
+            : isSamePos([rowIdx, colIdx], end)
               ? 'goal'
               : 'empty'
           : 'wall',
