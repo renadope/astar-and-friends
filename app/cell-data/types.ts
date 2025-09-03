@@ -1,5 +1,7 @@
+import type { Pos } from '~/types/pathfinding';
+
 export type CellData = {
-  pos: [number, number];
+  pos: Pos;
   cost: number;
   state: 'empty' | 'start' | 'goal' | 'wall' | 'visited' | 'frontier' | 'path' | 'ghost';
   g?: number;
