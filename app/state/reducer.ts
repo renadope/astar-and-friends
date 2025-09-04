@@ -106,7 +106,7 @@ function generateGrid(state: AppState, size: number): AppState {
   const posSize = Math.abs(size) >= 2 ? Math.abs(size) : 2;
   const goalPos = state.goalPos ?? [posSize - 1, posSize - 1];
   const weightGrid: number[][] = generateRandomCostGrid(
-    size,
+    posSize,
     state.weightPreset.func,
     startPos,
     goalPos
