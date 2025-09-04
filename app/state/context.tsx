@@ -21,7 +21,7 @@ export function GridProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const contextValue = useMemo(() => {
     return { state, dispatch };
-  }, [state]);
+  }, [state, dispatch]);
   return <GridContext.Provider value={contextValue}>{children}</GridContext.Provider>;
 }
 
