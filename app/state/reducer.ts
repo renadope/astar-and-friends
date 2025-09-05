@@ -432,6 +432,9 @@ export function reducer(state: AppState, action: Action): AppState {
       };
     case 'SET_WEIGHT_PRESET':
       const newWeightPresetName = action.payload;
+      if (newWeightPresetName === state.weightPreset.name) {
+        return state;
+      }
       if (
         isNullOrUndefined(newWeightPresetName) ||
         !(newWeightPresetName in predefinedWeightFuncs)
