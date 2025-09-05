@@ -1,6 +1,5 @@
 import { capitalize, isNullOrUndefined } from '~/utils/helpers';
 import { useGridContext } from '~/state/context';
-import GridCell, { cellBgColor, textColors } from '~/components/gridCell';
 import { isSamePos, stringifyPos } from '~/utils/grid-helpers';
 import { useEffect, useState } from 'react';
 import {
@@ -15,6 +14,8 @@ import type { Pos } from '~/types/pathfinding';
 import { Input } from './ui/input';
 import { cellWeight } from '~/presets/cell-weight';
 import { LockIcon, UnlockIcon } from 'lucide-react';
+import { cellBgColor, textColors } from '~/cell-data/cell-data-colors';
+import GridCell from '~/components/gridCell';
 
 export default function Grid() {
   const { state, dispatch } = useGridContext();
