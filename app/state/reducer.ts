@@ -124,7 +124,7 @@ function generateGrid(state: AppState, size: number): AppState {
     granularTimeline: [],
     isPlaying: false,
     configChanged: true,
-    gridSize: size,
+    gridSize: posSize,
     allReconstructedPathsCache: undefined,
   };
 }
@@ -432,7 +432,10 @@ export function reducer(state: AppState, action: Action): AppState {
       };
     case 'SET_WEIGHT_PRESET':
       const newWeightPresetName = action.payload;
-      if (isNullOrUndefined(newWeightPresetName)) {
+      if (
+        isNullOrUndefined(newWeightPresetName) ||
+        !(newWeightPresetName in predefinedWeightFuncs)
+      ) {
         return generateGrid(
           {
             ...state,
