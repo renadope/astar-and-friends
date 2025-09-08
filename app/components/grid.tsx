@@ -96,25 +96,7 @@ export default function Grid() {
           </div>
         )}
 
-        {hasCellData && (
-          <div className="mt-2 2xs:mt-3 sm:mt-4 flex flex-wrap gap-1 2xs:gap-1.5 sm:gap-2 justify-center">
-            {['empty', 'wall', 'visited', 'frontier', 'path', 'start', 'goal', 'ghost'].map(
-              (state) => (
-                <div
-                  key={state}
-                  className="flex items-center gap-1 px-1.5 2xs:px-2 py-0.5 2xs:py-1 bg-white rounded-full shadow-2xl"
-                >
-                  <div
-                    className={`w-2.5 2xs:w-3 h-2.5 2xs:h-3 rounded-full ${cellBgColor[state as keyof typeof cellBgColor]}`}
-                  ></div>
-                  <span className="text-xs 2xs:text-xs sm:text-sm text-slate-700 capitalize">
-                    {state}
-                  </span>
-                </div>
-              )
-            )}
-          </div>
-        )}
+        {hasCellData && <LegendComponent />}
 
         <Dialog
           open={isValidClickedCell && !hasAStarData && cellSelectionState === 'inactive'}
@@ -306,6 +288,24 @@ export default function Grid() {
           </DialogContent>
         </Dialog>
       </div>
+    </div>
+  );
+}
+
+function LegendComponent() {
+  return (
+    <div className="mt-2 2xs:mt-3 sm:mt-4 flex flex-wrap gap-1 2xs:gap-1.5 sm:gap-2 justify-center">
+      {['empty', 'wall', 'visited', 'frontier', 'path', 'start', 'goal', 'ghost'].map((state) => (
+        <div
+          key={state}
+          className="flex items-center gap-1 px-1.5 2xs:px-2 py-0.5 2xs:py-1 bg-white rounded-full shadow-2xl"
+        >
+          <div
+            className={`w-2.5 2xs:w-3 h-2.5 2xs:h-3 rounded-full ${cellBgColor[state as keyof typeof cellBgColor]}`}
+          ></div>
+          <span className="text-xs 2xs:text-xs sm:text-sm text-slate-700 capitalize">{state}</span>
+        </div>
+      ))}
     </div>
   );
 }
