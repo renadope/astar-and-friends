@@ -108,8 +108,13 @@ export function generateRandomCostGriForPathFinding(
   return generateRandomCostGridRowsCols(rows, cols, getCostAndWeight, st, goal);
 }
 
-export function getTerrainWeight(func: CostAndWeightFunc, r: number, c: number, size: number) {
-  const cdf = buildCDF(func(r, c, size));
+export function getTerrainWeight(
+  func: CostAndWeightFunc,
+  r: number,
+  c: number,
+  size: number
+): number {
+  const cdf: CDF = buildCDF(func(r, c, size));
   const roll = Math.random();
   const terrainWeight = cdf.find((costAndThreshold) => roll <= costAndThreshold.threshold);
   return terrainWeight ? terrainWeight.cost : 1;

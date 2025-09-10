@@ -68,11 +68,8 @@ export function isValidNode(grid: number[][], row: number, col: number) {
   return isValidGridIndex(grid, row, col) && isNodePassable(grid[row][col]);
 }
 
-export function isSamePos(a?: Pos | null, b?: Pos | null): boolean {
-  if (!isValidPos(a) || !isValidPos(b)) {
-    return false;
-  }
-  return a[0] === b[0] && a[1] === b[1];
+export function isSamePos(a?: Nullish<Pos>, b?: Nullish<Pos>): boolean {
+  return isValidPos(a) && isValidPos(b) && a[0] === b[0] && a[1] === b[1];
 }
 
 export function isValidPos(pos?: Nullish<Pos>): pos is Pos {
