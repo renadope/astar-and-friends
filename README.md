@@ -1,4 +1,4 @@
-# 🧭 A\* and Friends: Pathfinding Visualizer
+# A* and Friends: Pathfinding Visualizer
 
 <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
   <img src="https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react" alt="React" />
@@ -8,7 +8,7 @@
 </div>
 
 <p style="text-align: center; margin-bottom: 24px;">
-  <strong>A high-performance, fully customizable grid-based pathfinding visualizer</strong> featuring multiple search algorithms, detailed configuration, and real-time animation — designed for education, exploration, and technical demonstration.
+  <strong>A high-performance, fully customizable grid-based pathfinding visualizer</strong> featuring multiple search algorithms, comprehensive configuration options, and real-time animation capabilities designed for educational purposes, algorithmic exploration, and technical demonstration.
 </p>
 
 <div style="display: flex; justify-content: center; margin-bottom: 32px;">
@@ -18,89 +18,95 @@
 </div>
 
 <p style="text-align: center; font-size: 0.95rem; color: gray; margin-bottom: 32px;">
-  🖥️ Fully functional on mobile, but best experienced on desktop for full grid interaction.
+  Note: While fully functional on mobile devices, the application is optimized for desktop environments to provide the best grid interaction experience.
 </p>
 
-## ✨ Overview
+## Overview
 
-Visualize how pathfinding algorithms work in real-time on an interactive grid. Perfect for computer science students, algorithm enthusiasts, and developers interested in the inner workings of spatial search algorithms.
+This application provides real-time visualization of pathfinding algorithms operating on interactive grids. It serves as
+an educational tool for computer science students, algorithm enthusiasts, and software developers seeking to understand
+the mechanics of spatial search algorithms.
 
-## 🎯 Key Features
+## Core Features
 
-### 🔁 Supported Algorithms
+### Supported Algorithms
 
-- **AStar Search**: The gold standard pathfinding algorithm with adjustable `g` (path cost) and `h` (heuristic) weightings
-- **Dijkstra's Algorithm**: The classic shortest-path algorithm that uses path cost only (`g`)
-- **Greedy Best-First Search**: A faster, less optimal approach that uses heuristic only (`h`)
-- **Breadth-First Search**: A fundamental graph traversal technique, simulated by setting _gWeight = 0_ and _hWeight = 0_
+- **A* Search**: An informed search algorithm utilizing both path cost and heuristic evaluation with adjustable
+  weighting parameters
+- **Dijkstra's Algorithm**: A graph search algorithm that finds the shortest path between nodes using cumulative path
+  costs
+- **Greedy Best-First Search**: A heuristic-driven search algorithm that prioritizes nodes based on estimated distance
+  to the goal
+- **Breadth-First Search**: A fundamental graph traversal algorithm implemented through weight parameter configuration
 
-### 🧮 Unified Algorithm Framework
+### Unified Algorithm Framework
 
-All algorithms operate under a single elegant formula:
+All pathfinding algorithms operate within a single mathematical framework:
 
 > **f(n) = g(n) × gWeight + h(n) × hWeight**
 
-This design allows seamless real-time transitions between algorithms by simply adjusting weight parameters—no code switching required!
+This architectural approach enables seamless algorithm transitions through parameter adjustment without requiring code
+modifications, facilitating real-time algorithm comparison and analysis.
 
-### 🎮 Interactive Visualization Controls
+### Visualization and Control System
 
-- **Dynamic Speed Control**: Adjust from 0.5× to 10× to match your learning pace
-- **Timeline Scrubbing**: Jump to any point in the algorithm's execution
-- **Playback Controls**: Play, pause, restart, and skip to solution
+- **Variable Speed Control**: Animation speed adjustment ranging from 0.5× to 10× normal speed
+- **Timeline Navigation**: Precise control over algorithm execution state with scrubbing capabilities
+- **Comprehensive Playback Controls**: Standard media controls including play, pause, restart, and skip-to-solution
 - **Dual Visualization Modes**:
-  - 📸 **Snapshot Mode**: See the complete state at each algorithm step
-  - 🔍 **Granular Mode**: Watch fine-grained changes for deeper understanding
+    - **Snapshot Mode**: Displays complete algorithm state at discrete time intervals
+    - **Granular Mode**: Provides detailed step-by-step visualization for comprehensive analysis
 
-### 🎨 Rich Grid Interaction
+### Grid Interaction Capabilities
 
-- **Interactive Painting**: Drag to add weights, barriers, and customize your grid
-- **Node Customization**: Set custom start and goal positions with a click
-- **Wall Creation**: Design complex mazes by toggling impassable cells
-- **Randomized Environments**: Generate preset scenarios or completely random grids
-- **Diagonal Movement Options**:
-  - **None**: Classic four-direction movement (up, down, left, right)
-  - **Strict**: Diagonal movement only when both adjacent cells are passable (no corner cutting)
-  - **Lax**: Diagonal movement when at least one adjacent cell is passable (partial corner cutting)
-- **Customizable Costs**: Adjust diagonal movement cost (default: √2)
+- **Interactive Grid Modification**: Direct manipulation of grid properties through drag-and-drop interface
+- **Dynamic Node Configuration**: Real-time adjustment of start and goal positions
+- **Obstacle Creation**: Support for complex maze and barrier configurations
+- **Procedural Generation**: Automated creation of randomized grid environments
+- **Movement Configuration Options**:
+    - **Orthogonal Movement**: Traditional four-directional movement (cardinal directions only)
+    - **Strict Diagonal Movement**: Diagonal movement permitted only when adjacent cells are passable
+    - **Permissive Diagonal Movement**: Diagonal movement allowed with relaxed adjacency constraints
+- **Configurable Movement Costs**: Adjustable diagonal movement penalties (default: √2)
 
-### 👀 Intuitive Visual Feedback
+### Visual Feedback System
 
-- **Ghost Path Preview**: Instantly visualize potential paths by hovering over any cell
-- **Color-Coded States**: Clear distinction between frontier, visited nodes, and final path
-- **Responsive Design**: Optimal experience across devices and screen sizes
+- **Path Preview Functionality**: Real-time path visualization through mouse interaction
+- **State-Based Color Coding**: Visual distinction between explored nodes, frontier nodes, and optimal paths
+- **Responsive Interface Design**: Adaptive layout supporting multiple device form factors
 
-### 🧠 Advanced Heuristic Configuration
+### Heuristic Configuration
 
-Choose from multiple distance calculations:
+Multiple distance calculation methods are supported:
 
-- **Manhattan**: Optimal for grid-based movement without diagonals
-- **Euclidean**: True "as the crow flies" distance
-- **Octile**: Optimized for grids with diagonal movement at cost √2
-- **Chebyshev**: Equal cost in all directions (including diagonals)
+- **Manhattan Distance**: Optimal for orthogonal movement patterns
+- **Euclidean Distance**: True geometric distance calculation
+- **Octile Distance**: Specialized for grids supporting diagonal movement at cost √2
+- **Chebyshev Distance**: Uniform cost distance metric for all movement directions
 
-Fine-tune algorithm behavior with intuitive weight sliders for perfect customization.
+Algorithm behavior can be precisely tuned through intuitive weight adjustment controls.
 
-### ⚙️ Streamlined Controls
+### User Interface Design
 
-- **Unified Control Panel**: All settings in one convenient location
-- **Feature Toggles**: Enable/disable functionalities based on your needs
+- **Centralized Control Panel**: Consolidated settings interface for streamlined user experience
+- **Modular Feature System**: Selective activation of functionality based on user requirements
 
-### 🧪 Quality Assurance
+### Quality Assurance
 
-- **Comprehensive Testing**: Core components thoroughly tested with Vitest
-- **CI/CD Pipeline**: Automated testing on every commit ensures reliability
+- **Comprehensive Test Suite**: Extensive unit and integration testing using Vitest framework
+- **Continuous Integration**: Automated testing pipeline ensuring code quality and reliability
 
-## 🧠 Tech Stack
+## Technical Architecture
 
-- **Frontend**: React 19 + React Router + TailwindCSS + shadcn/ui
-- **State Management**: Custom hooks and context for efficient state handling
-- **Animation Engine**: Purpose-built timeline system for precise playback control
-- **Testing**: Vitest for unit and integration tests
-- **CI/CD**: GitHub Actions for automated testing and deployment
+- **Frontend Framework**: React 19 with React Router for navigation and TailwindCSS with shadcn/ui for styling
+- **State Management**: Custom React hooks and context providers for efficient state handling
+- **Animation System**: Purpose-built timeline engine providing precise playback control
+- **Testing Framework**: Vitest for comprehensive test coverage
+- **Deployment Pipeline**: GitHub Actions for automated testing and continuous deployment
 
-## 🛠️ Getting Started
+## Installation and Setup
 
-Clone and run the project locally in just three simple steps:
+To run the application locally, execute the following commands:
 
 ```bash
 git clone https://github.com/renadope/astar-and-friends.git
@@ -108,3 +114,5 @@ cd astar-and-friends
 pnpm install
 pnpm run dev
 ```
+
+The application will be available at the default development server address.
