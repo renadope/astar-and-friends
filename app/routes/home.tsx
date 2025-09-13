@@ -4,6 +4,7 @@ import Grid from '~/components/grid';
 import ControlPanel from '~/components/control-panel/control-panel';
 import { Link } from 'react-router';
 import { GithubIcon, LinkedInIcon } from '~/components/icons/icons';
+import { GlowingButton } from '~/components/glowing-button';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -94,6 +95,10 @@ export function Main() {
               />
             </Link>
             <span>·</span>
+
+            <GlowingButton to={'https://renado.gitbook.io/advanced-react-pathfinding'}>
+              Course
+            </GlowingButton>
           </div>
 
           <p className="text-xs">© {new Date().getFullYear()}</p>

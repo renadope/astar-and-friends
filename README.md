@@ -1,4 +1,4 @@
-# A* and Friends: Pathfinding Visualizer
+# A\* and Friends: Pathfinding Visualizer
 
 <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
   <img src="https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react" alt="React" />
@@ -31,7 +31,7 @@ the mechanics of spatial search algorithms.
 
 ### Supported Algorithms
 
-- **A* Search**: An informed search algorithm utilizing both path cost and heuristic evaluation with adjustable
+- **A\* Search**: An informed search algorithm utilizing both path cost and heuristic evaluation with adjustable
   weighting parameters
 - **Dijkstra's Algorithm**: A graph search algorithm that finds the shortest path between nodes using cumulative path
   costs
@@ -54,8 +54,8 @@ modifications, facilitating real-time algorithm comparison and analysis.
 - **Timeline Navigation**: Precise control over algorithm execution state with scrubbing capabilities
 - **Comprehensive Playback Controls**: Standard media controls including play, pause, restart, and skip-to-solution
 - **Dual Visualization Modes**:
-    - **Snapshot Mode**: Displays complete algorithm state at discrete time intervals
-    - **Granular Mode**: Provides detailed step-by-step visualization for comprehensive analysis
+  - **Snapshot Mode**: Displays complete algorithm state at discrete time intervals
+  - **Granular Mode**: Provides detailed step-by-step visualization for comprehensive analysis
 
 ### Grid Interaction Capabilities
 
@@ -64,9 +64,9 @@ modifications, facilitating real-time algorithm comparison and analysis.
 - **Obstacle Creation**: Support for complex maze and barrier configurations
 - **Procedural Generation**: Automated creation of randomized grid environments
 - **Movement Configuration Options**:
-    - **Orthogonal Movement**: Traditional four-directional movement (cardinal directions only)
-    - **Strict Diagonal Movement**: Diagonal movement permitted only when adjacent cells are passable
-    - **Permissive Diagonal Movement**: Diagonal movement allowed with relaxed adjacency constraints
+  - **Orthogonal Movement**: Traditional four-directional movement (cardinal directions only)
+  - **Strict Diagonal Movement**: Diagonal movement permitted only when adjacent cells are passable
+  - **Permissive Diagonal Movement**: Diagonal movement allowed with relaxed adjacency constraints
 - **Configurable Movement Costs**: Adjustable diagonal movement penalties (default: √2)
 
 ### Visual Feedback System
