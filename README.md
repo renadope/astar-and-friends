@@ -21,6 +21,13 @@
   Note: While fully functional on mobile devices, the application is optimized for desktop environments to provide the best grid interaction experience.
 </p>
 
+## Learn to Build This
+
+Want to understand how this application was built? Check out the comprehensive course that walks through creating this
+pathfinding visualizer from scratch:
+
+**[Learn Advanced React By Building a Pathfinding Visualizer](https://renado.gitbook.io/advanced-react-pathfinding)**
+
 ## Overview
 
 This application provides real-time visualization of pathfinding algorithms operating on interactive grids. It serves as
@@ -54,8 +61,8 @@ modifications, facilitating real-time algorithm comparison and analysis.
 - **Timeline Navigation**: Precise control over algorithm execution state with scrubbing capabilities
 - **Comprehensive Playback Controls**: Standard media controls including play, pause, restart, and skip-to-solution
 - **Dual Visualization Modes**:
-  - **Snapshot Mode**: Displays complete algorithm state at discrete time intervals
-  - **Granular Mode**: Provides detailed step-by-step visualization for comprehensive analysis
+    - **Snapshot Mode**: Displays complete algorithm state at discrete time intervals
+    - **Granular Mode**: Provides detailed step-by-step visualization for comprehensive analysis
 
 ### Grid Interaction Capabilities
 
@@ -64,9 +71,9 @@ modifications, facilitating real-time algorithm comparison and analysis.
 - **Obstacle Creation**: Support for complex maze and barrier configurations
 - **Procedural Generation**: Automated creation of randomized grid environments
 - **Movement Configuration Options**:
-  - **Orthogonal Movement**: Traditional four-directional movement (cardinal directions only)
-  - **Strict Diagonal Movement**: Diagonal movement permitted only when adjacent cells are passable
-  - **Permissive Diagonal Movement**: Diagonal movement allowed with relaxed adjacency constraints
+    - **Orthogonal Movement**: Traditional four-directional movement (cardinal directions only)
+    - **Strict Diagonal Movement**: Diagonal movement permitted only when adjacent cells are passable
+    - **Permissive Diagonal Movement**: Diagonal movement allowed with relaxed adjacency constraints
 - **Configurable Movement Costs**: Adjustable diagonal movement penalties (default: √2)
 
 ### Visual Feedback System
