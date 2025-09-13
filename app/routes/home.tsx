@@ -96,7 +96,12 @@ export function Main() {
             </Link>
             <span>·</span>
 
-            <GlowingButton to={'https://renado.gitbook.io/advanced-react-pathfinding'}>
+            <GlowingButton
+              to={'https://renado.gitbook.io/advanced-react-pathfinding'}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Official Course"
+            >
               Course
             </GlowingButton>
           </div>
