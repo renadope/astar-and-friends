@@ -4,7 +4,7 @@ import {
   type FlattenedStep,
   isFrontierSnapshot,
   isFrontierStep,
-  isPathSnapshot,
+  isPathStep,
   isVisitedSnapshot,
   isVisitedStep,
   type SnapshotStep,
@@ -67,7 +67,7 @@ export function updateCellDataSnapshotStep(
         cell.snapShotStep = snapshotStep;
         cell.costUpdateHistory = undefined;
       }
-    } else if (isVisitedSnapshot(node) || isPathSnapshot(node)) {
+    } else if (isVisitedSnapshot(node) || isPathStep(node)) {
       const [r, c] = node.node.pos;
       const cell = newCellData[r][c];
       cell.state = node.type;
@@ -76,7 +76,7 @@ export function updateCellDataSnapshotStep(
       cell.h = node.node.hCost;
       cell.f = node.node.fCost;
       cell.step = i;
-      cell.snapShotStep = isPathSnapshot(node) ? undefined : snapshotStep;
+      cell.snapShotStep = isPathStep(node) ? undefined : snapshotStep;
       cell.costUpdateHistory = undefined;
 
       if (isVisitedSnapshot(node)) {

@@ -5,7 +5,6 @@ import {
   buildTimeline,
   type FlattenedStep,
   flattenedTimeline,
-  isPathStep,
   type SnapshotStep,
 } from '~/utils/timeline-generation';
 import { generateRandomCostGrid } from '~/utils/grid-generation';
@@ -127,18 +126,6 @@ function generateGrid(state: AppState, size: number): AppState {
     gridSize: posSize,
     allReconstructedPathsCache: undefined,
   };
-}
-
-function groupBySnapshotStep(timeline: FlattenedStep[]): Map<number, FlattenedStep[]> {
-  const res = new Map<number, FlattenedStep[]>();
-  for (const node of timeline) {
-    if (!isPathStep(node) && node.snapShotStep !== undefined) {
-      const group = res.get(node.snapShotStep) ?? [];
-      group.push(node);
-      res.set(node.snapShotStep, group);
-    }
-  }
-  return res;
 }
 
 export function reducer(state: AppState, action: Action): AppState {
