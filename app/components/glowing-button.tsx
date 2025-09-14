@@ -17,8 +17,8 @@ export function GlowingButton({
     <div className={'relative group'}>
       <div
         className={`absolute -inset-2.5 bg-gradient-to-r from-pink-600 to-purple-600 
-         rounded-lg blur-lg opacity-90 group-hover:opacity-100
-         transition duration-1000 group-hover:duration-200 animate-[tilt_3s_ease-in-out_infinite]`}
+         rounded-lg blur-lg opacity-75 group-hover:opacity-100
+         transition duration-1000 group-hover:duration-200 animate-pulse`}
       ></div>
       <Link
         className={cn(
