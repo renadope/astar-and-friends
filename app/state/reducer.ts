@@ -178,7 +178,7 @@ export function reducer(state: AppState, action: Action): AppState {
           aStarResult.value.costs,
           aStarResult.value.prevMap,
           (_: Pos) => 0,
-          { ...state.gwWeights, name: 'default' },
+          { ...state.gwWeights, name: 'default ' },
           visitedNotInPath[i]
         );
         allGhostPathCache.set(
