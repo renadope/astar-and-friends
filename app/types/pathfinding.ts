@@ -24,7 +24,7 @@ export type DiagonalConfig =
       cornerCutting?: never;
     };
 
-export interface PathData {
+export type PathData = {
   pos: Pos;
   from?: Pos;
   step: number;
@@ -32,7 +32,7 @@ export interface PathData {
   gCost: number;
   hCost: number;
   fCost: number;
-}
+};
 
 export type AStarData = {
   goalFound: boolean;
