@@ -3,7 +3,7 @@ import { GridProvider } from '~/state/context';
 import Grid from '~/components/grid';
 import ControlPanel from '~/components/control-panel/control-panel';
 import { Link } from 'react-router';
-import { BookIcon, GithubIcon, LinkedInIcon } from '~/components/icons/icons';
+import { GithubIcon, GraduateIcon, LinkedInIcon } from '~/components/icons/icons';
 import { GlowingButton } from '~/components/glowing-button';
 
 export function meta({}: Route.MetaArgs) {
@@ -101,8 +101,8 @@ export function Main() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Official Course"
-              colorPreset={'ocean'}
-              icon={<BookIcon className={'size-6 text-sky-600 rotate-6 group-hover:rotate-12'} />}
+              colorPreset={'cyberpunk'}
+              renderIcon={({ className }) => <GraduateIcon className={className} />}
             >
               Course
             </GlowingButton>

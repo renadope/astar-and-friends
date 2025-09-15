@@ -121,7 +121,7 @@ export function GithubIcon({ className, ...props }: IconProps) {
   );
 }
 
-export function BookIcon({ className, ...props }: IconProps) {
+export function GraduateIcon({ className, ...props }: IconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
