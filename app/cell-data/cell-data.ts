@@ -56,9 +56,12 @@ export function updateCellDataSnapshotStep(
       const nodes = node.nodes;
       for (let j = 0; j < nodes.length; j++) {
         const frontier = nodes[j];
+        if (isNullOrUndefined(frontier)) {
+          throw new Error('frontier should not be null or undefined');
+        }
         const [r, c] = frontier.pos;
         const cell = newCellData[r][c];
-        cell.state = 'frontier';
+        cell.state = node.type;
         cell.pos = [r, c];
         cell.g = frontier.gCost;
         cell.h = frontier.hCost;
