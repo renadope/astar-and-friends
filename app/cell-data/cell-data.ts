@@ -102,9 +102,6 @@ export function updateCellDataFlattenedStep(
     }
     const [r, c] = timeLineNode.node.pos;
     const cell = newCellData[r][c];
-    if (isNullOrUndefined(cell)) {
-      continue;
-    }
     cell.state = timeLineNode.type;
     cell.pos = [r, c];
     cell.g = timeLineNode.node.gCost;
