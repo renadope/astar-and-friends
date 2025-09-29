@@ -3,10 +3,8 @@ import { isNodePassable, isSamePos } from '~/utils/grid-helpers';
 import {
   type FlattenedStep,
   isFrontierSnapshot,
-  isFrontierStep,
   isPathStep,
   isVisitedSnapshot,
-  isVisitedStep,
   type SnapshotStep,
 } from '~/utils/timeline-generation';
 import { isNullOrUndefined } from '~/utils/helpers';
@@ -108,10 +106,7 @@ export function updateCellDataFlattenedStep(
     cell.h = timeLineNode.node.hCost;
     cell.f = timeLineNode.node.fCost;
     cell.step = i;
-    cell.snapShotStep =
-      isFrontierStep(timeLineNode) || isVisitedStep(timeLineNode)
-        ? timeLineNode.snapShotStep
-        : undefined;
+    cell.snapShotStep = isPathStep(timeLineNode) ? undefined : timeLineNode.snapShotStep;
     cell.costUpdateHistory = undefined;
   }
   return newCellData;
