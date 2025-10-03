@@ -18,6 +18,7 @@ export function initCellData(weightGrid: number[][], start?: Pos, goal?: Pos): C
       const cellData: CellData = {
         pos: [rowIdx, colIdx],
         cost: weight,
+        g: undefined,
         h: undefined,
         f: undefined,
         costUpdateHistory: undefined,
