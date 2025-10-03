@@ -94,19 +94,19 @@ export function updateCellDataFlattenedStep(
 ): CellData[][] {
   const newCellData = copyCellData(cellData);
   for (let i = 0; i < timeline.length; i++) {
-    const timeLineNode = timeline[i];
-    if (isNullOrUndefined(timeLineNode)) {
+    const timelineNode = timeline[i];
+    if (isNullOrUndefined(timelineNode)) {
       continue;
     }
-    const [r, c] = timeLineNode.node.pos;
+    const [r, c] = timelineNode.node.pos;
     const cell = newCellData[r][c];
-    cell.state = timeLineNode.type;
+    cell.state = timelineNode.type;
     cell.pos = [r, c];
-    cell.g = timeLineNode.node.gCost;
-    cell.h = timeLineNode.node.hCost;
-    cell.f = timeLineNode.node.fCost;
+    cell.g = timelineNode.node.gCost;
+    cell.h = timelineNode.node.hCost;
+    cell.f = timelineNode.node.fCost;
     cell.step = i;
-    cell.snapShotStep = isPathStep(timeLineNode) ? undefined : timeLineNode.snapShotStep;
+    cell.snapShotStep = isPathStep(timelineNode) ? undefined : timelineNode.snapShotStep;
     cell.costUpdateHistory = undefined;
   }
   return newCellData;
