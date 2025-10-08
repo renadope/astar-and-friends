@@ -57,7 +57,11 @@ export function Main() {
         <div className="flex flex-col items-center justify-center space-y-2">
           <div className="flex items-center space-x-1">
             <p className="flex items-center space-x-1">
-              <Link to="https://github.com/renadope" target="_blank" rel="noopener noreferrer">
+              <Link
+                to={'https://github.com/renadope?tab=repositories'}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <span
                   className={`bg-gradient-to-r
                            from-purple-500 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent
