@@ -3,8 +3,9 @@ import { GridProvider } from '~/state/context';
 import Grid from '~/components/grid';
 import ControlPanel from '~/components/control-panel/control-panel';
 import { Link } from 'react-router';
-import { GithubIcon, GraduateIcon, LinkedInIcon } from '~/components/icons/icons';
+import { GithubIcon, LinkedInIcon } from '~/components/icons/icons';
 import { GlowingButton } from '~/components/glowing-button';
+import { SwordIcon } from 'lucide-react';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -101,14 +102,14 @@ export function Main() {
             <span>·</span>
 
             <GlowingButton
-              to={'https://renado.gitbook.io/advanced-react-pathfinding'}
+              to={'https://ktfo.gg/'}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Official Course"
-              colorPreset={'cyberpunk'}
-              renderIcon={({ className }) => <GraduateIcon className={className} />}
+              aria-label="Fight Picks"
+              colorPreset={'fire'}
+              renderIcon={({ className }) => <SwordIcon className={className} />}
             >
-              Course
+              ktfo.gg
             </GlowingButton>
           </div>
 
