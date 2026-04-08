@@ -58,16 +58,19 @@ export function Main() {
         <div className="flex flex-col items-center justify-center space-y-2">
           <div className="flex items-center space-x-1">
             <p className="flex items-center space-x-1">
-              <Link
-                to={'https://github.com/renadope?tab=repositories'}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <Link to={'https://renado.cv'} target="_blank" rel="noopener noreferrer">
                 <span
-                  className={`bg-gradient-to-r
-                           from-purple-500 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent
-                           hover:from-pink-600 hover:via-fuchsia-600 hover:to-purple-600 hover:text-2xl
-                            transition-all duration-500`}
+                  className="relative inline-block
+                  bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 bg-[length:200%_100%]
+                  bg-clip-text text-transparent
+                  animate-[gradient-slide_4s_linear_infinite]
+                  hover:animate-[gradient-slide_1.5s_linear_infinite]
+                  hover:scale-[1.08] hover:drop-shadow-[0_0_10px_rgba(168,85,247,0.45)]
+                  transition-all duration-400
+                  after:absolute after:bottom-[-2px] after:left-0 after:h-[2px] after:w-full
+                  after:bg-gradient-to-r after:from-purple-500 after:via-fuchsia-500 after:to-pink-500
+                  after:origin-left after:scale-x-0 hover:after:scale-x-100
+                  after:transition-transform after:duration-400"
                 >
                   Renado
                 </span>
@@ -106,7 +109,7 @@ export function Main() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Fight Picks"
-              colorPreset={'fire'}
+              colorPreset={'neon'}
               renderIcon={({ className }) => <SwordIcon className={className} />}
             >
               ktfo.gg
